@@ -17,17 +17,19 @@ import setuptools
 
 with open("README.md", "r") as f:
   long_description = f.read()
+with open("VERSION", "r") as f:
+  version = f.read().strip()
 
 setuptools.setup(
-    name="mlperf_compliance",
-    version="0.1.0",
+    name="mlperf-logging",
+    version=version,
     author="MLPerf.org",
     author_email="mlperf@googlegroups.com",
     description="MLPerf compliance tools.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mlperf/logging",
-    packages=setuptools.find_namespace_packages(include=['mllog*']),
+    packages=["mlperf_logging"],
     classifiers=[
       "Programming Language :: Python :: 2",
       "Programming Language :: Python :: 3",

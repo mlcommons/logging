@@ -29,7 +29,7 @@ import sys
 import time
 import timeit
 
-from mllog import constants
+from mlperf_logging.mllog import constants
 
 LOG_TEMPLATE = ':::MLLOG {log_json}'
 
