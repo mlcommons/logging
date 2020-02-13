@@ -17,8 +17,7 @@ import logging
 import os
 import sys
 
-import mllog
-from mllog import constants
+from mlperf_logging import mllog
 
 
 def dummy_example():
@@ -77,10 +76,10 @@ def dummy_example():
   # The methods to use are "start", "end", and "event".
   # You may check out the detailed APIs in mllog.mllog.
   # Try to use the keys from mllog.constants to avoid wrong keys.
-  mllogger.start(key=constants.RUN_START)
-  mllogger.event(key=constants.GLOBAL_BATCH_SIZE, value=1024)
-  mllogger.event(key=constants.EVAL_ACCURACY, value=0.99, clear_line=True)
-  mllogger.end(key=constants.RUN_STOP)
+  mllogger.start(key=mllog.constants.RUN_START)
+  mllogger.event(key=mllog.constants.GLOBAL_BATCH_SIZE, value=1024)
+  mllogger.event(key=mllog.constants.EVAL_ACCURACY, value=0.99, clear_line=True)
+  mllogger.end(key=mllog.constants.RUN_STOP)
 
 
 if __name__ == "__main__":

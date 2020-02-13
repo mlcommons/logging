@@ -23,8 +23,7 @@ import time
 import unittest
 from unittest import mock
 
-import mllog
-from mllog import constants
+from mlperf_logging import mllog
 
 
 @contextmanager
@@ -74,7 +73,7 @@ class TestMlperfLog(unittest.TestCase):
     expected_output = " ".join([prefix, expected_log_json])
     with _captured_stdout() as out:
       mllogger = mllog.get_mllogger()
-      mllogger.start(constants.RUN_START, None)
+      mllogger.start(mllog.constants.RUN_START, None)
       self.assertEqual(out.getvalue().splitlines()[0], expected_output)
 
   def test_mllog_end_simple(self):
@@ -91,7 +90,7 @@ class TestMlperfLog(unittest.TestCase):
     expected_output = " ".join([prefix, expected_log_json])
     with _captured_stdout() as out:
       mllogger = mllog.get_mllogger()
-      mllogger.end(constants.RUN_STOP, None)
+      mllogger.end(mllog.constants.RUN_STOP, None)
       self.assertEqual(out.getvalue().splitlines()[0], expected_output)
 
   def test_mllog_event_simple(self):
@@ -108,7 +107,7 @@ class TestMlperfLog(unittest.TestCase):
     expected_output = " ".join([prefix, expected_log_json])
     with _captured_stdout() as out:
       mllogger = mllog.get_mllogger()
-      mllogger.event(constants.EVAL_ACCURACY, 0.99)
+      mllogger.event(mllog.constants.EVAL_ACCURACY, 0.99)
       self.assertEqual(out.getvalue().splitlines()[0], expected_output)
 
   def test_mllog_event_override_param(self):
@@ -125,7 +124,7 @@ class TestMlperfLog(unittest.TestCase):
     expected_output = "\n" + " ".join([prefix, expected_log_json]) + "\n"
     with _captured_stdout() as out:
       mllogger = mllog.get_mllogger()
-      mllogger.event(constants.EVAL_ACCURACY, 0.99, namespace="worker1",
+      mllogger.event(mllog.constants.EVAL_ACCURACY, 0.99, namespace="worker1",
                      time_ms=1231231230123, clear_line=True)
       self.assertEqual(out.getvalue(), expected_output)
 

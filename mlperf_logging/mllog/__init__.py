@@ -17,7 +17,7 @@ import logging
 import sys
 import threading
 
-from mllog import mllog
+from mlperf_logging.mllog import mllog
 
 
 # _lock is for serializing access to shared data structures in this module.
