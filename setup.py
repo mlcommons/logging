@@ -29,7 +29,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/mlperf/logging",
-    packages=["mlperf_logging"],
+    packages=setuptools.find_packages(),
     classifiers=[
       "Programming Language :: Python :: 2",
       "Programming Language :: Python :: 3",
