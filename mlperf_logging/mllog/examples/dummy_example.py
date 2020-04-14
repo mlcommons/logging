@@ -53,6 +53,7 @@ def dummy_example():
   #
   # # Notice that proper log level needs to be set for both logger and handler.
   # logger = logging.getLogger("custom_logger")
+  # logger.propagate = False
   # logger.setLevel(logging.DEBUG)
   # # add file handler for file logging
   # _file_handler = logging.FileHandler("example_advanced.log")
