@@ -71,6 +71,9 @@ RUN_STOP = "run_stop"
 # Log keys - common run info
 CACHE_CLEAR = "cache_clear"
 EVAL_ACCURACY = "eval_accuracy"
+EVAL_SAMPLES = "eval_samples"
+SEED = "seed"
+TRAIN_SAMPLES = "train_samples"
 
 # Log kyes - model hyperparameters
 GLOBAL_BATCH_SIZE = "global_batch_size"
