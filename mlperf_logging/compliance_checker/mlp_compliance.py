@@ -9,8 +9,9 @@ import os
 import sys
 import yaml
 import json
+import re
 
-import mlp_parser
+from . import mlp_parser
 
 
 
@@ -220,12 +221,22 @@ class ComplianceChecker:
 
         return not self.has_messages()
 
+
+def rule_choices():
+    return [ x for x in os.listdir(os.path.dirname(__file__))
+            if re.match('\d+\.\d+\.\d+', x) ]
+
+
 def get_parser():
-    parser = argparse.ArgumentParser(description='Lint MLPerf Compliance Logs.')
+    parser = argparse.ArgumentParser(
+        prog='mlperf_logging.compliance_checker',
+        description='Lint MLPerf Compliance Logs.',
+    )
 
     parser.add_argument('filename', type=str,
                     help='the file to check for compliance')
     parser.add_argument('--ruleset', type=str, default='0.7.0',
+                    choices=rule_choices(),
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,
                     help='mlperf logging config, by default it loads {ruleset}/common.yaml', default=None)

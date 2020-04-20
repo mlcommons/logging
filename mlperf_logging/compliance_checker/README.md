@@ -8,7 +8,7 @@ The checker works with both python2 and python3, requires PyYaml package.
 
 To check a log file for compliance:
 
-    python mlp_compliance.py [--config YAML] [--ruleset MLPERF_EDITION] FILENAME
+    python -m mlperf_logging.compliance_checker [--config YAML] [--ruleset MLPERF_EDITION] FILENAME
 
 By default, 0.7.0 edition rules are used and the default config is set to `0.7.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
@@ -26,6 +26,8 @@ As log examples use [NVIDIA's v0.6 training logs](https://github.com/mlperf/trai
     0.7.0/maskrcnn.yaml
     0.7.0/gnmt.yaml
     0.7.0/transformer.yaml
+    0.7.0/bert.yaml
+    0.7.0/dlrm.yaml
 
 ### Implementation details
 Compliance checking is done following below algorithm.

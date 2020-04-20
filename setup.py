@@ -37,4 +37,5 @@ setuptools.setup(
       "Operating System :: OS Independent",
     ],
     license='Apache 2.0',
+    include_package_data=True,
 )
