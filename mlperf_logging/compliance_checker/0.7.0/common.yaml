@@ -185,33 +185,33 @@
     CHECK: " v['value'] != '' "
 
 - KEY:
-    NAME:  training_samples
+    NAME:  train_samples
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
 
 - KEY:
-    NAME:  evaluation_samples
+    NAME:  eval_samples
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
 
 - KEY:
-    NAME:  epoch_training_samples
-    REQ:   AT_LEAST_ONE_OR(block_trainings_samples)
+    NAME:  epoch_train_samples
+    REQ:   AT_LEAST_ONE_OR(block_train_samples)
     CHECK:
         - "v['value'] != ''"
         - "'epoch_num' in v['metadata']"
         - "v['metadata']['epoch_num'] == s['last_epoch']"
 
 - KEY:
-    NAME:  block_trainings_samples
-    REQ:   AT_LEAST_ONE_OR(epoch_training_samples)
+    NAME:  block_train_samples
+    REQ:   AT_LEAST_ONE_OR(epoch_train_samples)
     CHECK: " v['value'] != '' "
 
 - KEY:
-    NAME:  epoch_training_throughput
+    NAME:  epoch_train_throughput
     CHECK: " v['value'] != '' "
 
 - KEY:
-    NAME:  block_training_throughput
+    NAME:  block_train_throughput
     CHECK: " v['value'] != '' "
 

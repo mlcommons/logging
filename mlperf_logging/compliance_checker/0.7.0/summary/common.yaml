@@ -123,32 +123,32 @@
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  training_samples
+    NAME:  train_samples
     POST: |
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  evaluation_samples
+    NAME:  eval_samples
     POST: |
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  epoch_training_samples
+    NAME:  epoch_train_samples
     POST: |
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  block_trainings_samples
+    NAME:  block_train_samples
     POST: |
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  epoch_training_throughput
+    NAME:  epoch_train_throughput
     POST: |
         s['summary'][ll.key] = v['value']
 
 - KEY:
-    NAME:  block_training_throughput
+    NAME:  block_train_throughput
     POST: |
         s['summary'][ll.key] = v['value']
 
