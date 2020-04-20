@@ -104,7 +104,7 @@
 # FIXME: check epoch_count value match
 - KEY:
     NAME:  block_start
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(epoch_start)
     CHECK:
         - "s['run_started']"
         - "not s['run_stopped']"
@@ -120,7 +120,7 @@
 
 - KEY:
     NAME:  block_stop
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(epoch_stop)
     CHECK:
         - "s['in_block']"
         - "s['accuracy_printed']"
@@ -130,7 +130,7 @@
 
 - KEY:
     NAME:  epoch_start
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
         - "s['run_started']"
         - "not s['in_epoch']"
@@ -141,7 +141,7 @@
 
 - KEY:
     NAME:  epoch_stop
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(epoch_stop)
     CHECK:
         - "s['in_epoch']"
         - "'epoch_num' in v['metadata']"
