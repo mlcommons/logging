@@ -30,17 +30,34 @@ def enqueue_config(config):
     enqueued_configs.append(config)
 
 
+def all_same(l):
+    return not l or len(l) == l.count(l[0])
+
+def merge(*dicts,):
+    return { k:d[k] for d in dicts for k in d }
+
 class ComplianceChecker:
 
-    def __init__(self, ruleset):
+    def __init__(self, ruleset, quiet, werror):
         self.ruleset = ruleset
 
+        self.warnings = {}
         self.overwritable = {}
         self.not_overwritable = []
+
+        self.quiet = quiet
+        self.werror = werror
 
     def raise_exception(self, msg):
         raise CCError(msg)
 
+
+    def put_warning(self, msg, key):
+        if self.werror:
+            self.put_message(msg, key)
+        elif not self.quiet:
+            print(key, msg)
+            self.warnings[key] = msg
 
     def put_message(self, msg, key=None):
         if key:
@@ -55,15 +72,13 @@ class ComplianceChecker:
 
 
     def log_messages(self):
-        message_separator = '-' * 30
-        for key in self.overwritable:
-            print(message_separator)
-            print(self.overwritable[key])
+        message_separator = '\n' + '-' * 30 + '\n'
 
-        for msg in self.not_overwritable:
-            print(message_separator)
-            print(msg)
-
+        print(message_separator.join([
+            *self.warnings.values(),
+            *self.overwritable.values(),
+            *self.not_overwritable
+        ]))
 
     def has_messages(self):
         return self.not_overwritable or self.overwritable
@@ -131,7 +146,7 @@ class ComplianceChecker:
             if list(k)[0]=='KEY':
                 key_records.update({k['KEY']['NAME']:k['KEY']}) 
 
-        occurrence_counter = {k:0 for k in key_records.keys()}
+        reported_values = {k:[] for k in key_records.keys()}
 
         # if config overrides some rules from previous config, corresponding messages are not needed
         self.overwrite_messages(key_records)
@@ -140,7 +155,7 @@ class ComplianceChecker:
         for line in loglines:
             key_record = None
             try:
-                occurrence_counter[line.key] = occurrence_counter[line.key]+1
+                reported_values[line.key].append(line.value['value'])
                 key_record = key_records[line.key]
             except:
                 # unknown key - it's allowed, skip to next record
@@ -157,20 +172,29 @@ class ComplianceChecker:
                 continue
 
             if v['REQ']=='EXACTLY_ONE':
-                if occurrence_counter[k]!=1:
-                     self.put_message(f"Required EXACTLY_ONE occurrence of '{k}' but found {occurrence_counter[k]}",
-                                      key=k)
+                if len(reported_values[k]) !=1:
+                    if reported_values[k] and all_same(reported_values[k]):
+                        self.put_warning(f"Required EXACTLY_ONE occurrence of '{k}'"
+                                         f" but found {len(reported_values[k])}",
+                                         key=k)
+                    else:
+                        self.put_message(f"Required EXACTLY_ONE occurrence of '{k}'"
+                                         f" but found {len(reported_values[k])}" +
+                                         (f" with different values:"
+                                         f" [{', '.join(x for x in set(str(v) for v in reported_values[k]))}]"
+                                         if reported_values[k] else ''),
+                                         key=k)
 
             if v['REQ']=='AT_LEAST_ONE':
-                if occurrence_counter[k]<1:
-                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {occurrence_counter[k]}",
+                if len(reported_values[k])<1:
+                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
                                       key=k)
 
             if v['REQ'].startswith('AT_LEAST_ONE_OR'):
                 alternatives.add(tuple({k, *self.parse_alternatives(v['REQ'])}))
 
         for alts in alternatives:
-            if not any(occurrence_counter[k] for k in alts):
+            if not any(reported_values[k] for k in alts):
                 self.put_message("Required AT_LEAST_ONE occurrence of {}".format(' or '.join(f"'{s}'" for s in alts)))
 
         # execute end block
@@ -240,6 +264,10 @@ def get_parser():
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,
                     help='mlperf logging config, by default it loads {ruleset}/common.yaml', default=None)
+    parser.add_argument('--werror', action='store_true',
+                    help='Treas warnings as errors')
+    parser.add_argument('--quiet', action='store_true',
+                    help='Suppress warnings. Does nothing if --werror is set')
 
     return parser
 
@@ -256,7 +284,11 @@ def main():
     args = parser.parse_args()
     args = fill_defaults(args)
 
-    checker = ComplianceChecker(args.ruleset)
+    checker = ComplianceChecker(
+        args.ruleset,
+        args.quiet,
+        args.werror,
+    )
 
     if checker.check_file(args):
         print('SUCCESS')
