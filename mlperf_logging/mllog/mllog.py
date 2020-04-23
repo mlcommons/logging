@@ -29,6 +29,12 @@ import sys
 import time
 import timeit
 
+try:
+  import numpy as np
+  NUMPY_FOUND = True
+except ImportError:
+  NUMPY_FOUND = False
+
 from mlperf_logging.mllog import constants
 
 LOG_TEMPLATE = ':::MLLOG {log_json}'
@@ -66,49 +72,6 @@ def _current_time_ms():
   return int(time.time() * 1e3)
 
 
-def _try_float(value):
-  """Tries to convert a value to a float (otherwise returns the input)."""
-  try:
-    return float(value)
-  except Exception:  # pylint:disable=broad-except
-    return value
-
-
-def _to_ordered_json(kv_pairs):
-  """Convert a list of (key, value) pairs to a serialized json message.
-  Args:
-    kv_pairs: List of (key, value) tuples, ordered by how they should be
-      presented.
-  Returns:
-    string - The serialized json string with fields in the same order as
-      kv_pairs. If there were any key/value pairs that couldn't be properly
-      converted to json, returns an error string.
-  """
-  d = collections.OrderedDict()
-  # json.dumps() works differently in python 2 and 3 for boolean keys.
-  # py2: json.dumps({True: 'a', False: 'b'}) -> '{"True": "a", "False": "b"}'
-  # py3: json.dumps({True: 'a', False: 'b'}) -> '{"true": "a", "false": "b"}'
-  # We standardize to match python 3 output.
-  # Note that we don't need to account for this in boolean values.
-  # py2 and 3: json.dumps({'a': True, 'b': False}) -> '{"a": true, "b": false}'
-  for key, value in kv_pairs:
-    if isinstance(key, bool):
-      if key:
-        d['true'] = value
-      else:
-        d['false'] = value
-    elif key == 'value':
-      # See if we can convert the 'value' field to a float where possible.
-      # This is to mostly handle np.float values which cannot be json encoded.
-      d[key] = _try_float(value)
-    else:
-      d[key] = value
-  try:
-    return json.dumps(d)
-  except Exception:  # pylint:disable=broad-except
-    return '[convert-error: {kv_str}]'.format(kv_str=str(kv_pairs))
-
-
 def _encode_log(namespace, time_ms, event_type, key, value, metadata):
   """Encodes an MLEvent as a string log line.
   Args:
@@ -130,8 +93,23 @@ def _encode_log(namespace, time_ms, event_type, key, value, metadata):
     ('value', value),
     ('metadata', metadata)
   ]
-  encoded = _to_ordered_json(ordered_key_val_pairs)
+  d = collections.OrderedDict(ordered_key_val_pairs)
+  if NUMPY_FOUND:
+    encoded = json.dumps(d, cls=_NumpyJSONEncoder)
+  else:
+    encoded = json.dumps(d)
   return LOG_TEMPLATE.format(log_json=encoded)
+
+
+class _NumpyJSONEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, np.integer):
+      return int(obj)
+    elif isinstance(obj, np.floating):
+      return float(obj)
+    elif isinstance(obj, np.ndarray):
+      return obj.tolist()
+    return json.JSONEncoder.default(self, obj)
 
 
 class MLLogger(object):
@@ -211,15 +189,14 @@ class MLLogger(object):
               clear_line=True)
         log_metadata.update(metadata)
 
-    log_line = _encode_log(
-        namespace,
-        time_ms,
-        event_type,
-        key,
-        value,
-        log_metadata)
-
-    self._do_log(logging.INFO, log_line, clear_line)
+    try:
+      log_line = _encode_log(
+          namespace, time_ms, event_type, key, value, log_metadata)
+      self._do_log(logging.INFO, log_line, clear_line)
+    except Exception:  # pylint:disable=broad-except
+      self._do_log(logging.ERROR, "Failed to encode: {}".format(str(
+          [namespace, time_ms, event_type, key, value, log_metadata])),
+          clear_line=True)
 
   def start(self, key, value=None, metadata=None, namespace=None, time_ms=None,
             stack_offset=None, clear_line=None):
