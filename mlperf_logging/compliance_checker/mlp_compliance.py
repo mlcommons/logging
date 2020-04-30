@@ -84,33 +84,50 @@ class ComplianceChecker:
         return self.not_overwritable or self.overwritable
 
 
-    def run_check_eval(self, ll, tag, tests, state):
+    def run_check_eval(self, ll, tests, state):
         if type(tests) is not list:
             tests = [tests]
 
-        try:
-            failed_test = ''
-
-            for test in tests:
+        for test in tests:
+            try:
                 if not eval(test.strip(), state, {'ll': ll, 'v': ll.value }):
-                    failed_test = test
-                    break
-        except:
-            self.put_message(f'Failed executing CHECK code triggered by line :\n{ll.full_string}',
-                             key=ll.key)
-            return
+                    self.put_message(
+                        f"CHECK for '{ll.key}' failed in line {ll.lineno}:"
+                        f"\n{ll.full_string}"
+                        f"\nfailed test: {test}"
+                        f"\ncurrent context[s]={preety_dict(state['s'])}"
+                        f"\ncurrent line[v]={preety_dict(ll.value)}",
+                        key=ll.key
+                    )
+            except:
+                self.put_message(
+                    f'Failed executing CHECK code:'
+                    f'\n{test}'
+                    f'\ntriggered by line:'
+                    f'\n{ll.full_string}'
+                    f"\ncurrent context[s]={preety_dict(state['s'])}",
+                    key=ll.key
+                )
 
-        if failed_test:
-            self.put_message(
-                f"CHECK for '{tag}' failed in line {ll.lineno}:"
-                f"\n{ll.full_string}"
-                f"\nfailed test: {failed_test}"
-                f"\ncurrent context[s]={preety_dict(state['s'])}"
-                f"\ncurrent line[v]={preety_dict(ll.value)}",
-                key=ll.key)
+    def run_check_end(self, tests, state):
+        if type(tests) is not list:
+            tests = [tests]
 
+        for test in tests:
+            try:
+                if not eval(test.strip(), state):
+                    self.put_message(
+                        f"failed test: {test}"
+                        f"\ncurrent context[s]={preety_dict(state['s'])}",
+                    )
+            except:
+                self.put_message(
+                    f'Failed executing CHECK code:'
+                    f'\n{test}'
+                    f'\ncurrent context[s]={preety_dict(state["s"])}'
+                )
 
-    def run_check_exec(self, ll, tag, code, state, action):
+    def run_check_exec(self, ll, code, state, action):
         if code is None: return
 
         try:
@@ -161,9 +178,9 @@ class ComplianceChecker:
                 # unknown key - it's allowed, skip to next record
                 continue
 
-            if 'PRE' in key_record: self.run_check_exec(line, line.key, key_record['PRE'], state, 'PRE')
-            if 'CHECK' in key_record: self.run_check_eval(line, line.key, key_record['CHECK'], state)
-            if 'POST' in key_record: self.run_check_exec(line, line.key, key_record['POST'], state, 'POST')
+            if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
+            if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
+            if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
 
         alternatives = set()
         # verify occurrences requirements
@@ -204,10 +221,7 @@ class ComplianceChecker:
             end_record = end_blocks[0]['END']
             if 'PRE' in end_record: exec(end_record['PRE'].strip(), state)
             if 'CHECK' in end_record:
-                end_result = eval(end_record['CHECK'].strip(), state)
-                if not end_result:
-                    self.put_message('Failed executing END CHECK with \n s={},\n code \'{} \''.format(state, end_record['CHECK'].strip()))
-
+                self.run_check_end(end_record['CHECK'], state)
 
     def check_loglines(self, loglines, config):
         if not loglines:
