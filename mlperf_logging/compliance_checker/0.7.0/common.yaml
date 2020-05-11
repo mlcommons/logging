@@ -141,7 +141,7 @@
 
 - KEY:
     NAME:  epoch_stop
-    REQ:   AT_LEAST_ONE_OR(epoch_stop)
+    REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
         - "s['in_epoch']"
         - "'epoch_num' in v['metadata']"
@@ -151,7 +151,7 @@
 # making sure previous eval did print it's accuracy result
 - KEY:
     NAME:  eval_start
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
         - "s['run_started']"
         - "not s['in_eval']"
@@ -164,7 +164,7 @@
 
 - KEY:
     NAME:  eval_stop
-    REQ:   AT_LEAST_ONE
+    REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
         - "s['in_eval']"
         - "'epoch_num' in v['metadata']"
@@ -178,11 +178,6 @@
         - "'epoch_num' in v['metadata']"
         - "v['metadata']['epoch_num'] == s['last_eval']"
     POST:  " s['accuracy_printed'] = True "
-
-- KEY:
-    NAME:  seed
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] != '' "
 
 - KEY:
     NAME:  train_samples
