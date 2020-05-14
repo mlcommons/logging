@@ -53,8 +53,11 @@ def get_caller(stack_index=2, root_dir=None):
       "file": (string) file path
       "lineno": (int) line number
   """
-  caller = inspect.getframeinfo(inspect.stack()[stack_index][0])
-
+  frame = inspect.currentframe()
+  for _ in range(stack_index):
+    frame = frame.f_back
+  caller = inspect.getframeinfo(frame)
+  
   # Trim the filenames for readability.
   filename = caller.filename
   if root_dir is not None:
