@@ -196,7 +196,6 @@
 
 - KEY:
     NAME:  epoch_train_samples
-    REQ:   AT_LEAST_ONE_OR(block_train_samples)
     CHECK:
         - "v['value'] != ''"
         - "'epoch_num' in v['metadata']"
@@ -204,7 +203,6 @@
 
 - KEY:
     NAME:  block_train_samples
-    REQ:   AT_LEAST_ONE_OR(epoch_train_samples)
     CHECK: " v['value'] != '' "
 
 - KEY:

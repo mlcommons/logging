@@ -12,7 +12,7 @@
 - KEY:
     NAME:  opt_learning_rate_decay_boundary_epochs
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] > 0"
+    CHECK: " len(v['value']) > 0"
 
 - KEY:
     NAME:  opt_weight_decay
