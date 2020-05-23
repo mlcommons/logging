@@ -26,5 +26,5 @@ pip uninstall mlperf-logging
 
 ## Packages
 
-[mllog](mlperf_logging/mllog): MLPerf logging library
-[compliance checker](mlperf_logging/compliance_checker): utility checking compliance of MLPerf log
+- [mllog](mlperf_logging/mllog): MLPerf logging library
+- [compliance checker](mlperf_logging/compliance_checker): utility checking compliance of MLPerf log
