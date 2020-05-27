@@ -103,9 +103,13 @@ OPT_LR_WARMUP_EPOCHS = "opt_learning_rate_warmup_epochs"
 OPT_LR_WARMUP_FACTOR = "opt_learning_rate_warmup_factor"
 OPT_LR_WARMUP_STEPS = "opt_learning_rate_warmup_steps"
 OPT_WEIGHT_DECAY = "opt_weight_decay"
+MIN_IMAGE_SIZE = "minimum image size"
+MAX_IMAGE_SIZE = "maximum image size"
 
 # Log metadata keys
 EPOCH_COUNT = "epoch_count"
 EPOCH_NUM = "epoch_num"
 FIRST_EPOCH_NUM = "first_epoch_num"
 STATUS = "status"
+BBOX = "bbox mAP"
+SEGM = "segm mAP"
