@@ -28,3 +28,4 @@ pip uninstall mlperf-logging
 
 - [mllog](mlperf_logging/mllog): MLPerf logging library
 - [compliance checker](mlperf_logging/compliance_checker): utility checking compliance of MLPerf log
+- [system_desc_checker](mlperf_logging/system_desc_checker): utility checking compliance of system description json file
