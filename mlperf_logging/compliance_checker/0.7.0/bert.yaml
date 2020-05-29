@@ -1,12 +1,5 @@
 
 - KEY:
-    NAME:  initial_eval_accuracy
-    REQ:   EXACTLY_ONE
-    CHECK:
-        - s['cache_clear']
-        - not s['init_started']
-
-- KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
 
