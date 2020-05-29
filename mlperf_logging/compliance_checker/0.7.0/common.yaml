@@ -22,11 +22,8 @@
             'run_stopped' : False,
             'in_epoch' : False,
             'last_epoch' : 0,
-            'in_eval' : False,
-            'accuracy_printed' : True,
             'in_block' : False,
             'block_first_epoch' : -1,
-            'last_eval' : 0,
             'first_init_start': 9e99,
         })
 
@@ -96,7 +93,6 @@
     REQ:   EXACTLY_ONE
     CHECK:
         - "s['run_started']"
-        - "not s['in_eval']"
         - "'status' in v['metadata']"
         - "v['metadata']['status'] == 'success'"
     POST:  " s['run_stopped'] = True "
@@ -107,15 +103,12 @@
     REQ:   AT_LEAST_ONE_OR(epoch_start)
     CHECK:
         - "s['run_started']"
-        - "not s['run_stopped']"
         - "not s['in_block']"
         - "'epoch_count' in v['metadata']"
         - "'first_epoch_num' in v['metadata']"
         - "v['metadata']['epoch_count'] > 0"
-        - "v['metadata']['first_epoch_num'] == (s['last_eval'] if s['in_epoch'] else s['last_epoch'] + 1)"
     POST: >
         s['in_block'] = True;
-        s['accuracy_printed'] = True;
         s['block_first_epoch'] = v['metadata'].get('first_epoch_num', 'not set in block_start')
 
 - KEY:
@@ -123,7 +116,6 @@
     REQ:   AT_LEAST_ONE_OR(epoch_stop)
     CHECK:
         - "s['in_block']"
-        - "s['accuracy_printed']"
         - "'first_epoch_num' in v['metadata']"
         - "s['block_first_epoch'] == v['metadata']['first_epoch_num']"
     POST:  " s['in_block'] = False "
@@ -136,7 +128,6 @@
         - "not s['in_epoch']"
         - "'epoch_num' in v['metadata']"
         - "v['metadata']['epoch_num'] == s['last_epoch'] + 1"
-        - "not s['run_stopped']"
     POST:  " s['in_epoch'] = True; s['last_epoch'] = v['metadata'].get('epoch_num', 'not set in eval_start') "
 
 - KEY:
@@ -153,20 +144,12 @@
     NAME:  eval_start
     REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
-        - "s['run_started']"
-        - "not s['in_eval']"
         - "'epoch_num' in v['metadata']"
-        - "v['metadata']['epoch_num'] > s['last_eval']"
-        - "s['accuracy_printed']"
-        - "v['metadata']['epoch_num'] <= s['last_epoch']"
-        - "not s['run_stopped']"
-    POST:  " s['in_eval'] = True; s['accuracy_printed'] = False; s['last_eval'] = v['metadata'].get('epoch_num', 'not set in eval_start') "
 
 - KEY:
     NAME:  eval_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
-        - "s['in_eval']"
         - "'epoch_num' in v['metadata']"
         - "v['metadata']['epoch_num'] == s['last_eval']"
     POST:  " s['in_eval'] = False "
@@ -176,8 +159,6 @@
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'epoch_num' in v['metadata']"
-        - "v['metadata']['epoch_num'] == s['last_eval']"
-    POST:  " s['accuracy_printed'] = True "
 
 - KEY:
     NAME:  train_samples
