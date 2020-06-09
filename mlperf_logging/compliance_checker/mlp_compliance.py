@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import argparse
 import os
-import sys
 import yaml
 import json
 import re
@@ -241,9 +240,9 @@ class ComplianceChecker:
             self.configured_checks(loglines,  config_file)
 
 
-    def check_file(self, args):
+    def check_file(self, filename, config_file):
 
-        loglines, errors = mlp_parser.parse_file(args.filename, ruleset=self.ruleset)
+        loglines, errors = mlp_parser.parse_file(filename, ruleset=self.ruleset)
 
         if len(errors) > 0:
             print('Found parsing errors:')
@@ -253,7 +252,7 @@ class ComplianceChecker:
             print()
             self.put_message('Log lines had parsing errors.')
 
-        self.check_loglines(loglines, args.config)
+        self.check_loglines(loglines, config_file)
 
         self.log_messages()
 
@@ -286,29 +285,16 @@ def get_parser():
     return parser
 
 
-def fill_defaults(args):
-    if not args.config:
-        args.config = f'{args.ruleset}/common.yaml'
-
-    return args
-
-
-def main():
-    parser = get_parser()
-    args = parser.parse_args()
-    args = fill_defaults(args)
-
-    checker = ComplianceChecker(
-        args.ruleset,
-        args.quiet,
-        args.werror,
+def make_checker(ruleset, quiet, werror):
+    return ComplianceChecker(
+        ruleset,
+        quiet,
+        werror,
     )
 
-    if checker.check_file(args):
-        print('SUCCESS')
-    else:
-        print('FAIL')
-        sys.exit(1)
 
-if __name__ == '__main__':
-    main()
+def main(filename, config_file, checker):
+    valid = checker.check_file(filename, config_file)
+
+    return valid, None, None, None
+
