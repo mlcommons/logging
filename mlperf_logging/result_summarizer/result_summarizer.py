@@ -134,6 +134,18 @@ def _compute_olympic_average(scores):
     return sum(copied_scores) / len(copied_scores)
 
 
+def _is_organization_folder(folder):
+    if not os.path.isdir(folder):
+        return False
+    systems_folder = os.path.join(folder, 'systems')
+    if not os.path.exists(systems_folder):
+        return False
+    results_folder = os.path.join(folder, 'results')
+    if not os.path.exists(results_folder):
+        return False
+    return True
+
+
 def summarize_results(folder, ruleset):
     """Summarizes a set of results.
 
@@ -153,18 +165,43 @@ def summarize_results(folder, ruleset):
         system_file = os.path.join(
             systems_folder, '{}.json'.format(system))
         if not os.path.exists(system_file):
-            print('Missing {}'.format(system_file))
+            print('ERROR: Missing {}'.format(system_file))
             continue
-        desc = _read_json_file(system_file)
+        try:
+            desc = _read_json_file(system_file)
+        except:
+            print('ERROR: Could not decode JSON struct in {}'.format(system_file))
+            continue
 
         # Construct prefix portion of the row.
         row = ''
+        if 'submitter' not in desc:
+            print('ERROR: "submitter" field missing in {}'.format(system_file))
+            continue
         row += '"{}",'.format(desc['submitter'])
+        if 'system_name' not in desc:
+            print('ERROR: "system_name" field missing in {}'.format(system_file))
+            continue
         row += '"{}",'.format(_pretty_system_name(desc))
+        if 'host_processor_model_name' not in desc:
+            print('ERROR: "host_processor_model_name" field missing in {}'.format(system_file))
+            continue
         row += '"{}",'.format(desc['host_processor_model_name'])
+        if 'host_processor_core_count' not in desc:
+            print('ERROR: "host_processor_core_count" field missing in {}'.format(system_file))
+            continue
         row += '{},'.format(desc['host_processor_core_count'])
+        if 'accelerator_model_name' not in desc:
+            print('ERROR: "accelerator_model_name" field missing in {}'.format(system_file))
+            continue
         row += '"{}",'.format(_pretty_accelerator_model_name(desc))
+        if 'accelerators_per_node' not in desc:
+            print('ERROR: "accelerators_per_node" field missing in {}'.format(system_file))
+            continue
         row += '{},'.format(desc['accelerators_per_node'])
+        if 'framework' not in desc:
+            print('ERROR: "framework" field missing in {}'.format(system_file))
+            continue
         row += '"{}",'.format(_pretty_framework(desc))
 
         # Collect scores for benchmarks.
@@ -241,7 +278,14 @@ def main():
     if multiple_folders:
         # Parse results for multiple organizations.
         path_prefix = multiple_folders.group(1)
-        orgs = multiple_folders.group(2).split(',')
+        path_suffix = multiple_folders.group(2)
+        if ',' in path_suffix:
+            orgs = multiple_folders.group(2).split(',')
+        elif '*' == path_suffix:
+            orgs = os.listdir(path_prefix)
+            orgs = [org for org in orgs
+                    if _is_organization_folder(os.path.join(path_prefix, org))]
+        print('Detected organizations: {}'.format(', '.join(orgs)))
         for org in orgs:
             org_folder = path_prefix + org
             summarize_results(org_folder, args.ruleset)
