@@ -5,9 +5,8 @@
     CHECK: " v['value'] > 0"
 
 - KEY:
-    NAME:  opt_name
+    NAME:  opt_learning_rate_alt_decay_func
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['adam', 'lazy_adam'] "
 
 - KEY:
     NAME:  opt_base_learning_rate
@@ -15,24 +14,33 @@
     CHECK: " v['value'] > 0"
 
 - KEY:
+    NAME:  opt_learning_rate_decay_interval
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0"
+
+- KEY:
+    NAME:  opt_learning_rate_decay_factor
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0"
+
+- KEY:
+    NAME:  opt_learning_rate_decay_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0"
+
+- KEY:
+    NAME:  opt_learning_rate_remain_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0"
+
+- KEY:
+    NAME:  opt_learning_rate_alt_warmup_func
+    REQ:   EXACTLY_ONE
+
+- KEY:
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
-
-- KEY:
-    NAME:  opt_adam_beta_1
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
-
-- KEY:
-    NAME:  opt_adam_beta_2
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
-
-- KEY:
-    NAME:  opt_adam_epsilon
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-09"
+    CHECK: " v['value'] > 0"
 
 - KEY:
     NAME:  max_sequence_length
@@ -42,9 +50,3 @@
         - "'method' in v['metadata']"
         - "v['metadata']['method'] in ['truncate', 'discard']"
 
-- KEY:
-    NAME:  eval_accuracy
-    REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
-    ATLEAST_ONE_CHECK: "v['value'] >= 0.2500 and v['value'] < 1"

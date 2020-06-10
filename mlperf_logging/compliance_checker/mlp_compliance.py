@@ -9,9 +9,13 @@ import os
 import yaml
 import json
 import re
+import math
 
 from . import mlp_parser
 
+
+def is_integer(value):
+    return abs(int(value) - value) < 0.00001
 
 
 class CCError(Exception): 
@@ -149,7 +153,10 @@ class ComplianceChecker:
             return
 
         s = {}  # this would be visible from inside configs
-        state = {'enqueue_config':enqueue_config , 's':s}
+        state = {'enqueue_config':enqueue_config , 's':s,
+         'is_integer': is_integer,
+         'math': math}
+
 
         #execute begin block
         begin_blocks = [x for x in checks if list(x)[0]=='BEGIN']
@@ -167,6 +174,7 @@ class ComplianceChecker:
         # if config overrides some rules from previous config, corresponding messages are not needed
         self.overwrite_messages(key_records)
 
+        at_least_one_checks = {}
         # executing the rules through log records
         for line in loglines:
             key_record = None
@@ -180,6 +188,19 @@ class ComplianceChecker:
             if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
             if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
             if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
+            if 'ATLEAST_ONE_CHECK' in key_record:
+              if line.key not in at_least_one_checks:
+                at_least_one_checks[line.key] = [0, key_record['ATLEAST_ONE_CHECK']]
+              check = eval(key_record['ATLEAST_ONE_CHECK'].strip(),
+                           state, {'ll': line, 'v': line.value})
+              print(line, check)
+              if check:
+                at_least_one_checks[line.key][0] += 1
+        for name in at_least_one_checks:
+          if at_least_one_checks[name][0] == 0:
+            self.put_message('Failed checks for {} : {}'
+                             .format(name, at_least_one_checks[name][1]))
+
 
         alternatives = set()
         # verify occurrences requirements
