@@ -6,13 +6,16 @@ from __future__ import print_function
 
 import argparse
 import os
-import sys
 import yaml
 import json
 import re
+import math
 
 from . import mlp_parser
 
+
+def is_integer(value):
+    return abs(int(value) - value) < 0.00001
 
 
 class CCError(Exception): 
@@ -150,7 +153,10 @@ class ComplianceChecker:
             return
 
         s = {}  # this would be visible from inside configs
-        state = {'enqueue_config':enqueue_config , 's':s}
+        state = {'enqueue_config':enqueue_config , 's':s,
+         'is_integer': is_integer,
+         'math': math}
+
 
         #execute begin block
         begin_blocks = [x for x in checks if list(x)[0]=='BEGIN']
@@ -168,6 +174,7 @@ class ComplianceChecker:
         # if config overrides some rules from previous config, corresponding messages are not needed
         self.overwrite_messages(key_records)
 
+        at_least_one_checks = {}
         # executing the rules through log records
         for line in loglines:
             key_record = None
@@ -181,6 +188,19 @@ class ComplianceChecker:
             if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
             if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
             if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
+            if 'ATLEAST_ONE_CHECK' in key_record:
+              if line.key not in at_least_one_checks:
+                at_least_one_checks[line.key] = [0, key_record['ATLEAST_ONE_CHECK']]
+              check = eval(key_record['ATLEAST_ONE_CHECK'].strip(),
+                           state, {'ll': line, 'v': line.value})
+              print(line, check)
+              if check:
+                at_least_one_checks[line.key][0] += 1
+        for name in at_least_one_checks:
+          if at_least_one_checks[name][0] == 0:
+            self.put_message('Failed checks for {} : {}'
+                             .format(name, at_least_one_checks[name][1]))
+
 
         alternatives = set()
         # verify occurrences requirements
@@ -241,9 +261,9 @@ class ComplianceChecker:
             self.configured_checks(loglines,  config_file)
 
 
-    def check_file(self, args):
+    def check_file(self, filename, config_file):
 
-        loglines, errors = mlp_parser.parse_file(args.filename, ruleset=self.ruleset)
+        loglines, errors = mlp_parser.parse_file(filename, ruleset=self.ruleset)
 
         if len(errors) > 0:
             print('Found parsing errors:')
@@ -253,7 +273,7 @@ class ComplianceChecker:
             print()
             self.put_message('Log lines had parsing errors.')
 
-        self.check_loglines(loglines, args.config)
+        self.check_loglines(loglines, config_file)
 
         self.log_messages()
 
@@ -286,29 +306,16 @@ def get_parser():
     return parser
 
 
-def fill_defaults(args):
-    if not args.config:
-        args.config = f'{args.ruleset}/common.yaml'
-
-    return args
-
-
-def main():
-    parser = get_parser()
-    args = parser.parse_args()
-    args = fill_defaults(args)
-
-    checker = ComplianceChecker(
-        args.ruleset,
-        args.quiet,
-        args.werror,
+def make_checker(ruleset, quiet, werror):
+    return ComplianceChecker(
+        ruleset,
+        quiet,
+        werror,
     )
 
-    if checker.check_file(args):
-        print('SUCCESS')
-    else:
-        print('FAIL')
-        sys.exit(1)
 
-if __name__ == '__main__':
-    main()
+def main(filename, config_file, checker):
+    valid = checker.check_file(filename, config_file)
+
+    return valid, None, None, None
+
