@@ -34,8 +34,8 @@
 - KEY:
     NAME: opt_learning_rate_decay_boundary_epochs
     REQ:   EXACTLY_ONE
-    CHECK: " is_integer(10 * (v['value'][0] / 40 - 1))"
-    CHECK: " is_integer(10 * (v['value'][1] / 50 - 1))"
+    CHECK: " is_integer(10 * (v['value'][0] / 40.0 - 1))"
+    CHECK: " is_integer(10 * (v['value'][1] / 50.0 - 1))"
 
 - KEY:
     NAME:  eval_accuracy
