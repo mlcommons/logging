@@ -15,7 +15,7 @@ from . import mlp_parser
 
 
 def is_integer(value):
-    return abs(int(value) - value) < 0.00001
+    return abs(round(value) - value) < 0.00001
 
 
 class CCError(Exception): 
