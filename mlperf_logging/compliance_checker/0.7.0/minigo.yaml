@@ -12,7 +12,7 @@
 
 - KEY:
     NAME:  actual_selfplay_games_per_generation
-    REQ:   EXACTLY_ONE
+    REQ:   AT_LEAST_ONE
     CHECK:
       - "v['value'] >= 8192"
 
@@ -34,4 +34,10 @@
 
 - KEY:
     NAME: block_stop
+
+- KEY:
+    NAME: train_samples
+
+- KEY:
+    NAME: eval_samples
 

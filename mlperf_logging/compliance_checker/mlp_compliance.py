@@ -193,7 +193,6 @@ class ComplianceChecker:
                 at_least_one_checks[line.key] = [0, key_record['ATLEAST_ONE_CHECK']]
               check = eval(key_record['ATLEAST_ONE_CHECK'].strip(),
                            state, {'ll': line, 'v': line.value})
-              print(line, check)
               if check:
                 at_least_one_checks[line.key][0] += 1
         for name in at_least_one_checks:
