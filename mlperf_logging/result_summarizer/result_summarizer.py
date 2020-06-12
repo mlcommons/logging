@@ -33,8 +33,8 @@ _ALLOWED_BENCHMARKS_V07 = [
     'transformer',
 ]
 
-_RUN_START_REGEX = r':::MLL (.*) run_start: {.*}'
-_RUN_STOP_REGEX = r':::MLL (.*) run_stop: {.*}'
+_RUN_START_REGEX = r':::MLLOG (.*"run_start",.*)'
+_RUN_STOP_REGEX = r':::MLLOG (.*"run_stop",.*)'
 
 def _get_sub_folders(folder):
     sub_folders = [os.path.join(folder, sub_folder)
@@ -118,9 +118,11 @@ def _read_mlperf_score(result_file):
         result = f.read()
 
     run_start = re.search(_RUN_START_REGEX, result)
-    run_start = json.loads(run_start.group(1))
+    if run_start is None:
+      raise Exception('Failed to match run_start!.')
+    run_start = json.loads(run_start.group(1))['time_ms']
     run_stop = re.search(_RUN_STOP_REGEX, result)
-    run_stop = json.loads(run_stop.group(1))
+    run_stop = json.loads(run_stop.group(1))['time_ms']
 
     seconds = float(run_stop) - float(run_start)
     minutes = seconds / 60
