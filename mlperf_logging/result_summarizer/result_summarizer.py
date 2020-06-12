@@ -125,7 +125,7 @@ def _read_mlperf_score(result_file):
     run_stop = json.loads(run_stop.group(1))['time_ms']
 
     seconds = float(run_stop) - float(run_start)
-    minutes = seconds / 60
+    minutes = seconds / 60 / 1000 # convert ms to minutes
     return minutes
 
 
