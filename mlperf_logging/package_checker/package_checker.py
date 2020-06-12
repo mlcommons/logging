@@ -52,10 +52,8 @@ def check_training_result_files(folder, ruleset, quiet, werror):
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0 or 0.7.0.
     """
-    checker = mlp_compliance.make_checker(
-        ruleset=ruleset,
-        quiet=quiet,
-        werror=werror)
+
+    errors_found = 0
 
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
@@ -66,6 +64,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
 
             # If it is not a recognized benchmark, skip further checks.
             if benchmark not in _ALLOWED_BENCHMARKS:
+                print('Skipping benchmark: {}'.format(benchmark))
                 continue
 
             # Find all result files for this benchmark.
@@ -75,6 +74,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
             # No result files were found. That is okay, because the organization
             # may not have submitted any results for this benchmark.
             if not result_files:
+                print('No Result Files!')
                 continue
 
             _print_divider_bar()
@@ -97,12 +97,21 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 # For each result file, run the benchmark's compliance checks.
                 _print_divider_bar()
                 print('Run {}'.format(run))
-                config_file = '{ruleset}/{benchmark}.yaml'.format(
+                config_file = '{ruleset}/common.yaml'.format(
                     ruleset=ruleset,
                     benchmark=benchmark)
-                mlp_compliance.main(result_file, config_file, checker)
+                checker = mlp_compliance.make_checker(
+                    ruleset=ruleset,
+                    quiet=quiet,
+                    werror=werror)
+                valid, _, _, _ = mlp_compliance.main(result_file, config_file, checker)
+                if not valid:
+                  errors_found += 1
+
 
             _print_divider_bar()
+    if errors_found > 0:
+      raise Exception('Found errors in logging, see log above for details.')
 
 
 def check_training_package(folder, ruleset, quiet, werror):
