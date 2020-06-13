@@ -17,22 +17,22 @@
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
+    CHECK: " v['value'] > 0"
 
 - KEY:
     NAME:  opt_adam_beta_1
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
+    CHECK: " v['value'] in [ 0.86, 0.9 ]"
 
 - KEY:
     NAME:  opt_adam_beta_2
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0"
+    CHECK: " v['value'] in [ 0.92, 0.98, 0.997 ]"
 
 - KEY:
     NAME:  opt_adam_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-09"
+    CHECK: " v['value'] > 0"
 
 - KEY:
     NAME:  max_sequence_length
@@ -42,9 +42,3 @@
         - "'method' in v['metadata']"
         - "v['metadata']['method'] in ['truncate', 'discard']"
 
-- KEY:
-    NAME:  eval_accuracy
-    REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
-    ATLEAST_ONE_CHECK: "v['value'] >= 0.2500 and v['value'] < 1"
