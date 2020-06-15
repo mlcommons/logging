@@ -2,12 +2,6 @@
 - KEY:
     NAME:  save_model
     REQ:   AT_LEAST_ONE
-    CHECK:
-        - "s['in_epoch']"
-        - "v['value']['iteration'] == s['last_epoch']"
-        - "not s['model_saved']"
-    POST:  " s['model_saved'] = True ; s['save_model_ts'].append(ll.timestamp) "
-
 
 - KEY:
     NAME:  global_batch_size
@@ -23,11 +17,6 @@
     NAME:  opt_learning_rate_decay_boundary_steps
     REQ:   EXACTLY_ONE
     CHECK: " len(v['value']) > 0"
-
-- KEY:
-    NAME:  opt_base_learning_rate
-    REQ:   EXACTLY_ONE
-    CHECK: " len(v['value']) > 0 "
 
 - KEY:
     NAME:  opt_weight_decay
@@ -93,11 +82,4 @@
     NAME:  eval_games
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] > 0 "
-
-# block_start/stop keys are not required in minigo, so re-define without REQ
-- KEY:
-    NAME: block_start
-
-- KEY:
-    NAME: block_stop
 
