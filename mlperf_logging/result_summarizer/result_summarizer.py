@@ -108,7 +108,7 @@ def _code_url(system_desc, ruleset):
 
 
 def _row_key(system_desc):
-    system_name = system_desc['system_name']
+    system_name = '{}-{}'.format(system_desc['system_name'], system_desc['framework'])
     if system_name == 'tpu-v3':
         chips = int(system_desc['accelerators_per_node']) * 2
         return 'tpu-v3-{:04d}'.format(chips)
