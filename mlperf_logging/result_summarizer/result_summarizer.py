@@ -250,7 +250,7 @@ def summarize_results(folder, ruleset):
                 else:
                     scores.append(score)
             if dropped_scores > 1:
-              print('CRITICAL ERROR: Too many non-convnerging runs for {} {}/{}'.
+              print('CRITICAL ERROR: Too many non-converging runs for {} {}/{}'.
                     format(desc['submitter'], system, benchmark))
               print('** CRITICAL ERROR ** Results in the table for {} {}/{} are NOT correct'.
                     format(desc['submitter'], system, benchmark))
