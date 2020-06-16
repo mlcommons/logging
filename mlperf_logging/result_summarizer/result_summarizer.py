@@ -12,6 +12,8 @@ import os
 import re
 import sys
 
+from ..compliance_checker import mlp_compliance
+
 _ALLOWED_BENCHMARKS_V06 = [
     'resnet',
     'ssd',
@@ -113,9 +115,19 @@ def _row_key(system_desc):
     return system_name
 
 
-def _read_mlperf_score(result_file):
+def _read_mlperf_score(result_file, ruleset):
     with open(result_file, 'r') as f:
         result = f.read()
+
+    config_file = '{ruleset}/common.yaml'.format(ruleset=ruleset)
+    checker = mlp_compliance.make_checker(
+        ruleset=ruleset,
+        quiet=True,
+        werror=False)
+    valid, _, _, _ = mlp_compliance.main(result_file, config_file, checker)
+
+    if not valid:
+      return None
 
     run_start = re.search(_RUN_START_REGEX, result)
     if run_start is None:
@@ -129,11 +141,25 @@ def _read_mlperf_score(result_file):
     return minutes
 
 
-def _compute_olympic_average(scores):
-    copied_scores = copy.deepcopy(scores)
-    copied_scores.sort()
-    copied_scores = copied_scores[1:-1]
-    return sum(copied_scores) / len(copied_scores)
+def _compute_olympic_average(scores, dropped_scores):
+    """There are two possible cases we might handle:
+    If dropped_scores == 0, then we compute a normal olympiic score.
+    If dropped_scores > 0, then the maximum was already dropped
+    (and does not appear in scores) because it did not converge.
+    """
+    sum_of_scores = sum(scores)
+    count = len(scores)
+
+    # Subtract off the min
+    sum_of_scores -= min(scores)
+    count -= 1
+
+    # Subtract off the max, only if the max was not already dropped
+    if dropped_scores == 0:
+      sum_of_scores -= max(scores)
+      count -= 1
+
+    return sum_of_scores * 1.0 / count
 
 
 def _is_organization_folder(folder):
@@ -216,11 +242,23 @@ def summarize_results(folder, ruleset):
             pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
             result_files = glob.glob(pattern, recursive=True)
             scores = []
+            dropped_scores = 0
             for result_file in result_files:
-                score = _read_mlperf_score(result_file)
-                scores.append(score)
+                score = _read_mlperf_score(result_file, ruleset)
+                if score is None:
+                    dropped_scores += 1
+                else:
+                    scores.append(score)
+            if dropped_scores > 1:
+              print('CRITICAL ERROR: Too many non-convnerging runs for {} {}/{}'.
+                    format(desc['submitter'], system, benchmark))
+              print('** CRITICAL ERROR ** Results in the table for {} {}/{} are NOT correct'.
+                    format(desc['submitter'], system, benchmark))
+            if dropped_scores == 1:
+              print('NOTICE: Dropping non-converged run for {} {}/{} using olympic scoring.'
+                    .format(desc['submitter'], system, benchmark))
 
-            benchmark_scores[benchmark] = _compute_olympic_average(scores)
+            benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores)
 
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
