@@ -41,6 +41,7 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
+    POST:  " enqueue_config('0.7.0/{}_common.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  submission_status
@@ -51,7 +52,6 @@
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert'] "
-    POST:  " enqueue_config('0.7.0/{}.yaml'.format(v['value'])) "
 
 # at least one record should be found, but any found records must pass the test
 - KEY:
