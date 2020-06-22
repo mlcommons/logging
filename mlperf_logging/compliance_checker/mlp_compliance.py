@@ -76,12 +76,13 @@ class ComplianceChecker:
 
     def log_messages(self):
         message_separator = '\n' + '-' * 30 + '\n'
-
-        print(message_separator.join([
-            *self.warnings.values(),
-            *self.overwritable.values(),
-            *self.not_overwritable
-        ]))
+        message = message_separator.join([
+                    *self.warnings.values(),
+                    *self.overwritable.values(),
+                    *self.not_overwritable
+        ])
+        if message:
+          print(message)
 
     def has_messages(self):
         return self.not_overwritable or self.overwritable

@@ -53,8 +53,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
         ruleset: The ruleset such as 0.6.0 or 0.7.0.
     """
 
-    errors_found = 0
-
+    too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
         for benchmark_folder in _get_sub_folders(system_folder):
@@ -88,6 +87,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                     _EXPECTED_RESULT_FILE_COUNTS[benchmark],
                     len(result_files)))
 
+            errors_found = 0
             result_files.sort()
             for result_file in result_files:
                 result_basename = os.path.basename(result_file)
@@ -107,11 +107,15 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 valid, _, _, _ = mlp_compliance.main(result_file, config_file, checker)
                 if not valid:
                   errors_found += 1
-
+            if errors_found == 1:
+              print('WARNING: One file does not comply.')
+              print('WARNING: Allowing this failure under olympic scoring rules.')
+            if errors_found > 1:
+              too_many_errors = True
 
             _print_divider_bar()
-    if errors_found > 0:
-      raise Exception('Found errors in logging, see log above for details.')
+    if too_many_errors:
+      raise Exception('Found too many errors in logging, see log above for details.')
 
 
 def check_training_package(folder, ruleset, quiet, werror):
