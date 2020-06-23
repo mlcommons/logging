@@ -23,7 +23,7 @@ _ALLOWED_BENCHMARKS = [
 
 _EXPECTED_RESULT_FILE_COUNTS = {
     'bert': 10,
-    'dlrm': 10,
+    'dlrm': 5,
     'gnmt': 10,
     'maskrcnn': 5,
     'minigo': 10,
