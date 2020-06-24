@@ -108,7 +108,7 @@ def _code_url(system_desc, ruleset):
 
 
 def _row_key(system_desc):
-    system_name = '{}-{}'.format(system_desc['system_name'], system_desc['framework'])
+    system_name = '{}-{}'.format(system_desc['division'], system_desc['system_name'], system_desc['framework'])
     if system_name == 'tpu-v3':
         chips = int(system_desc['accelerators_per_node']) * 2
         return 'tpu-v3-{:04d}'.format(chips)
@@ -203,10 +203,10 @@ def summarize_results(folder, ruleset):
 
         # Construct prefix portion of the row.
         row = ''
-        if 'divison' not in desc:
-            print('ERROR: "divison" field missing in {}'.format(system_file))
+        if 'division' not in desc:
+            print('ERROR: "division" field missing in {}'.format(system_file))
             continue
-        row += '"{}",'.format(desc['divison'])
+        row += '"{}",'.format(desc['division'])
         if 'submitter' not in desc:
             print('ERROR: "submitter" field missing in {}'.format(system_file))
             continue
@@ -263,6 +263,7 @@ def summarize_results(folder, ruleset):
                     .format(desc['submitter'], system, benchmark))
 
             benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores)
+            print(row, benchmark, benchmark_scores[benchmark])
 
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
