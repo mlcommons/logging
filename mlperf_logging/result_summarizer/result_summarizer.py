@@ -263,7 +263,6 @@ def summarize_results(folder, ruleset):
                     .format(desc['submitter'], system, benchmark))
 
             benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores)
-            print(row, benchmark, benchmark_scores[benchmark])
 
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
