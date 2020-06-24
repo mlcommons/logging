@@ -203,6 +203,10 @@ def summarize_results(folder, ruleset):
 
         # Construct prefix portion of the row.
         row = ''
+        if 'divison' not in desc:
+            print('ERROR: "divison" field missing in {}'.format(system_file))
+            continue
+        row += '"{}",'.format(desc['divison'])
         if 'submitter' not in desc:
             print('ERROR: "submitter" field missing in {}'.format(system_file))
             continue
