@@ -39,7 +39,7 @@ def check_training_system_desc(json_file, ruleset):
 
     required_fields = [
         "submitter",
-        "divison",
+        "division",
         "status",
         "system_name",
         "number_of_nodes",
