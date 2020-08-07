@@ -108,7 +108,7 @@ def _code_url(system_desc, ruleset):
 
 
 def _row_key(system_desc):
-    system_name = '{}-{}'.format(system_desc['system_name'], system_desc['framework'])
+    system_name = '{}-{}-{}'.format(system_desc['division'], system_desc['system_name'], system_desc['framework'])
     if system_name == 'tpu-v3':
         chips = int(system_desc['accelerators_per_node']) * 2
         return 'tpu-v3-{:04d}'.format(chips)
@@ -203,6 +203,10 @@ def summarize_results(folder, ruleset):
 
         # Construct prefix portion of the row.
         row = ''
+        if 'division' not in desc:
+            print('ERROR: "division" field missing in {}'.format(system_file))
+            continue
+        row += '"{}",'.format(desc['division'])
         if 'submitter' not in desc:
             print('ERROR: "submitter" field missing in {}'.format(system_file))
             continue
@@ -218,7 +222,7 @@ def summarize_results(folder, ruleset):
         if 'host_processor_core_count' not in desc:
             print('ERROR: "host_processor_core_count" field missing in {}'.format(system_file))
             continue
-        row += '{},'.format(desc['host_processor_core_count'])
+        row += '{},'.format(int(desc['host_processors_per_node']) * int(desc['number_of_nodes']))
         if 'accelerator_model_name' not in desc:
             print('ERROR: "accelerator_model_name" field missing in {}'.format(system_file))
             continue
@@ -226,7 +230,7 @@ def summarize_results(folder, ruleset):
         if 'accelerators_per_node' not in desc:
             print('ERROR: "accelerators_per_node" field missing in {}'.format(system_file))
             continue
-        row += '{},'.format(desc['accelerators_per_node'])
+        row += '{},'.format(int(desc['accelerators_per_node']) * int(desc['number_of_nodes']))
         if 'framework' not in desc:
             print('ERROR: "framework" field missing in {}'.format(system_file))
             continue
