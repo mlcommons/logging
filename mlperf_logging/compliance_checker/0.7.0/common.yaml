@@ -46,7 +46,7 @@
 - KEY:
     NAME:  submission_status
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['cloud', 'onprem', 'research'] "
+    CHECK: " v['value'] in ['cloud', 'onprem', 'preview', 'research'] "
 
 - KEY:
     NAME:  submission_benchmark
