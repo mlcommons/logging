@@ -1,0 +1,66 @@
+accelerator_version:
+  description: "Accelerator driver version"
+  command: null
+  vendor_command: {}
+accelerator_type:
+  description: "Accelerator type"
+  command: null
+  vendor_command: {}
+accelerator_model:
+  description: "Accelerator name"
+  command: null
+  vendor_command: {}
+total_num_accelerators:
+  description: "Total number of accelerators"
+  command: null
+  vendor_command: {}
+precision:
+  description: "Precision"
+  command: null
+  vendor_command: {}
+framework_name_version:
+  description: "Framework name and version"
+  command: null
+  vendor_command: {}
+python_version:
+  description: "Python version"
+  command: null
+  vendor_command: {}
+library_versions:
+  description: "Library versions, {library1: version, library2: version}"
+  command: null
+  vendor_command: {}
+processor_model:
+  description: "Host processor name"
+  command: null
+  vendor_command: {}
+total_num_processors:
+  description: "Host processor count"
+  command: null
+  vendor_command: {}
+num_processors_per_node:
+  description: "Number of accelerators per node"
+  command: null
+  vendor_command: {}
+accelerator_mem_capacity:
+  description: "Total accelerator memory capacity"
+  command: null
+  vendor_command: {}
+accelerator_topology_info:
+  description: "Accelerator interconnect topology"
+  command: null
+  vendor_command: {}
+os_version:
+  description: "OS and version"
+  command: null
+  vendor_command: {}
+linux_version:
+  description: "Linux version"
+  command: null
+  vendor_command: {}
+runtime_command:
+  description: "Command used to execute the job"
+storage_location:
+  description: "Storage location: {remote, local, ...}"
+storage_protoco:
+  description: "Storage protocol: {file, object, ...}"
