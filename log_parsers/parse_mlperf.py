@@ -14,380 +14,853 @@
 # =============================================================================
 
 import os
+import re
 import csv
 import sys
-import re
 import argparse
-from datetime import datetime, timedelta
 
 # Third-party modules
-import pytz
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 import plotly.graph_objects as pgo
+import dateutil.parser
+import pandas
+import numpy
 
-# Global Variables
-#   g_*_tz 			  : to help with host/dut TZ differences
-#   g_power*td		  : manual tweaking of timedelta, adding or subtracting by seconds from the power log timestamps
+from dash.dependencies import Input, Output, State, ALL
+from datetime import datetime, timedelta
+from collections import defaultdict
+
+# Global Variables -- User Modifiable
 #   g_power_window*   : how much time before (BEGIN) and after (END) loadgen timestamps to show data in graph
-#   g_power_stats*    : when to start (after BEGIN) and end (before END) loadgen timestamps to calculate statistical data of graph
-g_power_tz     			 = None # pytz.timezone( 'US/Pacific' )
-g_loadgen_tz   			 = None # pytz.utc
-g_power_add_td 			 = timedelta(seconds=3600)
-g_power_sub_td  		 = timedelta(seconds=0)
-g_power_window_before_td = timedelta(seconds=30)
-g_power_window_after_td  = timedelta(seconds=30)
-g_power_stats_begin_td   = timedelta(seconds=3)
-g_power_stats_end_td     = timedelta(seconds=3)
+#   g_power_stats*    : when to start (after BEGIN) and end (before END) loadgen timestamps to calculate
+#                       the statistical data of graph, independent of --deskew parameter
+g_power_window_before_add_td = timedelta(seconds=0)
+g_power_window_before_sub_td = timedelta(seconds=30)
+g_power_window_after_add_td  = timedelta(seconds=30)
+g_power_window_after_sub_td  = timedelta(seconds=0)
+g_power_stats_begin_add_td   = timedelta(seconds=0)
+g_power_stats_begin_sub_td   = timedelta(seconds=0)
+g_power_stats_end_add_td     = timedelta(seconds=0)
+g_power_stats_end_sub_td     = timedelta(seconds=0)
+
+# Global Variables -- Do not modify
+g_power_add_td               = timedelta(seconds=0)
+g_power_sub_td               = timedelta(seconds=0)
+g_loadgen_data               = defaultdict(dict)
+g_graph_data                 = defaultdict(dict)
+g_figures                    = defaultdict(dict)
+g_verbose                    = False
+
+app = dash.Dash(__name__)
 
 # Check command-line parameters and call respective functions
 def main():
 
-	m_args = f_parseParameters()
+    m_args = f_parseParameters()
 
-	if( m_args.loadgen_in != "" ):
-		f_parseLoadgen( m_args.loadgen_in, m_args.loadgen_out )
+    if( m_args.loadgen_in != "" ):
+        f_parse_Loadgen( m_args.loadgen_in, m_args.loadgen_out, m_args.workload )
 
-	if( m_args.power_in != "" ):
-		f_parsePowerlog( m_args.power_in, m_args.power_out )
+    if( m_args.specpower_in != "" ):
+        f_parse_SPECPowerlog( m_args.specpower_in, m_args.powerlog_out )
 
-	if( m_args.graph ):
-		f_graph_powerOverTime( m_args.loadgen_out, m_args.power_out )
+    if( m_args.stats is not None and m_args.loadgen_out != "" and m_args.powerlog_out != "" ):
+        f_stats( m_args.loadgen_out, m_args.powerlog_out, m_args.stats, m_args.csv )
+        
+    if( m_args.graph is not None and m_args.loadgen_out != "" and m_args.powerlog_out != "" ):
+        f_graph( m_args.loadgen_out, m_args.powerlog_out, m_args.graph )
 
-		#	if( m_args.tmp != "" ):
-#		f_parseTemplog( m_args )
+        
+def f_stats( p_loadgen_csv, p_power_csv, p_filter , p_stats_csv ):
+    m_loadgen_data = pandas.DataFrame()
+    m_power_data   = pandas.DataFrame()
+   
+    if( p_stats_csv ):
+        m_stats_frame  = pandas.DataFrame( columns=['Run',
+                                                    'Workload',
+                                                    'Scenario',
+                                                    'Mode',
+                                                    'Begin Time',
+                                                    'End Time',
+                                                    'Runtime',
+                                                    'Samples',
+                                                    'Data',
+                                                    'Minimum',
+                                                    'Maximum',
+                                                    'Average',
+                                                    'Std.Dev'] )
 
-def f_graph_powerOverTime( p_loadgen_csv, p_power_csv ):
-	global g_power_tz   
-	global g_loadgen_tz 
-	global g_power_add_td  
-	global g_power_sub_td  
-	global g_power_window_before_td 
-	global g_power_window_after_td  
-	
-	m_figure_volts = pgo.Figure() # title="Voltage (V) over Time" )
-	m_figure_watts = pgo.Figure() # title="Power (W) over Time" )
-	m_figure_amps  = pgo.Figure() # title="Current (A) over Time" )
-	
-	m_loadgen_data = []
-	m_power_data = []
-	
-	m_workname = ""
-	m_scenario = ""
-	m_testmode = ""
-	m_power_state = ""
-	m_loadgen_ts = ""
-	m_power_ts = ""
-	
-	# Parse and loadgen data
-	try:
-		print( f"graph: opening {p_loadgen_csv} for reading..." )
-		m_file = open( p_loadgen_csv, 'r' )
-	except:
-		print( f"graph: error opening file: {p_loadgen_csv}" )
-		exit(1)
-	
-	# loadgen CSV must contain BEGIN and END timestamps
-	for m_line in m_file:
-		if( re.search("BEGIN", m_line) or re.search("END", m_line) ):
-			(m_workname, m_scenario, m_testmode, m_power_state, m_loadgen_ts, m_power_ts) = m_line.split(",", 5)
-			m_datetime = datetime.fromisoformat( m_power_ts.strip() )
-			m_loadgen_data.append( [m_workname, m_scenario, m_testmode, m_power_state, m_loadgen_ts, m_datetime] )
+    # Open loadgen data
+    try:
+        if( g_verbose ) : print( f"stats: opening {p_loadgen_csv} for reading" )
+        m_loadgen_data = pandas.read_csv( p_loadgen_csv )
+    except:
+        print( f"stats: error opening file: {p_loadgen_csv}" )
+        exit(1)
 
-	# Parse and power data
-	try:
-		print( f"graph: opening {p_power_csv} for reading..." )
-		m_file = open( p_power_csv, 'r' )
-#		m_power_data = pandas.read_csv( p_power_csv )
-	except:
-		print( f"graph: error opening file: {p_power_csv}",  )
-		exit(1)
-	
-	# power CSV	must contain time and power
-	# skip first line of headers
-	next( m_file )
-	for m_line in m_file:
-		(m_date, m_time, m_power, m_volt, m_amps) = m_line.split(",")[:5]
-		m_datetime = datetime.fromisoformat( m_date + " " + m_time )
-		m_power_data.append( [m_datetime, m_power, m_volt, m_amps] )
-	
-	m_loadgen_iter = iter( m_loadgen_data )
-	m_power_iter   = iter( m_power_data )
-	for m_loadgen_entry in m_loadgen_iter:
-		m_trace_x_time = []
-		m_trace_y_watt = []
-		m_trace_y_volt = []
-		m_trace_y_amps = []
-		
-		m_power_ts_begin = (m_loadgen_entry[5]).astimezone(g_loadgen_tz)
-		m_power_ts_end   = (next(m_loadgen_iter)[5]).astimezone(g_loadgen_tz)
+    # Open power data
+    try:
+        if( g_verbose ) : print( f"stats: opening {p_power_csv} for reading" )
+        m_power_data = pandas.read_csv( p_power_csv )
+    except:
+        print( f"stats: error opening file: {p_power_csv}",  )
+        exit(1)
+        
+    # Combine Date/Time and drop Time
+    m_power_data['Date'] = m_power_data['Date'] + " " + m_power_data['Time']
+    m_power_data.rename( columns = {'Date' : 'Datetime'}, inplace = True )
+    m_power_data['Datetime'] = pandas.to_datetime( m_power_data['Datetime'] )
+    m_power_data = m_power_data.drop( columns=['Time'] )
+    m_power_data.set_index( 'Datetime' )
 
-#		print( m_power_ts_begin.strftime("%Y-%m-%D %H:%M:%S.%f")[:-3], "to", m_power_ts_end.strftime("%Y-%m-%D %H:%M:%S.%f")[:-3] )
-		
-		m_counter = 0
-		for m_power_entry in m_power_iter:
-		
-			#print( m_power_entry[0].strftime("%Y-%m-%D %H:%M:%S.%f")[:-3], m_power_ts_begin.strftime("%Y-%m-%D %H:%M:%S.%f")[:-3], m_power_ts_end.strftime("%Y-%m-%D %H:%M:%S.%f")[:-3] )
-			m_power_entry_ts = (m_power_entry[0].replace(tzinfo=g_power_tz)).astimezone(g_loadgen_tz) + g_power_add_td - g_power_sub_td
-			
-			if( m_power_entry_ts < (m_power_ts_begin - g_power_window_before_td) ):
-				continue
-			if( m_power_entry_ts > (m_power_ts_end + g_power_window_after_td) ) :
-				break
-			
-			# because of limitations of datetime, offset date by a fixed date
-			m_trace_x_time.append( datetime(2011,1,13) + (m_power_entry_ts - m_power_ts_begin) )
-			m_trace_y_watt.append( m_power_entry[1] )
-			m_trace_y_volt.append( m_power_entry[2] )
-			m_trace_y_amps.append( m_power_entry[3] )
-			
-			m_counter = m_counter + 1
-		
-		if( m_counter ):
-			m_figure_watts.add_trace( pgo.Scatter( x=m_trace_x_time, y=m_trace_y_watt,
-												   mode="lines+markers",
-												   name=f"{m_loadgen_entry[0]}, {m_loadgen_entry[1]}" ) )
-			m_figure_volts.add_trace( pgo.Scatter( x=m_trace_x_time, y=m_trace_y_volt,
-												   mode="lines+markers",
-												   name=f"{m_loadgen_entry[0]}, {m_loadgen_entry[1]}" ) )
-			m_figure_amps.add_trace(  pgo.Scatter( x=m_trace_x_time, y=m_trace_y_amps,
-												   mode="lines+markers",
-												   name=f"{m_loadgen_entry[0]}, {m_loadgen_entry[1]}" ) )
+    m_dataset_count = 0
+    
+    if( g_verbose ) : print( "stats: loading and parsing data, please wait" )
 
-	m_figure_volts.update_layout( title={'text'   : "Voltage over Time",
-	                                     'x'      : 0.5,
-										 'y'      : 0.95,
-										 'xanchor': 'center',
-										 'yanchor': 'top' },
-								  xaxis_title="Time (offset between powerlog & loadgen timestamps)",
-								  xaxis_tickformat='%H:%M:%S.%L',
-								  yaxis_title="Volts (V)" )
-	m_figure_watts.update_layout( title={ 'text'  : "Power over Time",
-	                                     'x'      : 0.5,
-										 'y'      : 0.95,
-										 'xanchor': 'center',
-										 'yanchor': 'top' },
-								  xaxis_title="Time (offset between powerlog & loadgen timestamps)",
-								  xaxis_tickformat='%H:%M:%S.%L',
-								  yaxis_title="Watts (W)" )
-	m_figure_amps.update_layout(  title={'text'   : "Current over Time",
-	                                     'x'      : 0.5,
-										 'y'      : 0.95,
-										 'xanchor': 'center',
-										 'yanchor': 'top' },
-								  xaxis_title="Time (offset between powerlog & loadgen timestamps)",
-								  xaxis_tickformat='%H:%M:%S.%L',
-								  yaxis_title="Amps (A)" )
-												   
-	m_figure_volts.show()
-	m_figure_watts.show()
-	m_figure_amps.show()
-	
+    for index, m_loadgen_entry in m_loadgen_data.iterrows():
+        m_power_ts_begin = dateutil.parser.parse( m_loadgen_entry['System Begin Date'] + " " + m_loadgen_entry['System Begin Time'] )
+        m_power_ts_end   = dateutil.parser.parse( m_loadgen_entry['System End Date']   + " " + m_loadgen_entry['System End Time']   )
+
+        m_mask_stats = (m_power_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td - g_power_stats_begin_sub_td + g_power_stats_begin_add_td )) & \
+                       (m_power_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td - g_power_stats_end_sub_td   + g_power_stats_end_add_td   ))
+
+        m_dataframe = m_power_data.loc[m_mask_stats].copy()
+        
+        if( m_dataframe.empty ):
+            continue
+        else:
+            m_dataset_count += 1
+
+        if( p_stats_csv ) :
+            m_stats_list = []
+        
+            for m_header in list(m_dataframe) :
+                if( p_filter and not re.findall(r"("+'|'.join(p_filter)+r")", m_header) ):
+                    continue
+                    
+                m_data = m_dataframe[m_header]
+                
+                if( m_data.dtypes not in [numpy.int64, numpy.float64] ):
+                    continue
+                    
+                m_stats_list.append( { 'Run'        : m_dataset_count,
+                                       'Workload'   : m_loadgen_entry['Workload'],
+                                       'Scenario'   : m_loadgen_entry['Scenario'],
+                                       'Mode'       : m_loadgen_entry['Mode'],
+                                       'Begin Time' : f"{m_power_ts_begin}",
+                                       'End Time'   : f"{m_power_ts_end}",
+                                       'Runtime'    : f"{m_power_ts_end - m_power_ts_begin}",
+                                       'Metric'     : m_loadgen_entry['Metric'],
+                                       'Score'      : m_loadgen_entry['Score'],
+                                       'Samples'    : m_dataframe.shape[0],
+                                       'Data'       : m_header,
+                                       'Minimum'    : f"{m_data.min():.3f}",
+                                       'Maximum'    : f"{m_data.max():.3f}",
+                                       'Average'    : f"{m_data.mean():.3f}",
+                                       'Std.Dev'    : f"{m_data.std():.3f}" } )
+                if( re.search( "watts?|power", m_header, re.I ) ):
+                    m_stats_list[-1].update( {'Energy' : f"{ float(m_stats_list[-1]['Average']) * (dateutil.parser.parse(m_stats_list[-1]['End Time']) - dateutil.parser.parse(m_stats_list[-1]['Begin Time'])).total_seconds():.3f}"} )
+
+            m_stats_frame = m_stats_frame.append( pandas.DataFrame( m_stats_list ) )
+
+        else:
+            print( f"Run:        {m_dataset_count}\n" +
+                   f"Workload:   {m_loadgen_entry['Workload']}\n" +
+                   f"Scenario:   {m_loadgen_entry['Scenario']}\n" +
+                   f"Mode:       {m_loadgen_entry['Mode']}\n" +
+                   f"Begin Time: {m_loadgen_entry['System Begin Date']} {m_loadgen_entry['System Begin Time']}\n" +
+                   f"End Time:   {m_loadgen_entry['System End Date']} {m_loadgen_entry['System End Time']}\n" +
+                   f"Runtime:    {(m_power_ts_end - m_power_ts_begin)}\n" +
+                   f"Metric:     {m_loadgen_entry['Metric']}\n" +
+                   f"Score:      {m_loadgen_entry['Score']}\n" +
+                   f"Samples:    {m_dataframe.shape[0]}\n" )
+                   
+            for m_header in list(m_dataframe) :
+                if( p_filter and not re.findall(r"("+'|'.join(p_filter)+r")", m_header) ):
+                    continue
+                
+                m_data = m_dataframe[m_header]
+                
+                if( m_data.dtypes not in [numpy.int64, numpy.float64] ):
+                    #if( g_verbose ) : print( f"stats: {m_header} dtype is {m_data.dtypes}" )
+                    continue
+                
+                print( f"Data:       {m_header}\n" + 
+                       f"Minimum:    {m_data.min():.3f}\n" +
+                       f"Maximum:    {m_data.max():.3f}\n" +
+                       f"Average:    {m_data.mean():.3f}\n" +
+                       f"Std.Dev:    {m_data.std():.3f}\n" )
+                       
+                if( re.search( "\bwatts?\b|\bpower\b", m_header, re.I ) ):
+                    print( f"Energy:     {(m_data.mean() * (m_power_ts_end - m_power_ts_begin).total_seconds()):.3f}\n" )
+
+    if( g_verbose ) : print( f"stats: {m_dataset_count} entries parsed" )
+
+    if( not m_dataset_count ):
+        print( "*** ERROR: no data collated!" )
+        print( "           check loadgen and data timestamps for timing mismatches and/or use --deskew [seconds] to realign" )
+        exit(1)
+
+    if( p_stats_csv ):
+        try:
+            if( g_verbose ) : print( f"stats: saving stats to {p_stats_csv}\n" )
+            m_stats_frame.to_csv( p_stats_csv, index=False )
+        except:
+            print( f"stats: error while creating csv output file: {p_stats_csv}" )
+            exit(1)
+
+    
+
+#### Graph data over time
+####  Parses the loadgen data for BEGIN and END times
+####  Parses the power data (or any CSV data with a header) and tries to plot over time
+def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
+    m_loadgen_data = pandas.DataFrame()
+    m_graph_data   = pandas.DataFrame()
+
+    # Open loadgen data
+    try:
+        if( g_verbose ) : print( f"graph: opening {p_loadgen_csv} for reading" )
+        m_loadgen_data = pandas.read_csv( p_loadgen_csv )
+    except:
+        print( f"graph: error opening file: {p_loadgen_csv}" )
+        exit(1)
+
+    # Open power/raw data
+    try:
+        if( g_verbose ) : print( f"graph: opening {p_power_csv} for reading" )
+        m_graph_data = pandas.read_csv( p_power_csv )
+    except:
+        print( f"graph: error opening file: {p_power_csv}",  )
+        exit(1)
+
+    # Combine Date/Time and drop Time
+    m_graph_data['Date'] = m_graph_data['Date'] + " " + m_graph_data['Time']
+    m_graph_data.rename( columns = {'Date' : 'Datetime'}, inplace = True )
+    m_graph_data['Datetime'] = pandas.to_datetime( m_graph_data['Datetime'] )
+    m_graph_data = m_graph_data.drop( columns=['Time'] )
+    m_graph_data.set_index( 'Datetime' )
+
+    m_dataset_count = 0
+    
+    if( g_verbose ) : print( "graph: Loading and parsing data, please wait" )
+
+    for index, m_loadgen_entry in m_loadgen_data.iterrows():
+        m_power_ts_begin = dateutil.parser.parse( m_loadgen_entry['System Begin Date'] + " " + m_loadgen_entry['System Begin Time'] )
+        m_power_ts_end   = dateutil.parser.parse( m_loadgen_entry['System End Date'] + " " + m_loadgen_entry['System End Time'] )
+
+        m_mask_stats = (m_graph_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td + g_power_stats_begin_add_td   - g_power_stats_begin_sub_td   )) & \
+                       (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td + g_power_stats_end_add_td     - g_power_stats_end_sub_td     ))
+        m_mask_graph = (m_graph_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td + g_power_window_before_add_td - g_power_window_before_sub_td )) & \
+                       (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td + g_power_window_after_add_td  - g_power_window_after_sub_td  ))
+
+        m_dataframe = m_graph_data.loc[m_mask_graph].copy()
+        if( m_dataframe.empty ):
+            continue
+
+        for m_header in m_graph_data.columns[1:] :
+
+            if( not re.findall(r"("+'|'.join(p_filter)+r")", m_header) ):
+                continue
+        
+            if( not g_figures[m_header] ):
+                g_figures[m_header] = pgo.Figure()
+                g_figures[m_header].update_layout( title={'text'   : f'{m_header} vs. Time',
+                                                          'x'      : 0.5,
+                                                          'y'      : 0.95,
+                                                          'xanchor': 'center',
+                                                          'yanchor': 'top' },
+                                                    xaxis_title="Time (offset between powerlog & loadgen timestamps)",
+                                                    xaxis_tickformat='%H:%M:%S.%L',
+                                                    yaxis_title=f"{m_header}" )
+
+            # Zero the timescale to difference between loadgen and data timestamps
+            # Zero'ing causes datetime to be a timedelta, add an "arbitrary" date to convert back into datetime
+            m_dataframe.loc[:,'Datetime'] -= m_dataframe['Datetime'].iloc[0]
+            m_dataframe.loc[:,'Datetime'] += datetime( 2011, 1, 13 )
+
+            g_figures[m_header].add_trace( pgo.Scatter( x=m_dataframe['Datetime'],
+                                                        y=m_dataframe[m_header],
+                                                        mode="lines+markers",
+                                                        name=f"run {m_dataset_count}, {m_loadgen_entry['Workload']}, {m_loadgen_entry['Scenario']}, {m_loadgen_entry['Mode']}",
+                                                        visible=True ) )
+        g_graph_data[m_dataset_count] = m_graph_data.loc[m_mask_stats]
+        g_loadgen_data[m_dataset_count] = m_loadgen_entry
+
+        m_dataset_count += 1
+
+    if( g_verbose ) : print( "graph: data parsing complete.  building components" )
+
+    # Build list of graphs, dropdown options
+    m_dcc_graphs = []
+    m_dcc_dropdown = []
+    m_counter = 0
+    for m_key in g_figures :
+        m_dcc_graphs.append( dcc.Graph( id={ 'type' : 'graph-obj',
+                                             'data' : f'{m_key}',
+                                             'index': m_counter },
+                                        figure=g_figures[m_key],
+                                        style ={'height':'70vh',
+                                                'display':'none'} ) )
+        m_dcc_dropdown.append( {'label':f'{m_key}', 'value':m_counter } )
+        m_counter += 1
+        
+    if( not m_counter ):
+        print( "*** ERROR: No data collated!" )
+        print( "           Check loadgen and data timestamp for timing mismatches and/or use --deskew [seconds] to realign" )
+        exit(1)
+        
+    app.layout = html.Div([
+                      html.Div( id="div-filter-options", children=[
+                           html.Div( ["Filter Dataset by Keywords (i.e. 'resnet ssd-large'): ", dcc.Input(id='input-box-filter-by-keywords', type='text') ] ),
+                           html.Div( ["Filter Dataset by Run IDs (i.e. '1, 2, 3-9'): ",         dcc.Input(id='input-box-filter-by-run-id',   type='text') ] ),
+                           html.Div( ["Graph selection: ", dcc.Dropdown(id='dropdown-graph-select',
+                                                                        options=m_dcc_dropdown,
+                                                                        value=m_dcc_dropdown[0]['value'],
+                                                                        clearable=False,
+                                                                        searchable=False) ] )
+                           ]),
+                      html.Div( id="div-graphs-area", children=m_dcc_graphs ),
+                      html.Div( id="div-stats-area", children=[
+                           html.P( html.B( id="div-loadgen-stats-title", children=["- Hide Loadgen Statistics & Info"], n_clicks=0, style={'cursor':'pointer'} ) ), 
+                           html.Div( id="div-stats-area-loadgen",  style={'display':'block'}, children=[
+                                html.Table( id="table-loadgen-stats", children=[] ),
+                                html.Div( id="div-loadgen-stats-trigger", children=['0'], style={'display':'none' } ),
+                                ]),
+                           html.Hr(),
+                           html.Div( id="div-stats-area-selected", children=[
+                                html.P( id="div-selected-stats-infobox", children=[
+                                   html.B( children=["Selected Data Statistics & Info"] ), " (use either box or lasso select for statistical information of selection)"] ),
+                                html.Table( id="table-selected-stats", children=[] ),
+                                html.Div( id="div-selected-stats-trigger", children=['0'], style={'display':'none' } ),
+                                ])
+                           ])
+                     ])
+
+#### Callbacks
+####  Dropdown Menu Hanlding
+    @app.callback(Output( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'style' ),
+                  [Input( 'dropdown-graph-select', 'value' )],
+                  [State( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'style' )])
+    def f_dash_updateGraph( p_dropdown_value, s_graph_obj_styles ):
+        for m_style in s_graph_obj_styles:
+            m_style['display'] = 'none'
+        s_graph_obj_styles[p_dropdown_value]['display'] = 'block'
+
+        return s_graph_obj_styles
+
+#### Filtering by keywords/run ID
+####   Also triggers loadgen stats function to be called
+    @app.callback([Output( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'figure' ),
+                   Output( 'div-loadgen-stats-trigger', 'children' ),
+                   Output( 'div-selected-stats-trigger', 'children' )],
+                  [Input(  'input-box-filter-by-keywords', 'value'),
+                   Input(  'input-box-filter-by-run-id',   'value')],
+                  [State( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'figure'),
+                   State( 'div-loadgen-stats-trigger', 'children' ),
+                   State( 'div-selected-stats-trigger', 'children' )] )
+    def f_dash_filterDatasets( p_filter_keywords, p_filter_run_id, s_graph_obj_figures, s_loadgen_trigger, s_selected_trigger ):
+        m_filter_keywords = ""
+        m_filter_run_id   = ""
+
+        if( (p_filter_keywords != None) and (p_filter_keywords.strip() != "") ):
+            m_filter_keywords = '|'.join( p_filter_keywords.split() )
+
+        if( (p_filter_run_id != None) and (p_filter_run_id.strip() != "") ):
+            for m_run_id in re.split( "[,\s]", p_filter_run_id):
+                if( re.search( "^\d+-\d+$", m_run_id ) ):
+                    if( m_filter_run_id != "" ):
+                        m_filter_run_id += '|'
+                    (m_lo, m_hi) = re.search( "^(\d+)-(\d+)$", m_run_id ).groups()
+                    m_filter_run_id += '|'.join( str(m_int) for m_int in range( int(m_lo),int(m_hi)+1 ) )
+                elif( re.search( "^\d+$", m_run_id) ):
+                    if( m_filter_run_id != "" ):
+                        m_filter_run_id += '|'
+                    m_filter_run_id += f"{m_run_id}"
+
+        m_filter_run_id = re.sub( "(\d+)", r"\\s*\1\\s*", m_filter_run_id )
+
+        for m_figure in s_graph_obj_figures:
+            for m_dataset in m_figure['data']:
+                if( (re.search( m_filter_run_id, m_dataset['name'], re.I )) and (re.search( m_filter_keywords, m_dataset['name'], re.I )) ):
+                    m_dataset['visible']=True
+                else:
+                    m_dataset['visible']="legendonly"
+
+        return [ s_graph_obj_figures, not s_loadgen_trigger, not s_selected_trigger ]
+
+        
+#### Toggle visibility of loadgen stats table        
+    @app.callback([Output( 'div-stats-area-loadgen', 'style' ),
+                   Output( 'div-loadgen-stats-title', 'children' )], 
+                   [Input( 'div-loadgen-stats-title', 'n_clicks' )] )
+    def f_dash_toggleLoadgenStats( p_n_clicks ):
+        if( p_n_clicks % 2 ):
+            return [{ 'display' : 'none'  }, "+ Loadgen Statistics & Info"]
+        else:
+            return [{ 'display' : 'block' }, "- Loadgen Statistics & Info"]
+    
+    
+#### Generate selection stats table
+    @app.callback([Output( 'table-selected-stats', 'children'),
+                   Output( 'div-selected-stats-infobox', 'style' )],
+                  [Input( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'selectedData' ),
+                   Input( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'restyleData' ),
+                   Input( 'div-selected-stats-trigger', 'children' ),
+                   Input( 'dropdown-graph-select', 'value' )],
+                  [State( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'figure' ),
+                   State( 'dropdown-graph-select', 'value' )] )
+    def f_dash_generateSelectedStats( p_selectedData, p_restyleData, p_dummy_trigger, p_dummy_dropdown, s_graph_obj_figures, s_dropdown_graph_select ):
+        m_ctx = dash.callback_context
+        ( m_trigger_obj, m_trigger_src ) = m_ctx.triggered[0]['prop_id'].rsplit('.', 1)
+
+        if( not m_ctx.triggered or m_trigger_obj in ['div-selected-stats-trigger', 'dropdown-graph-select'] or m_trigger_src == 'restyleData' ):
+            return [ [], {'display':'block'} ]
+
+        m_figure = s_graph_obj_figures[s_dropdown_graph_select]
+
+        m_table_run_id     = [ html.Th( "Run"      ) ]
+        m_table_workload   = [ html.Th( "Workload" ) ]
+        m_table_scenario   = [ html.Th( "Scenario" ) ]
+        m_table_run_mode   = [ html.Th( "Mode"     ) ]
+        m_table_samples    = [ html.Th( "Samples"  ) ]
+        m_table_timedelta  = [ html.Th( "Timedelta") ]
+        m_table_min        = [ html.Th( "Minimum"  ) ]
+        m_table_max        = [ html.Th( "Maximum"  ) ]
+        m_table_average    = [ html.Th( "Average"  ) ]
+        m_table_dev        = [ html.Th( "Std.Dev"  ) ]
+
+        if( re.search( "\bwatts?\b|\bpower\b", m_figure['layout']['yaxis']['title']['text'], re.I ) ):
+        #if( m_figure['layout']['yaxis']['title']['text'] == 'Watts' ):
+            m_table_energy = [ html.Th( "Energy"   ) ]
+        
+        m_dataframes       = defaultdict(dict)
+        
+        if( p_selectedData and p_selectedData[s_dropdown_graph_select] is not None ):
+            for m_point in p_selectedData[s_dropdown_graph_select]['points'] :
+            
+                if( s_graph_obj_figures[s_dropdown_graph_select]['data'][m_point['curveNumber']]['visible'] != True ):
+                    continue
+                    
+                if( m_point['curveNumber'] not in m_dataframes ):
+                    m_dataframes[m_point['curveNumber']]['name'] = s_graph_obj_figures[s_dropdown_graph_select]['data'][m_point['curveNumber']]['name']
+                    m_dataframes[m_point['curveNumber']]['data'] = s_graph_obj_figures[s_dropdown_graph_select]['layout']['yaxis']['title']['text']
+                    m_dataframes[m_point['curveNumber']]['dataframe'] = pandas.DataFrame( {'x':[m_point['x']], 'y':[m_point['y']] } )
+                else:    
+                    m_dataframes[m_point['curveNumber']]['dataframe'] = m_dataframes[m_point['curveNumber']]['dataframe'].append( {'x':m_point['x'], 'y':m_point['y'] }, ignore_index=True )
+
+            if( not m_dataframes ):
+                return [ [], {'display':'block'} ]
+                
+            for m_key in m_dataframes:
+                m_frame = m_dataframes[m_key]['dataframe']
+                (m_run_id, m_workload, m_scenario, m_run_mode) = m_dataframes[m_key]['name'].split(", ")
+                
+                m_table_run_id.append( html.Td( f"{m_run_id}" ) )
+                m_table_workload.append( html.Td( f"{m_workload}" ) )
+                m_table_scenario.append( html.Td( f"{m_scenario}" ) )
+                m_table_run_mode.append( html.Td( f"{m_run_mode}" ) )
+                m_table_samples.append( html.Td( f"{m_frame.shape[0]}" ) )
+                m_duration = dateutil.parser.parse(m_frame['x'].max()) - dateutil.parser.parse(m_frame['x'].min())
+                m_table_timedelta.append( html.Td( f"{(datetime(2011, 1, 13) + m_duration).strftime('%H:%M:%S.%f')[:-3]}" ) )
+
+                if( numpy.issubdtype(m_frame['y'].dtype, numpy.number ) ):
+                    m_table_average.append( html.Td( f"{m_frame['y'].mean():.3f}" ) )
+                    m_table_min.append( html.Td( f"{m_frame['y'].min():.3f}" ) )
+                    m_table_max.append( html.Td( f"{m_frame['y'].max():.3f}" ) )
+                    m_table_dev.append( html.Td( f"{m_frame['y'].std():.3f}" ) )
+                else:  
+                    m_table_average.append( html.Td( "n/a" ) )
+                    m_table_min.append( html.Td( "n/a" ) )
+                    m_table_max.append( html.Td( "n/a" ) )
+                    m_table_dev.append( html.Td( "n/a" ) )
+                
+                if( re.search( "watts?|power", m_dataframes[m_key]['data'], re.I ) ):
+                    m_table_energy.append( html.Td( f"{(m_frame['y'].mean() * (m_duration.seconds + m_duration.microseconds / 1000000)):.3f}" ) )
+                
+                   
+            m_ret = [ html.Tr( m_table_run_id   ),
+                      html.Tr( m_table_workload ),
+                      html.Tr( m_table_scenario ),
+                      html.Tr( m_table_run_mode ),
+                      html.Tr( m_table_samples  ),
+                      html.Tr( m_table_timedelta),
+                      html.Tr( m_table_min      ),
+                      html.Tr( m_table_max      ),
+                      html.Tr( m_table_average  ),
+                      html.Tr( m_table_dev      ) ]
+
+            if( re.search( "watts?|power", m_dataframes[m_key]['data'], re.I ) ):
+                m_ret.append( html.Tr( m_table_energy  ) )
+                
+            return [ m_ret, {'display':'block'} ]
+            
+        return [ [], {'display':'block'} ]
+
+            
+#### Generate loadgen stats table
+    @app.callback(Output( 'table-loadgen-stats', 'children' ),
+                  [Input( 'dropdown-graph-select', 'value' ),
+                   Input( 'div-loadgen-stats-trigger', 'children' ),
+                   Input( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'restyleData' )],
+                  [State( { 'type':'graph-obj', 'data':ALL, 'index':ALL }, 'figure' )] )
+    def f_dash_generateLoadgenStats( p_dropdown_graph_select, p_dummy_trigger, p_dummy_restyle, s_graph_obj_figures ):
+        m_figure = s_graph_obj_figures[p_dropdown_graph_select]
+
+        m_table_run_id     = [ html.Th( "Run"    ) ]
+        m_table_workload   = [ html.Th( "Workload" ) ]
+        m_table_scenario   = [ html.Th( "Scenario" ) ]
+        m_table_run_mode   = [ html.Th( "Mode"     ) ]
+        m_table_metric     = [ html.Th( "Metric"   ) ]
+        m_table_score      = [ html.Th( "Score"    ) ]
+        m_table_samples    = [ html.Th( "Samples"  ) ]
+        m_table_duration   = [ html.Th( "Duration" ) ]
+        m_table_min        = [ html.Th( "Minimum"  ) ]
+        m_table_max        = [ html.Th( "Maximum"  ) ]
+        m_table_average    = [ html.Th( "Average"  ) ]
+        m_table_dev        = [ html.Th( "Std.Dev"  ) ]
+        
+        if( m_figure['layout']['yaxis']['title']['text'] == 'Watts' ):
+            m_table_energy = [ html.Th( "Energy"   ) ]
+
+        m_iter = 0
+        for m_dataset in s_graph_obj_figures[p_dropdown_graph_select]['data'] :
+            if( m_dataset['visible'] == True ):
+                (m_run_id, m_workload, m_scenario, m_run_mode) = m_dataset['name'].split(", ")
+                
+                m_table_run_id.append( html.Td( f"{m_run_id}" ) )
+                m_table_workload.append( html.Td( f"{m_workload}" ) )
+                m_table_scenario.append( html.Td( f"{m_scenario}" ) )
+                m_table_run_mode.append( html.Td( f"{m_run_mode}" ) )
+                m_table_metric.append( html.Td( f"{g_loadgen_data[m_iter]['Metric']}" ) )
+                m_table_score.append( html.Td( f"{g_loadgen_data[m_iter]['Score']}" ) )
+                m_table_samples.append( html.Td( f"{g_graph_data[m_iter].shape[0]}" ) )
+                m_duration = g_graph_data[m_iter]['Datetime'].max() - g_graph_data[m_iter]['Datetime'].min()
+                m_table_duration.append( html.Td( f"{(datetime(2011, 1, 13) + m_duration).strftime('%H:%M:%S.%f')[:-3]}" ) )
+
+                if( numpy.issubdtype(g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].dtype, numpy.number ) ):
+                    m_table_average.append( html.Td( f"{g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].mean():.3f}" ) )
+                    m_table_min.append( html.Td( f"{g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].min():.3f}" ) )
+                    m_table_max.append( html.Td( f"{g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].max():.3f}" ) )
+                    m_table_dev.append( html.Td( f"{g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].std():.3f}" ) )
+                else:  
+                    m_table_average.append( html.Td( "n/a" ) )
+                    m_table_min.append( html.Td( "n/a" ) )
+                    m_table_max.append( html.Td( "n/a" ) )
+                    m_table_dev.append( html.Td( "n/a" ) )
+                
+                
+                if( m_figure['layout']['yaxis']['title']['text'] == 'Watts' ):
+                    m_table_energy.append( html.Td( f"{(g_graph_data[m_iter][m_figure['layout']['yaxis']['title']['text']].mean() * (m_duration.seconds + m_duration.microseconds / 1000000)):.3f}" ) )
+
+            m_iter += 1
+
+        if( len(m_table_run_id) == 1 ):
+            return html.B( "No datasets match filter settings." )
+             
+        m_ret = [ html.Tr( m_table_run_id   ),
+                  html.Tr( m_table_workload ),
+                  html.Tr( m_table_scenario ),
+                  html.Tr( m_table_run_mode ),
+                  html.Tr( m_table_metric   ),
+                  html.Tr( m_table_score    ),
+                  html.Tr( m_table_samples  ),
+                  html.Tr( m_table_duration ),
+                  html.Tr( m_table_min      ),
+                  html.Tr( m_table_max      ),
+                  html.Tr( m_table_average  ),
+                  html.Tr( m_table_dev      ) ]
+                  
+        if( m_figure['layout']['yaxis']['title']['text'] == 'Watts' ):
+            m_ret.append( html.Tr( m_table_energy  ) )
+            
+        return m_ret
 
 
+    if( g_verbose ) : print( "graph: starting DASH server.  use a web browser to connect to IP to view graphs.\n" +
+                             "       press CTRL-C to stop server and end script" )
 
-# Parse Loadgen log files
-# Speciy directory and search for ""*detail.txt" & "*summary.txt"
-def f_parseLoadgen( p_dirin, p_fileout ):
+#### Begin graphing
+    app.run_server(debug=True)
 
-	m_workname = [ "resnet50", "resnet",
-	               "mobilnet",
-				   "gnmt",
-				   "ssdmobilenet", "ssd-small",
-				   "ssdresnet34",  "ssd-large" ]
-	m_metric   = { "offline"      : "Samples per second",
-	               "multistream"  : "Samples per query",
-				   "singlestream" : "90th percentile latency (ns)",
-				   "server"       : "Schehduled Samples per second" }
-	m_scenario = ""	
-	m_testname = ""
-	m_testmode = ""
-	m_loadgen_ts = 0
-	m_power_ts = ""	
-	m_power_state = ""	
-	m_score_value = 0
-	m_score_valid = ""
-	m_counter = 0
-	
-	m_storage = []
-	m_storage.append( ["Workload", "Scenario", "Mode", "State", "Loadgen TS", "System Date", "System Time", "Result", "Score", "Metric"] )
+    
+#### Parse Loadgen log files
+####  Specify directory and search for ""*detail.txt" & "*summary.txt"
+####  Loadgen directory structure should be:
+####     .\.*\year.month.day-hour.minute.second\device\workload\scenario\*.*
+####  The workload name must be contained in m_worklist since it is not recorded in the .txt files
+def f_parse_Loadgen( p_dirin, p_fileout, p_custom_workloads ):
+    m_worklist         = [ "resnet50", "resnet",
+                           "mobilenet",
+                           "gnmt",
+                           "ssdmobilenet", "ssd-small",
+                           "ssdresnet34",  "ssd-large" ]
+    m_workload         = None
+    m_scenario         = ""
+    m_testmode         = ""
+    m_loadgen_start_dt = None
+    m_loadgen_begin_ts = 0
+    m_loadgen_end_ts   = 0
+    m_system_begin_dt  = None
+    m_system_end_dt    = None
+    m_score_valid      = None
+    m_score_value      = None
+    m_metric           = defaultdict( lambda : "No metric defined." )
 
-	# Assumes both *detail.txt and *summary.txt files exists
-	for m_dirname, m_subdirs, m_filelist in os.walk( p_dirin ):
-		for m_filename in m_filelist:
-			if m_filename.endswith( 'detail.txt' ):
-				m_counter = m_counter + 1
-				m_fullpath = os.path.join(m_dirname, m_filename)
+    if( type(p_custom_workloads) is list ): 
+        if( g_verbose ) : print( f"parseLoadgen: parsing custom list of workloads {p_custom_workloads}" )
+        m_worklist = p_custom_workloads
 
-				for m_re in m_workname:
-					if( re.search( m_re, m_fullpath, re.I ) ):
-						m_testname = m_re
+    m_metric.update( { "offline"      : "Samples per second",
+                       "multistream"  : "Samples per query",
+                       "singlestream" : "90th percentile latency (ns)",
+                       "server"       : "Scheduled samples per second" } )
+    
+    m_counter = 0
 
-				for m_re in m_metric.keys():
-					if( re.search( m_re, m_fullpath, re.I ) ):
-						m_scenario = m_re
-						
-				try:
-					m_file = open( m_fullpath, 'r' )
-				except:
-					print( "error opening file:", m_fullpath )
-					exit(1)
+    m_storage = []
+    m_storage.append( ["Workload", "Scenario", "Mode",
+                       "Loadgen Start Date", "Loadgen Start Time",  # time of test: <iso datetime>
+                       "Loadgen Begin TS",   "Loadgen End TS",      # "ts": (\d*)ns
+                       "System Begin Date",  "System Begin Time",   # POWER_BEGIN ... "time": <non-iso datetime>
+                       "System End Date",    "System End Time",     # POWER_END   ... "time": <non-iso datetime>
+                       "Result", "Score", "Metric"] )
 
-				for m_line in m_file:
-					# Date format is YYYY-MM-DD HH:MM:SS
-					if( re.search('time of test', m_line) ):
-						m_testmode = ""
-						m_power_state = "INIT"
-#						m_power_ts = (re.search("(\d*)-(\d*-\d\d).*(\d\d:\d*:\d*)Z$", m_line)).groups()
-#						m_power_ts = m_power_ts[1] + "-" + m_power_ts[0] + " " + m_power_ts[2] + ".000"
-						m_power_ts = (re.search("(\d*-\d*-\d\d).*(\d\d:\d*:\d*)Z$", m_line)).groups()
-						m_power_ts = m_power_ts[0] + " " + m_power_ts[1] + ".000"
-					elif( re.search( 'Starting ' + m_testmode + ' mode', m_line) ):
-						m_testmode = "START"
-						m_power_state = ""
-						m_power_ts = ""
-					# Date format is MM-DD-YYYY HH:MM:SSS.mmm
-					elif( re.search( "POWER_", m_line) ):
-						m_power_state = (re.search( "POWER_(\w*)", m_line)).group(1)
-						m_power_ts = (re.search('(\d*-\d*)-(\d*)( \d*:\d*:\d*\.\d*)$', m_line)).groups()
-						m_power_ts = m_power_ts[1] + "-" + m_power_ts[0] + m_power_ts[2]
-					elif( re.search('pid', m_line) and re.search('Scenario', m_line) ):
-						m_scenario = (re.search( '(\w*\s?\w*)$', m_line )).group(1)
-						m_scenario = (m_scenario.replace( " ", "" )).lower()
-						continue
-					elif( re.search('Test mode', m_line) ): # and re.search('accuracy', m_line, re.I) ):
-						m_testmode = (re.search( "Test mode : (\w*)", m_line)).group(1)
-						continue
-					else:
-						continue
+    # Assumes both *detail.txt and *summary.txt files exists
+    for m_dirname, m_subdirs, m_filelist in os.walk( p_dirin ):
+        for m_filename in m_filelist:
+            if m_filename.endswith( 'detail.txt' ):
+                m_fullpath = os.path.join(m_dirname, m_filename)
 
-					m_loadgen_ts = (re.search( '(\d*)ns', m_line)).group(1)
-					(m_power_ts_date, m_power_ts_time) = m_power_ts.split()
-						
-					m_storage.append( [m_testname, m_scenario, m_testmode, m_power_state, m_loadgen_ts, m_power_ts_date, m_power_ts_time] )
-			
-			# Most parameters should be already filled (e.g. testname, scenario, mode)
-			elif m_filename.endswith( 'summary.txt' ):
-				m_fullpath = os.path.join(m_dirname, m_filename)
+                m_workload = None
+                for m_re in m_worklist:
+                    if( re.search( r"\\" + m_re + r"\\", m_fullpath, re.I ) or 
+                        re.search( r"/"  + m_re + r"/" , m_fullpath, re.I ) ):
+                        m_workload = m_re
+                        break
+                if( not m_workload ):
+                    print( f"parseLoadgen: warning: {m_filename} found, but workload name is missing from directory structure: {m_dirname}\n" +
+                           f"                       please place files into a structure with supported workload names in the path\n" +
+                           f"                       or use --workload to specify a custom workload.  parsing will be skipped for: {m_filename}" )
+                    continue
+                else:
+                    m_counter += 1
 
-				m_score_valid = ""
-				m_score_value = ""
-				
-				try:
-					m_file = open( m_fullpath, 'r' )
-				except:
-					print( "error opening file:", m_fullpath )
-					exit(1)
+                try:
+                    m_file = open( m_fullpath, 'r' )
+                except:
+                    print( "error opening file:", m_fullpath )
+                    exit(1)
 
-				m_power_state = "DONE"
+                for m_line in m_file:
+                    # Date format is YYYY-MM-DD HH:MM:SS
+                    if( re.search('time of test', m_line) ):
+                        m_loadgen_start_dt = dateutil.parser.parse( (re.search("(\d*-\d*-\d*.*\d*:\d*:\d*)Z$", m_line)).group(1) )
+                        m_loadgen_begin_ts = (re.search('"ts": (\d*)ns', m_line)).group(1)
+                    # Date format is MM-DD-YYYY HH:MM:SSS.mmm
+                    elif( re.search( "POWER_BEGIN", m_line) ):
+                        m_system_begin_dt = dateutil.parser.parse( (re.search('(\d*-\d*-\d* \d*:\d*:\d*\.\d*)$', m_line)).group(1) )
+                    elif( re.search( "POWER_END", m_line) ):
+                        m_system_end_dt   = dateutil.parser.parse( (re.search('(\d*-\d*-\d* \d*:\d*:\d*\.\d*)$', m_line)).group(1) )
+                        m_loadgen_end_ts = (re.search('"ts": (\d*)ns', m_line)).group(1)
+                    elif( re.search('pid', m_line) and re.search('Scenario', m_line) ):
+                        m_scenario = (re.search( '(\w*\s?\w*)$', m_line )).group(1)
+                        m_scenario = (m_scenario.replace( " ", "" )).lower()
+                        continue
+                    elif( re.search('Test mode', m_line) ): # and re.search('accuracy', m_line, re.I) ):
+                        m_testmode = (re.search( "Test mode : (\w*)", m_line)).group(1)
+                        continue
+                    else:
+                        continue
+            elif m_filename.endswith( 'summary.txt' ):
+            
+                if( m_metric[m_scenario] == "No metric defined." ):
+                    m_score_valid = "Unknown"
+                    m_score_value = "Unknown"
+                else:
+                    m_fullpath = os.path.join(m_dirname, m_filename)
 
-				for m_line in m_file:
-					if( re.search( "Result is", m_line) ):
-						m_score_valid = (re.search('Result is : (.*)$', m_line)).group(1)
-					elif( re.search( re.escape(m_metric[m_scenario.lower()]), m_line) ):
-						m_score_value = (re.search( "(\d*\.?\d*)$", m_line, re.I)).group(1)
-#					else:
-						# nothing
-					continue
+                    m_score_valid = None
+                    m_score_value = None
 
-				m_storage.append( [m_testname, m_scenario, m_testmode, m_power_state, "", "", "", m_score_valid, m_score_value, m_metric[m_scenario.lower()]] )
+                    try:
+                        m_file = open( m_fullpath, 'r' )
+                    except:
+                        print( f"parseLoadgen: warning/error opening file:{m_fullpath}" )
+                        continue
+
+                    for m_line in m_file:
+                        if( re.search( "Result is", m_line) ):
+                            m_score_valid = (re.search('Result is : (.*)$', m_line)).group(1)
+                        elif( re.search( re.escape(m_metric[m_scenario]), m_line) ):
+                            m_score_value = (re.search( "(\d*\.?\d*)$", m_line, re.I)).group(1)
+    #                   else:
+                            # nothing
+                        continue
+
+            if( not None in [m_loadgen_start_dt, m_system_begin_dt, m_system_end_dt, m_score_valid, m_score_value] ):
+                m_storage.append( [ m_workload, m_scenario, m_testmode,
+                                    m_loadgen_start_dt.date(), m_loadgen_start_dt.time(),
+                                    m_loadgen_begin_ts, m_loadgen_end_ts,
+                                    m_system_begin_dt.date(), m_system_begin_dt.time(),
+                                    m_system_end_dt.date(), m_system_end_dt.time(),
+                                    m_score_valid, m_score_value, m_metric[m_scenario] ] )
+                m_loadgen_start_dt = m_system_begin_dt = m_system_end_dt = m_score_valid = m_score_value = None
+
+    if( g_verbose ) : print( f"parseLoadgen: {m_counter} loadgen log files found and {len(m_storage)-1} parsed" )
+
+    try:
+        if( g_verbose ) : print( f"parseLoadgen: storing CSV data into: {p_fileout}" )
+        with open( p_fileout, 'w', newline='') as m_file:
+            m_csvWriter = csv.writer( m_file, delimiter=',' )
+
+            for m_entry in m_storage:
+                m_csvWriter.writerow( m_entry )
+        m_file.close()
+    except:
+        print( "parseLoadgen: error while creating csv output file:", p_fileout )
+        exit(1)
 
 
-	print( "{} loadgen log files found and parsed".format(m_counter) )
-	print( "storing CSV data into:", p_fileout )
+#### Parse PTDaemon Power Log Filename (legacy support)
+#### Format should be:
+####   Time,MM-DD-YYYY HH:MM:SS.mmm,Watts,D*.D*,Volts,D*.D*,Amps,D*.D*,PF,D*.D*,Mark,String
+#### Output format will be:
+####   Date,Time,Watts,Volts,Amps,PF,Mark
+####   YYYY-MM-DD,HH:MM:SS.mmm,D*.D*,D*.D*,D*.D*,D*.D*,String
+def f_parse_SPECPowerlog( p_filein, p_fileout ):
+    m_counter = 0
+    m_storage = []
 
-	try:
-		with open( p_fileout, 'w', newline='') as m_file:
-			m_csvWriter = csv.writer( m_file, delimiter=',' )
+    try:
+        if( g_verbose ) : print( f"parseSPEC: opening power log file: {p_filein}" )
+        m_file = open( p_filein, 'r' )
+    except:
+        print( f"parseSPEC: error opening power log file: {p_filein}" )
+        exit(1)
 
-			for m_entry in m_storage:
-				m_csvWriter.writerow( m_entry )
-		m_file.close()
-	except:
-		print( "error while creating loadgen log csv output file:", p_fileout )
-		exit(1)
+    # Create headers
+    # Relabel & split date & time for better parsing
+    m_line = m_file.readline()
+    m_line = m_line.replace( "Time", "Date", 1 )
+    m_line = m_line.replace( " ", ",Time,", 1)
+    m_storage.append( m_line.split(',')[::2] )
 
+    # Store data
+    for m_line in m_file :
+        m_counter = m_counter + 1
+        m_line = m_line.strip()
+        m_line = m_line.replace( "Time", "Date", 1 )
+        m_line = m_line.replace( " ", ",Time,", 1)
+        m_line = m_line.split(',')[1::2]
 
-# Parse PTDaemon Power Log Filename
-# Format should be:
-#   Time,MM-DD-YYYY HH:MM:SS.SSS,Watts,DD.DDDDDD,Volts,DDD,DDDDDD,Amps,D.DDDDDD,PF,D.DDDDDD,Mark,String
-def f_parsePowerlog( p_filein, p_fileout ):
-	m_counter = 0
-	m_storage = []
+        # need to re-order date to iso format
+        m_line[0] = m_line[0][-4:] + m_line[0][-5:-4] + m_line[0][:5]
 
-	try:
-		m_file = open( p_filein, 'r' )
-		print( "opening power log file:", p_filein )
-	except:
-		print( "error opening power log file:", p_filein )
-		exit(1)
+        m_storage.append( m_line )
 
-	# Create headers
-	# Relabel & split date & time for better parsing
-	m_line = m_file.readline()
-	m_line = m_line.replace( "Time", "Date", 1 )
-	m_line = m_line.replace( " ", ",Time,", 1)
-	m_storage.append( m_line.split(',')[::2] )
+    m_file.close()
 
-	# Store data
-	for m_line in m_file :
-		m_counter = m_counter + 1
-		m_line = m_line.strip()
-		m_line = m_line.replace( "Time", "Date", 1 )
-		m_line = m_line.replace( " ", ",Time,", 1)
-		m_line = m_line.split(',')[1::2]
+    if( g_verbose ) : print( f"parseSPEC: done parsing PTDaemon power log.  {m_counter} entries processed" )
 
-		# need to re-order date to iso format
-		m_line[0] = m_line[0][-4:] + m_line[0][-5:-4] + m_line[0][:5]
-		
-		m_storage.append( m_line )
+    try:
+        if( g_verbose ) : print( f"parseSPEC: storing csv data into: {p_fileout}" )
+        with open( p_fileout, 'w', newline='') as m_file:
+            m_csvWriter = csv.writer( m_file, delimiter=',' )
 
-	m_file.close()
-
-	print( "done parsing PTDaemon power log.  {} entries processed".format(m_counter) )
-	print( "storing CSV data into:", p_fileout )
-
-	try:
-		with open( p_fileout, 'w', newline='') as m_file:
-			m_csvWriter = csv.writer( m_file, delimiter=',' )
-
-			for m_entry in m_storage:
-				m_csvWriter.writerow( m_entry )
-		m_file.close()
-	except:
-		print( "error while creating PTDaemon power log csv output file:", p_fileout )
-		exit(1)
+            for m_entry in m_storage:
+                m_csvWriter.writerow( m_entry )
+        m_file.close()
+    except:
+        print( f"parseSPEC: error while creating PTDaemon power log csv output file: {p_fileout}" )
+        exit(1)
 
 
 
 def f_parseParameters():
-	m_argparser = argparse.ArgumentParser()
+    global g_verbose
+    global g_power_add_td
+    global g_power_sub_td
+    
+    m_argparser = argparse.ArgumentParser()
 
-	# Filename options
-	# Input
-	m_argparser.add_argument( "-lgi", "--loadgen_in",  help="Specify directory of loadgen log files",
-	 												   default="" )
-	m_argparser.add_argument( "-pli", "--power_in",    help="Specify PTDaemon power log file",
-	 												   default="" )
+    # Inputs
+    m_argparser.add_argument( "-lgi", "--loadgen_in",   help="Specify directory of loadgen log files to parase from",
+                                                        default="" )
+    m_argparser.add_argument( "-spl", "--specpower_in", help="Specify PTDaemon power log file (in custom PTD format)",
+                                                        default="" )
+    m_argparser.add_argument( "-pli", "--powerlog_in",  help="Specify power or data input file (in CSV format)",
+                                                        default="" )
 
-	# Output
-	m_argparser.add_argument( "-lgo", "--loadgen_out", help="Specify loadgen CSV output file",
-	 												   default="loadgen_out.csv" )
-	m_argparser.add_argument( "-plo", "--power_out",   help="Specify power CSV output file",
-	 												   default="power_out.csv" )
+    # Outputs
+    m_argparser.add_argument( "-lgo", "--loadgen_out",  help="Specify loadgen CSV output file (default: loadgen_out.csv)",
+                                                        default="loadgen_out.csv" )
+    m_argparser.add_argument( "-plo", "--powerlog_out", help="Specify power or data CSV output file (default: power_out.csv)",
+                                                        default="power_out.csv" )
 
-	# Function options
-	m_argparser.add_argument( "-g", "--graph",         help="Draw/output graph of power over time (default input: output loadgen and power CSVs)",
-													   action="store_true")
-	m_argparser.add_argument( "-s", "--stats",         help="Calculates power stats based on timestamps (both power and loadgen logs required)",
-													   action="store_true")
+    # Function options
+    m_argparser.add_argument( "-g",   "--graph",        help="Draw/output graphable data over time using the lgi/lgo and pli/plo as input.\n"
+                                                             "(Optional) Input a list of strings to filter data",
+                                                        nargs="*")
+    m_argparser.add_argument( "-s",   "--stats",        help="Outputs statistics between loadgen & power/data timestamps using lgi/lgo and pli/plo as inputs.\n" +
+                                                             "(Optional) Input a list of strings to filter data",
+                                                        nargs="*")
+    m_argparser.add_argument( "-csv", "--csv",          help="Outputs statistics to a CSV file (optional parameter, default: stats_out.csv) instead of stdout.",
+                                                        nargs="?",
+                                                        const="" )
+    m_argparser.add_argument( "-w",   "--workload",     help="Parse for workloads other than [mobilenet, gnmt, resenet50/resnet, ssd-large/ssdresnet34, or ssd-small/ssdmobilenet]",
+                                                        nargs="+" )
 
-	m_args = m_argparser.parse_args()
+    m_argparser.add_argument( "-v",   "--verbose",      action="store_true" )
 
-	if( m_args.power_in == m_args.power_out ):
-		print( "Power log output file cannot be the same as power log input file!")
-		exit(1)
+                                                        
+    # Timing parameters
+    m_argparser.add_argument( "-deskew", "--deskew",    help="Adjust timing skew between loadgen and power/data logs (in seconds)",
+                                                        type=int,
+                                                        default=0)
 
-	return m_args
+    m_args = m_argparser.parse_args()
+    
+    g_verbose = m_args.verbose
+    
+    if( m_args.csv == "" ):
+        m_args.csv = "stats_out.csv"
+
+    if( m_args.workload ):
+        m_args.workload = list(dict.fromkeys(m_args.workload))
+
+    if( m_args.specpower_in == m_args.powerlog_out ):
+        print( "**** ERROR: Power log output file cannot be the same as power log input file!" )
+        exit(1)
+
+    if( m_args.specpower_in != "" and m_args.powerlog_in != "" and m_args.graph ):
+        print( "**** ERROR: Only one set of power data can be graphed." )
+        exit(1)
+
+    if( m_args.powerlog_out != "" and m_args.powerlog_in == "" and m_args.graph ):
+        m_args.powerlog_in = m_args.powerlog_out
+
+    if( m_args.graph ) :
+        if( m_args.powerlog_in is None and m_args.powerlog_out is None and m_args.specpower_in is None ) :
+            print( "**** ERROR: Need power/data log to graph" )
+            exit(1)
+        if( m_args.loadgen_in is None and m_args.loadgen_out is None ) :
+            print( "**** ERROR: Need loadgen log to graph" )
+            exit(1)
+        
+        
+    if( m_args.deskew >= 0 ):
+        g_power_add_td           = timedelta(seconds=m_args.deskew)
+        g_power_sub_td           = timedelta(seconds=0)
+    else:
+        g_power_add_td           = timedelta(seconds=0)
+        g_power_sub_td           = timedelta(seconds=abs(m_args.deskew))
+
+
+    return m_args
 
 
 if __name__ == '__main__':
-	main()
+    main()
