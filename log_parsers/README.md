@@ -11,8 +11,8 @@ Latest versions should work, but not actively tested.  The versions below were u
 The graphing feature uses plotly.
 To install:
 ```
-  pip install dash==1.13.4
-  pip install plotly==4.6.0
+  pip install dash==1.18.1
+  pip install plotly==4.14.1
 ```
 
 Data handling uses pandas & numpy
@@ -41,13 +41,6 @@ The following variables are for modifying the graphing and statistical windows.
   g_power_window_before_sub_td = timedelta(seconds=0)
   g_power_window_after_add_td  = timedelta(seconds=0)
   g_power_window_after_sub_td  = timedelta(seconds=10)
-  
-# g_power_stats*  : adjusts the time around POWER_BEGIN and POWER_END of the loadgen timestamps for statistics calculation
-                    typically used to focus on the certain areas of the data
-  g_power_stats_begin_add_td   = timedelta(seconds=0)
-  g_power_stats_begin_sub_td   = timedelta(seconds=0)
-  g_power_stats_end_add_td     = timedelta(seconds=0)
-  g_power_stats_end_sub_td     = timedelta(seconds=10)
 ```
 
 # Command-line Parameters
@@ -102,4 +95,4 @@ To terminate the server (and script), press Ctrl-C (or equivalent).
 
 # Future plans
 
-- 
+- Possible performance enhancements
