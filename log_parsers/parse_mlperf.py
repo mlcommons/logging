@@ -23,6 +23,7 @@ import argparse
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import plotly.express       as pex
 import plotly.graph_objects as pgo
 import dateutil.parser
 import pandas
@@ -34,16 +35,10 @@ from collections import defaultdict
 
 # Global Variables -- User Modifiable
 #   g_power_window*   : how much time before (BEGIN) and after (END) loadgen timestamps to show data in graph
-#   g_power_stats*    : when to start (after BEGIN) and end (before END) loadgen timestamps to calculate
-#                       the statistical data of graph, independent of --deskew parameter
 g_power_window_before_add_td = timedelta(seconds=0)
 g_power_window_before_sub_td = timedelta(seconds=30)
 g_power_window_after_add_td  = timedelta(seconds=30)
 g_power_window_after_sub_td  = timedelta(seconds=0)
-g_power_stats_begin_add_td   = timedelta(seconds=0)
-g_power_stats_begin_sub_td   = timedelta(seconds=0)
-g_power_stats_end_add_td     = timedelta(seconds=0)
-g_power_stats_end_sub_td     = timedelta(seconds=0)
 
 # Global Variables -- Do not modify
 g_power_add_td               = timedelta(seconds=0)
@@ -123,8 +118,8 @@ def f_stats( p_loadgen_csv, p_power_csv, p_filter , p_stats_csv ):
         m_power_ts_begin = dateutil.parser.parse( m_loadgen_entry['System Begin Date'] + " " + m_loadgen_entry['System Begin Time'] )
         m_power_ts_end   = dateutil.parser.parse( m_loadgen_entry['System End Date']   + " " + m_loadgen_entry['System End Time']   )
 
-        m_mask_stats = (m_power_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td - g_power_stats_begin_sub_td + g_power_stats_begin_add_td )) & \
-                       (m_power_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td - g_power_stats_end_sub_td   + g_power_stats_end_add_td   ))
+        m_mask_stats = (m_power_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td )) & \
+                       (m_power_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td ))
 
         m_dataframe = m_power_data.loc[m_mask_stats].copy()
         
@@ -249,10 +244,10 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
 
     for index, m_loadgen_entry in m_loadgen_data.iterrows():
         m_power_ts_begin = dateutil.parser.parse( m_loadgen_entry['System Begin Date'] + " " + m_loadgen_entry['System Begin Time'] )
-        m_power_ts_end   = dateutil.parser.parse( m_loadgen_entry['System End Date'] + " " + m_loadgen_entry['System End Time'] )
+        m_power_ts_end   = dateutil.parser.parse( m_loadgen_entry['System End Date']   + " " + m_loadgen_entry['System End Time'] )
 
-        m_mask_stats = (m_graph_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td + g_power_stats_begin_add_td   - g_power_stats_begin_sub_td   )) & \
-                       (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td + g_power_stats_end_add_td     - g_power_stats_end_sub_td     ))
+        m_mask_stats = (m_graph_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td )) & \
+                       (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td ))
         m_mask_graph = (m_graph_data['Datetime'] >= (m_power_ts_begin + g_power_add_td - g_power_sub_td + g_power_window_before_add_td - g_power_window_before_sub_td )) & \
                        (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td + g_power_window_after_add_td  - g_power_window_after_sub_td  ))
 
@@ -284,8 +279,23 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
             g_figures[m_header].add_trace( pgo.Scatter( x=m_dataframe['Datetime'],
                                                         y=m_dataframe[m_header],
                                                         mode="lines+markers",
+                                                        line=dict(color=pex.colors.qualitative.Plotly[m_dataset_count%len(pex.colors.qualitative.Plotly)]),
+                                                        marker=dict(color=pex.colors.qualitative.Plotly[m_dataset_count%len(pex.colors.qualitative.Plotly)]),
                                                         name=f"run {m_dataset_count}, {m_loadgen_entry['Workload']}, {m_loadgen_entry['Scenario']}, {m_loadgen_entry['Mode']}",
                                                         visible=True ) )
+
+            # Draw the loadgen runtime below the graph
+            g_figures[m_header].add_vrect( x0=m_graph_data.loc[m_mask_stats]['Datetime'].iloc[0]  - m_graph_data.loc[m_mask_graph]['Datetime'].iloc[0] + datetime( 2011, 1, 13 ),
+                                           x1=m_graph_data.loc[m_mask_stats]['Datetime'].iloc[-1] - m_graph_data.loc[m_mask_graph]['Datetime'].iloc[0] + datetime( 2011, 1, 13 ),
+#                                           y1=m_graph_data.loc[m_mask_stats][m_header].max(),
+                                           fillcolor=pex.colors.qualitative.Plotly[m_dataset_count%len(pex.colors.qualitative.Plotly)],
+                                           opacity=0.20,
+                                           layer="below",
+                                           line_width=0,
+#                                           annotation_text=f"loadgen range for run {m_dataset_count}", #, {m_loadgen_entry['Workload']}, {m_loadgen_entry['Scenario']}, {m_loadgen_entry['Mode']}",
+#                                           annotation_position="bottom left",
+                                           visible=True )
+
         g_graph_data[m_dataset_count] = m_graph_data.loc[m_mask_stats]
         g_loadgen_data[m_dataset_count] = m_loadgen_entry
 
@@ -341,15 +351,18 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
 
 #### Callbacks
 ####  Dropdown Menu Hanlding
-    @app.callback(Output( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'style' ),
+    @app.callback([Output( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'style' ),
+                   Output( 'input-box-filter-by-keywords', 'value' ),
+                   Output( 'input-box-filter-by-run-id',   'value' )],
                   [Input( 'dropdown-graph-select', 'value' )],
                   [State( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'style' )])
     def f_dash_updateGraph( p_dropdown_value, s_graph_obj_styles ):
+    
         for m_style in s_graph_obj_styles:
             m_style['display'] = 'none'
         s_graph_obj_styles[p_dropdown_value]['display'] = 'block'
 
-        return s_graph_obj_styles
+        return [ s_graph_obj_styles, "", "" ]
 
 #### Filtering by keywords/run ID
 ####   Also triggers loadgen stats function to be called
@@ -357,11 +370,32 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
                    Output( 'div-loadgen-stats-trigger', 'children' ),
                    Output( 'div-selected-stats-trigger', 'children' )],
                   [Input(  'input-box-filter-by-keywords', 'value'),
-                   Input(  'input-box-filter-by-run-id',   'value')],
+                   Input(  'input-box-filter-by-run-id',   'value'),
+                   Input( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'restyleData' )],
                   [State( {'type': 'graph-obj', 'data': ALL, 'index': ALL }, 'figure'),
                    State( 'div-loadgen-stats-trigger', 'children' ),
-                   State( 'div-selected-stats-trigger', 'children' )] )
-    def f_dash_filterDatasets( p_filter_keywords, p_filter_run_id, s_graph_obj_figures, s_loadgen_trigger, s_selected_trigger ):
+                   State( 'div-selected-stats-trigger', 'children' ),
+                   State( 'dropdown-graph-select', 'value' )] )
+    def f_dash_filterDatasets( p_filter_keywords, p_filter_run_id, p_restyleData, s_graph_obj_figures, s_loadgen_trigger, s_selected_trigger, s_graph_select ):
+
+        m_ctx = dash.callback_context
+        ( m_trigger_obj, m_trigger_src ) = m_ctx.triggered[0]['prop_id'].rsplit('.', 1)
+
+        if( m_trigger_src == 'restyleData' ):
+            for m_iter in range(0,len(p_restyleData[s_graph_select][1])) :
+                (m_state, m_run) = (p_restyleData[s_graph_select][0], p_restyleData[s_graph_select][1])
+
+                if( m_state['visible'][m_iter] == 'legendonly' ) :
+                    s_graph_obj_figures[s_graph_select]['data'][m_run[m_iter]]['visible'] = 'legendonly'
+                    s_graph_obj_figures[s_graph_select]['layout']['shapes'][m_run[m_iter]]['visible'] = False
+                elif( m_state['visible'][m_iter] == True ) :
+                    s_graph_obj_figures[s_graph_select]['data'][m_run[m_iter]]['visible'] = True
+                    s_graph_obj_figures[s_graph_select]['layout']['shapes'][m_run[m_iter]]['visible'] = True
+                else:
+                    print( f"*** ERROR: restyleData = {p_restyleData}" )
+
+            return [ s_graph_obj_figures, s_loadgen_trigger, s_selected_trigger ]
+
         m_filter_keywords = ""
         m_filter_run_id   = ""
 
@@ -382,12 +416,14 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
 
         m_filter_run_id = re.sub( "(\d+)", r"\\s*\1\\s*", m_filter_run_id )
 
-        for m_figure in s_graph_obj_figures:
-            for m_dataset in m_figure['data']:
-                if( (re.search( m_filter_run_id, m_dataset['name'], re.I )) and (re.search( m_filter_keywords, m_dataset['name'], re.I )) ):
-                    m_dataset['visible']=True
-                else:
-                    m_dataset['visible']="legendonly"
+        m_figure = s_graph_obj_figures[s_graph_select]
+        for (m_dataset, m_shapes) in zip(m_figure['data'], m_figure['layout']['shapes']):
+            if( (re.search( m_filter_run_id, m_dataset['name'], re.I )) and (re.search( m_filter_keywords, m_dataset['name'], re.I )) ):
+                m_dataset['visible'] = True
+                m_shapes['visible']  = True
+            else:
+                m_dataset['visible'] = "legendonly"
+                m_shapes['visible']  = False
 
         return [ s_graph_obj_figures, not s_loadgen_trigger, not s_selected_trigger ]
 
@@ -397,6 +433,7 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
                    Output( 'div-loadgen-stats-title', 'children' )], 
                    [Input( 'div-loadgen-stats-title', 'n_clicks' )] )
     def f_dash_toggleLoadgenStats( p_n_clicks ):
+    
         if( p_n_clicks % 2 ):
             return [{ 'display' : 'none'  }, "+ Loadgen Statistics & Info"]
         else:
@@ -413,6 +450,7 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
                   [State( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'figure' ),
                    State( 'dropdown-graph-select', 'value' )] )
     def f_dash_generateSelectedStats( p_selectedData, p_restyleData, p_dummy_trigger, p_dummy_dropdown, s_graph_obj_figures, s_dropdown_graph_select ):
+    
         m_ctx = dash.callback_context
         ( m_trigger_obj, m_trigger_src ) = m_ctx.triggered[0]['prop_id'].rsplit('.', 1)
 
@@ -507,6 +545,7 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
                    Input( { 'type':'graph-obj', 'data': ALL, 'index': ALL }, 'restyleData' )],
                   [State( { 'type':'graph-obj', 'data':ALL, 'index':ALL }, 'figure' )] )
     def f_dash_generateLoadgenStats( p_dropdown_graph_select, p_dummy_trigger, p_dummy_restyle, s_graph_obj_figures ):
+    
         m_figure = s_graph_obj_figures[p_dropdown_graph_select]
 
         m_table_run_id     = [ html.Th( "Run"    ) ]
