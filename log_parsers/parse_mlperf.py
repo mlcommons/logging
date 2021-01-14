@@ -252,7 +252,7 @@ def f_graph( p_loadgen_csv, p_power_csv, p_filter ):
                        (m_graph_data['Datetime'] <= (m_power_ts_end   + g_power_add_td - g_power_sub_td + g_power_window_after_add_td  - g_power_window_after_sub_td  ))
 
         m_dataframe = m_graph_data.loc[m_mask_graph].copy()
-        if( m_dataframe.empty ):
+        if( m_dataframe.empty or m_graph_data.loc[m_mask_stats].empty ):
             continue
 
         for m_header in m_graph_data.columns[1:] :
@@ -781,14 +781,14 @@ def f_parse_SPECPowerlog( p_filein, p_fileout ):
         exit(1)
 
     # Create headers
-    # Relabel & split date & time for better parsing
-    m_line = m_file.readline()
-    m_line = m_line.replace( "Time", "Date", 1 )
-    m_line = m_line.replace( " ", ",Time,", 1)
-    m_storage.append( m_line.split(',')[::2] )
+    m_storage.append( ["Date", "Time", "Watts", "Volts", "Amps", "PF", "Mark"] )
 
     # Store data
     for m_line in m_file :
+    
+        if( not re.match("^Time,.*,Watts,.*,Volts,.*,Amps,.*,PF,.*,Mark,.*$", m_line ) ):
+            continue
+    
         m_counter = m_counter + 1
         m_line = m_line.strip()
         m_line = m_line.replace( "Time", "Date", 1 )
