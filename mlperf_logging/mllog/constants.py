@@ -35,6 +35,7 @@ NCF = "ncf"
 RESNET = "resnet"
 SSD = "ssd"
 TRANSFORMER = "transformer"
+UNET3D = "unet3d"
 
 # Constant values - model info
 ADAM = "adam"
@@ -75,7 +76,7 @@ EVAL_SAMPLES = "eval_samples"
 SEED = "seed"
 TRAIN_SAMPLES = "train_samples"
 
-# Log kyes - model hyperparameters
+# Log keys - model hyperparameters
 GLOBAL_BATCH_SIZE = "global_batch_size"
 LARS_EPSILON = "lars_epsilon"
 LARS_OPT_END_LR = "lars_opt_end_learning_rate"
