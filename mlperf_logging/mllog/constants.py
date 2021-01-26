@@ -74,9 +74,11 @@ EVAL_ACCURACY = "eval_accuracy"
 EVAL_SAMPLES = "eval_samples"
 SEED = "seed"
 TRAIN_SAMPLES = "train_samples"
+WEIGHTS_INITIALIZATION = "weights_initialization"
 
 # Log kyes - model hyperparameters
 GLOBAL_BATCH_SIZE = "global_batch_size"
+GRADIENT_ACCUMULATION_STEPS = "gradient_accumulation_steps"
 LARS_EPSILON = "lars_epsilon"
 LARS_OPT_END_LR = "lars_opt_end_learning_rate"
 LARS_OPT_LR_DECAY_POLY_POWER = "lars_opt_learning_rate_decay_poly_power"
