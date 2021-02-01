@@ -51,7 +51,7 @@
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert'] "
+    CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert', 'unet3d'] "
 
 # at least one record should be found, but any found records must pass the test
 - KEY:
