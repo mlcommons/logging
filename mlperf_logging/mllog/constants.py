@@ -27,6 +27,15 @@ INTERVAL_END = "INTERVAL_END"
 INTERVAL_START = "INTERVAL_START"
 POINT_IN_TIME = "POINT_IN_TIME"
 
+# Constant values - submission division
+CLOSED = "closed"
+OPEN = "open"
+
+# Constant values - submission status
+ONPREM = "onprem"
+CLOUD = "cloud"
+RESEARCH = "research"
+
 # Constant values - benchmark name
 GNMT = "gnmt"
 MASKRCNN = "maskrcnn"
@@ -35,6 +44,7 @@ NCF = "ncf"
 RESNET = "resnet"
 SSD = "ssd"
 TRANSFORMER = "transformer"
+RNNT = "rnnt"
 
 # Constant values - model info
 ADAM = "adam"
@@ -96,12 +106,11 @@ OPT_ADAM_EPSILON = "opt_adam_epsilon"
 OPT_NAME = "opt_name"
 OPT_BASE_LR = "opt_base_learning_rate"
 OPT_LAMB_LR_MIN = "opt_lamb_learning_rate_min"
-OPT_LAMB_LR_DECAY_POLY_POWER = "opt_lamb_learning_rate_decay_poly_power"
+OPT_LAMB_LR_POLY_DECAY_POWER = "opt_lamb_learning_rate_poly_decay_power"
 OPT_LAMB_BETA_1 = "opt_lamb_beta_1"
 OPT_LAMB_BETA_2 = "opt_lamb_beta_2"
 OPT_LAMB_EPSILON = "opt_lamb_epsilon"
 OPT_LAMB_LR_HOLD_EPOCHS = "opt_lamb_learning_rate_hold_epochs"
-OPT_LAMB_LR_WARMUP_EPOCHS = "opt_lamb_learning_rate_warmup_epochs"
 OPT_LR_ALT_DECAY_FUNC = "opt_learning_rate_alt_decay_func"
 OPT_LR_ALT_WARMUP_FUNC = "opt_learning_rate_alt_warmup_func"
 OPT_LR_DECAY_BOUNDARY_EPOCHS = "opt_learning_rate_decay_boundary_epochs"
