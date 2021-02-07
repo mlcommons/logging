@@ -4,3 +4,8 @@
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert'] "
     POST:  " enqueue_config('1.0.0/closed_{}.yaml'.format(v['value'])) "
+
+- KEY:
+    NAME: gradient_accumulation_steps
+    REQ: EXACTLY_ONE
+    CHECK: " v['value'] > 0 "
