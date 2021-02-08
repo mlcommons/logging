@@ -121,5 +121,5 @@ storage_location:
                 TRANSPORT="<unknown bus>"
                 ;;
           esac
-storage_protoco:
+storage_protocol:
   description: "Storage protocol: {file, object, ...}"
