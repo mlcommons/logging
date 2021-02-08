@@ -2,7 +2,7 @@
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert'] "
+    CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert', 'rnnt', 'unet3d'] "
     POST:  " enqueue_config('1.0.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:
