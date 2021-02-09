@@ -45,6 +45,7 @@ RESNET = "resnet"
 SSD = "ssd"
 TRANSFORMER = "transformer"
 RNNT = "rnnt"
+UNET3D = "unet3d"
 
 # Constant values - model info
 ADAM = "adam"
