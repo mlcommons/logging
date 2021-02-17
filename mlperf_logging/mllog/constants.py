@@ -138,6 +138,7 @@ DATA_TRAIN_NUM_BUCKETS = "data_train_num_buckets"
 DATA_TRAIN_MAX_DURATION = "data_train_max_duration"
 DATA_NUM_BUCKETS = "data_num_buckets"
 MODEL_EVAL_EMA_FACTOR = "model_eval_ema_factor"
+MODEL_WEIGHTS_INITIALIZATION_SCALE = "model_weights_initialization_scale"
 EVAL_MAX_PREDICTION_SYMBOLS = "eval_max_prediction_symbols"
 
 # Log keys - misc.
