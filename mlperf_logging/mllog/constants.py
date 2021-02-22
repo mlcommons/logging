@@ -27,6 +27,15 @@ INTERVAL_END = "INTERVAL_END"
 INTERVAL_START = "INTERVAL_START"
 POINT_IN_TIME = "POINT_IN_TIME"
 
+# Constant values - submission division
+CLOSED = "closed"
+OPEN = "open"
+
+# Constant values - submission status
+ONPREM = "onprem"
+CLOUD = "cloud"
+RESEARCH = "research"
+
 # Constant values - benchmark name
 GNMT = "gnmt"
 MASKRCNN = "maskrcnn"
@@ -35,6 +44,8 @@ NCF = "ncf"
 RESNET = "resnet"
 SSD = "ssd"
 TRANSFORMER = "transformer"
+RNNT = "rnnt"
+UNET3D = "unet3d"
 
 # Constant values - model info
 ADAM = "adam"
@@ -74,9 +85,11 @@ EVAL_ACCURACY = "eval_accuracy"
 EVAL_SAMPLES = "eval_samples"
 SEED = "seed"
 TRAIN_SAMPLES = "train_samples"
+WEIGHTS_INITIALIZATION = "weights_initialization"
 
 # Log kyes - model hyperparameters
 GLOBAL_BATCH_SIZE = "global_batch_size"
+GRADIENT_ACCUMULATION_STEPS = "gradient_accumulation_steps"
 LARS_EPSILON = "lars_epsilon"
 LARS_OPT_END_LR = "lars_opt_end_learning_rate"
 LARS_OPT_LR_DECAY_POLY_POWER = "lars_opt_learning_rate_decay_poly_power"
