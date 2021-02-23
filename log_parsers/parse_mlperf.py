@@ -17,6 +17,7 @@ import os
 import re
 import csv
 import sys
+import json
 import argparse
 
 # Third-party modules
@@ -652,10 +653,10 @@ def f_parse_Loadgen( p_dirin, p_fileout, p_custom_workloads ):
         if( g_verbose ) : print( f"parseLoadgen: parsing custom list of workloads {p_custom_workloads}" )
         m_worklist = p_custom_workloads
 
-    m_metric.update( { "offline"      : "Samples per second",
-                       "multistream"  : "Samples per query",
-                       "singlestream" : "90th percentile latency (ns)",
-                       "server"       : "Scheduled samples per second" } )
+    m_metric.update( { "offline"      : "result_samples_per_second",
+                       "multistream"  : "effective_samples_per_query",
+                       "singlestream" : "result_90.00_percentile_latency_ns",
+                       "server"       : "result_scheduled_samples_per_sec" } )
     
     m_counter = 0
 
@@ -693,51 +694,34 @@ def f_parse_Loadgen( p_dirin, p_fileout, p_custom_workloads ):
                     print( "error opening file:", m_fullpath )
                     exit(1)
 
+                m_scenario = None
                 for m_line in m_file:
-                    # Date format is YYYY-MM-DD HH:MM:SS
-                    if( re.search('time of test', m_line) ):
-                        m_loadgen_start_dt = dateutil.parser.parse( (re.search("(\d*-\d*-\d*.*\d*:\d*:\d*)Z$", m_line)).group(1) )
-                        m_loadgen_begin_ts = (re.search('"ts": (\d*)ns', m_line)).group(1)
-                    # Date format is MM-DD-YYYY HH:MM:SSS.mmm
-                    elif( re.search( "POWER_BEGIN", m_line) ):
-                        m_system_begin_dt = dateutil.parser.parse( (re.search('(\d*-\d*-\d* \d*:\d*:\d*\.\d*)$', m_line)).group(1) )
-                    elif( re.search( "POWER_END", m_line) ):
-                        m_system_end_dt   = dateutil.parser.parse( (re.search('(\d*-\d*-\d* \d*:\d*:\d*\.\d*)$', m_line)).group(1) )
-                        m_loadgen_end_ts = (re.search('"ts": (\d*)ns', m_line)).group(1)
-                    elif( re.search('pid', m_line) and re.search('Scenario', m_line) ):
-                        m_scenario = (re.search( '(\w*\s?\w*)$', m_line )).group(1)
-                        m_scenario = (m_scenario.replace( " ", "" )).lower()
-                        continue
-                    elif( re.search('Test mode', m_line) ): # and re.search('accuracy', m_line, re.I) ):
-                        m_testmode = (re.search( "Test mode : (\w*)", m_line)).group(1)
-                        continue
-                    else:
-                        continue
-            elif m_filename.endswith( 'summary.txt' ):
-            
-                if( m_metric[m_scenario] == "No metric defined." ):
-                    m_score_valid = "Unknown"
-                    m_score_value = "Unknown"
-                else:
-                    m_fullpath = os.path.join(m_dirname, m_filename)
+                    logger_prefix = ":::MLLOG "
+                    if m_line.starts_with(logger_prefix):
+                        try:
+                            m_line_json = json.loads(m_line[len(logger_prefix):])
+                        except Exception as e:
+                            print( f"Invalid format in detailed log. Error: {e}.\nSkipping line: {m_line}" )
+                            continue
 
-                    m_score_valid = None
-                    m_score_value = None
-
-                    try:
-                        m_file = open( m_fullpath, 'r' )
-                    except:
-                        print( f"parseLoadgen: warning/error opening file:{m_fullpath}" )
-                        continue
-
-                    for m_line in m_file:
-                        if( re.search( "Result is", m_line) ):
-                            m_score_valid = (re.search('Result is : (.*)$', m_line)).group(1)
-                        elif( re.search( re.escape(m_metric[m_scenario]), m_line) ):
-                            m_score_value = (re.search( "(\d*\.?\d*)$", m_line, re.I)).group(1)
-    #                   else:
-                            # nothing
-                        continue
+                        m_line_key = m_line_json["key"]
+                        m_line_value = m_line_json["value"]
+                        if m_line_key == "test_datetime":
+                            m_loadgen_start_dt = dateutil.parser.parse(m_line_value)
+                            m_loadgen_begin_ts = int(m_line_json["time_ms"] * 1000000)
+                        elif m_line_key == "power_begin":
+                            m_system_begin_dt = m_line_value
+                        elif m_line_key == "power_end":
+                            m_system_end_dt = m_line_value
+                            m_loadgen_end_ts = int(m_line_json["time_ms"] * 1000000)
+                        elif m_line_key == "effective_scenario":
+                            m_scenario = m_line_value.lower()
+                        elif m_line_key == "effective_test_mode":
+                            m_testmode = m_line_value.replace("Only","")
+                        elif m_line_key == "result_validity":
+                            m_score_valid = m_line_value
+                        elif m_scenario is not None and m_line_key == m_metric[m_scenario]:
+                            m_score_value = m_line_value
 
             if( not None in [m_loadgen_start_dt, m_system_begin_dt, m_system_end_dt, m_score_valid, m_score_value] ):
                 m_storage.append( [ m_workload, m_scenario, m_testmode,
@@ -903,3 +887,4 @@ def f_parseParameters():
 
 if __name__ == '__main__':
     main()
+
