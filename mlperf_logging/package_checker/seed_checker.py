@@ -39,6 +39,7 @@ def find_source_files_under(path):
 class SeedChecker:
     """ Check if the seeds fit MLPerf submission requirements.
     Current requirements are:
+
     1. All seeds must be logged through mllog (if choose to log seeds). Any seed
        logged via any other method will be disgarded.
     2. All seeds, if choose to be logged, must be valid integer (convertible via
@@ -47,9 +48,11 @@ class SeedChecker:
        one seed.
     4. The set of seed(s) that one run logs must be completely different from
        the set of seed(s) any other run logs.
+
     Unsatisfying any of the above requirements results in check failure.
 
     A warning is raised for the following situations:
+
     1. Any run logs more than one seed.
     2. No seed is logged. However, the source files contain the keyword whose
        lowercase is "seed". What files are considered as source files are
