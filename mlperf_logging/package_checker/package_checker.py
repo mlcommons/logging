@@ -9,6 +9,7 @@ import os
 import sys
 
 from ..compliance_checker import mlp_compliance
+from .seed_checker import find_source_files_under, SeedChecker
 
 _ALLOWED_BENCHMARKS = [
     'bert',
@@ -54,6 +55,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
         ruleset: The ruleset such as 0.6.0 or 0.7.0.
     """
 
+    seed_checker = SeedChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
@@ -76,6 +78,10 @@ def check_training_result_files(folder, ruleset, quiet, werror):
             if not result_files:
                 print('No Result Files!')
                 continue
+
+            # Find all source codes for this benchmark.
+            source_files = find_source_files_under(
+                os.path.join(folder, 'benchmarks', benchmark))
 
             _print_divider_bar()
             print('System {}'.format(system))
@@ -120,6 +126,9 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 print('WARNING: Allowing this failure under olympic scoring '
                       'rules.')
             if errors_found > 1:
+                too_many_errors = True
+            # Check if each run use unique seeds.
+            if not seed_checker.check_seeds(result_files, source_files):
                 too_many_errors = True
 
             _print_divider_bar()
