@@ -1,3 +1,73 @@
+- BEGIN:
+    CODE: >
+        s.update({
+            'initialized_tensors': []
+        })
+
+- KEY:
+    NAME: weights_initialization
+    REQ: AT_LEAST_ONE
+    CHECK:
+        - "'tensor' in v['metadata']"
+    POST: >
+        s['initialized_tensors'] += [v['metadata']['tensor']]
+
+- END:
+    CHECK: >
+        tensor_list = [
+            "input_block_0_conv",
+            "input_block_0_instancenorm",
+            "input_block_1_conv",
+            "input_block_1_instancenorm",
+            "down0_block_0_conv",
+            "down0_block_0_instancenorm",
+            "down0_block_1_conv",
+            "down0_block_1_instancenorm",
+            "down1_block_0_conv",
+            "down1_block_0_instancenorm",
+            "down1_block_1_conv",
+            "down1_block_1_instancenorm",
+            "down2_block_0_conv",
+            "down2_block_0_instancenorm",
+            "down2_block_1_conv",
+            "down2_block_1_instancenorm",
+            "down3_block_0_conv",
+            "down3_block_0_instancenorm",
+            "down3_block_1_conv",
+            "down3_block_1_instancenorm",
+            "down4_block_0_conv",
+            "down4_block_0_instancenorm",
+            "down4_block_1_conv",
+            "down4_block_1_instancenorm",
+            "up0_deconv",
+            "up0_block_0_conv",
+            "up0_block_0_instancenorm",
+            "up0_block_1_conv",
+            "up0_block_1_instancenorm",
+            "up1_deconv",
+            "up1_block_0_conv",
+            "up1_block_0_instancenorm",
+            "up1_block_1_conv",
+            "up1_block_1_instancenorm",
+            "up2_deconv",
+            "up2_block_0_conv",
+            "up2_block_0_instancenorm",
+            "up2_block_1_conv",
+            "up2_block_1_instancenorm",
+            "up3_deconv",
+            "up3_block_0_conv",
+            "up3_block_0_instancenorm",
+            "up3_block_1_conv",
+            "up3_block_1_instancenorm",
+            "up4_deconv",
+            "up4_block_0_conv",
+            "up4_block_0_instancenorm",
+            "up4_block_1_conv",
+            "up4_block_1_instancenorm",
+            "output_conv",
+            "input_block_1_conv",
+        ]
+        sorted(s['initialized_tensors']) == sorted(tensor_list)
 
 - KEY:
     NAME:  global_batch_size
