@@ -41,7 +41,7 @@ class SeedChecker:
     Current requirements are:
 
     1. All seeds must be logged through mllog (if choose to log seeds). Any seed
-       logged via any other method will be disgarded.
+       logged via any other method will be discarded.
     2. All seeds, if choose to be logged, must be valid integer (convertible via
        int()).
     3. If any run log at lesat one seed, we expect all runs to log at least
