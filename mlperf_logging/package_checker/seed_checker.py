@@ -62,7 +62,7 @@ class SeedChecker:
     def __init__(self, ruleset):
         self._ruleset = ruleset
 
-    def _get_seed(self, result_file):
+    def _get_seed_records(self, result_file):
         loglines, errors = mlp_parser.parse_file(
             result_file,
             ruleset=self._ruleset,
@@ -73,9 +73,11 @@ class SeedChecker:
                 ['{}\n  ^^  {}'.format(line, error)
                  for line, error in errors] +
                 ['', 'Log lines had parsing errors.']))
-        return [
-            int(line.value['value']) for line in loglines if line.key == 'seed'
-        ]
+        return [(
+            line.value['metadata']['file'],
+            line.value['metadata']['lineno'],
+            int(line.value['value']),
+        ) for line in loglines if line.key == 'seed']
 
     def _assert_unique_seed_per_run(self, result_files):
         no_logged_seed = True
@@ -83,34 +85,38 @@ class SeedChecker:
         seed_to_result_file = {}
         for result_file in result_files:
             try:
-                seeds = self._get_seed(result_file)
+                seed_records = self._get_seed_records(result_file)
             except Exception as e:
                 error_messages.append("Error found when querying seeds from "
                                       "{}: {}".format(result_file, e))
                 continue
 
-            if not no_logged_seed and len(seeds) == 0:
+            if not no_logged_seed and len(seed_records) == 0:
                 error_messages.append(
                     "Result file {} logs no seed. However, other "
                     "result files, including {}, already logs some "
-                    "seeds.".format(list(seed_to_result_file.keys())))
-            if no_logged_seed and len(seeds) > 0:
+                    "seeds.".format(result_file,
+                                    list(seed_to_result_file.keys())))
+            if no_logged_seed and len(seed_records) > 0:
                 no_logged_seed = False
-            if len(seeds) > 1:
-                warnings.warn("Result file {} logs more than one "
-                              "seeds {}!".format(result_file, seeds))
-            for seed in seeds:
-                if seed in seed_to_result_file:
+            if len(seed_records) > 1:
+                warnings.warn(
+                    "Result file {} logs more than one seeds {}!".format(
+                        result_file, seed_records))
+            for f, ln, s in seed_records:
+                if (f, ln, s) in seed_to_result_file:
                     error_messages.append(
-                        "Result file {} logs seed {}. However, result file {} "
-                        "already logs the same seed {}.".format(
+                        "Result file {} logs seed {} on {}:{}. However, "
+                        "result file {} already logs the same seed on the same "
+                        "line.".format(
                             result_file,
-                            seed,
-                            seed_to_result_file[seed],
-                            seed,
+                            s,
+                            f,
+                            ln,
+                            seed_to_result_file[(f, ln, s)],
                         ))
                 else:
-                    seed_to_result_file[seed] = result_file
+                    seed_to_result_file[(f, ln, s)] = result_file
 
         return no_logged_seed, error_messages
 
