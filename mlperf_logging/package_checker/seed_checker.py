@@ -44,7 +44,7 @@ class SeedChecker:
        logged via any other method will be discarded.
     2. All seeds, if choose to be logged, must be valid integer (convertible via
        int()).
-    3. If any run log at lesat one seed, we expect all runs to log at least
+    3. If any run log at least one seed, we expect all runs to log at least
        one seed.
     4. The set of seed(s) that one run logs must be completely different from
        the set of seed(s) any other run logs.
