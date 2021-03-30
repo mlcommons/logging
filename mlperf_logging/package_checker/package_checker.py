@@ -9,6 +9,7 @@ import os
 import sys
 
 from ..compliance_checker import mlp_compliance
+from .seed_checker import find_source_files_under, SeedChecker
 
 _ALLOWED_BENCHMARKS = [
     'bert',
@@ -34,11 +35,12 @@ _EXPECTED_RESULT_FILE_COUNTS = {
 
 
 def _get_sub_folders(folder):
-    sub_folders = [os.path.join(folder, sub_folder)
-                   for sub_folder in os.listdir(folder)]
-    return [sub_folder
-            for sub_folder in sub_folders
-            if os.path.isdir(sub_folder)]
+    sub_folders = [
+        os.path.join(folder, sub_folder) for sub_folder in os.listdir(folder)
+    ]
+    return [
+        sub_folder for sub_folder in sub_folders if os.path.isdir(sub_folder)
+    ]
 
 
 def _print_divider_bar():
@@ -53,6 +55,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
         ruleset: The ruleset such as 0.6.0 or 0.7.0.
     """
 
+    seed_checker = SeedChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
@@ -76,16 +79,21 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 print('No Result Files!')
                 continue
 
+            # Find all source codes for this benchmark.
+            source_files = find_source_files_under(
+                os.path.join(folder, 'benchmarks', benchmark))
+
             _print_divider_bar()
             print('System {}'.format(system))
             print('Benchmark {}'.format(benchmark))
 
-            # If the organization did submit results for this benchmark, the number
-            # of result files must be an exact number.
+            # If the organization did submit results for this benchmark, the
+            # number of result files must be an exact number.
             if len(result_files) != _EXPECTED_RESULT_FILE_COUNTS[benchmark]:
                 print('Expected {} runs, but detected {} runs.'.format(
                     _EXPECTED_RESULT_FILE_COUNTS[benchmark],
-                    len(result_files)))
+                    len(result_files),
+                ))
 
             errors_found = 0
             result_files.sort()
@@ -99,23 +107,34 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 print('Run {}'.format(run))
                 config_file = '{ruleset}/common.yaml'.format(
                     ruleset=ruleset,
-                    benchmark=benchmark)
+                    benchmark=benchmark,
+                )
                 checker = mlp_compliance.make_checker(
                     ruleset=ruleset,
                     quiet=quiet,
-                    werror=werror)
-                valid, _, _, _ = mlp_compliance.main(result_file, config_file, checker)
+                    werror=werror,
+                )
+                valid, _, _, _ = mlp_compliance.main(
+                    result_file,
+                    config_file,
+                    checker,
+                )
                 if not valid:
-                  errors_found += 1
+                    errors_found += 1
             if errors_found == 1:
-              print('WARNING: One file does not comply.')
-              print('WARNING: Allowing this failure under olympic scoring rules.')
+                print('WARNING: One file does not comply.')
+                print('WARNING: Allowing this failure under olympic scoring '
+                      'rules.')
             if errors_found > 1:
-              too_many_errors = True
+                too_many_errors = True
+            # Check if each run use unique seeds.
+            if not seed_checker.check_seeds(result_files, source_files):
+                too_many_errors = True
 
             _print_divider_bar()
     if too_many_errors:
-      raise Exception('Found too many errors in logging, see log above for details.')
+        raise Exception(
+            'Found too many errors in logging, see log above for details.')
 
 
 def check_training_package(folder, ruleset, quiet, werror):
@@ -134,16 +153,31 @@ def get_parser():
         description='Lint MLPerf submission packages.',
     )
 
-    parser.add_argument('folder', type=str,
-                    help='the folder for a submission package')
-    parser.add_argument('usage', type=str,
-                    help='the usage such as training, inference_edge, inference_server')
-    parser.add_argument('ruleset', type=str,
-                    help='the ruleset such as 0.6.0, 0.7.0')
-    parser.add_argument('--werror', action='store_true',
-                    help='Treat warnings as errors')
-    parser.add_argument('--quiet', action='store_true',
-                    help='Suppress warnings. Does nothing if --werror is set')
+    parser.add_argument(
+        'folder',
+        type=str,
+        help='the folder for a submission package',
+    )
+    parser.add_argument(
+        'usage',
+        type=str,
+        help='the usage such as training, inference_edge, inference_server',
+    )
+    parser.add_argument(
+        'ruleset',
+        type=str,
+        help='the ruleset such as 0.6.0, 0.7.0',
+    )
+    parser.add_argument(
+        '--werror',
+        action='store_true',
+        help='Treat warnings as errors',
+    )
+    parser.add_argument(
+        '--quiet',
+        action='store_true',
+        help='Suppress warnings. Does nothing if --werror is set',
+    )
 
     return parser
 
