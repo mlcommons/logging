@@ -48,6 +48,8 @@ class SeedChecker:
        one seed.
     4. The set of seed(s) that one run logs must be completely different from
        the set of seed(s) any other run logs.
+    4. If one run logs one seed on a certain line in a certain source file, no
+       other run can log the same seed on the same line in the same file.
 
     Unsatisfying any of the above requirements results in check failure.
 
