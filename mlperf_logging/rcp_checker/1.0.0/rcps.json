@@ -1,0 +1,127 @@
+
+# These RCPs are tentative.
+# Currently used for testing and development
+
+{
+  "maskrcnn_nv_256":
+  {
+    "Benchmark": "maskrcnn",
+    "BS": 256,
+    "Hyperparams": {
+      "opt_learning_decay_factor": 0.1,
+      "opt_learning_decay_steps": [5625, 7500],
+      "opt_base_learning_rate": 0.24,
+      "max_image_size": 1333,
+      "min_image_size": 800,
+      "num_image_candidates": 6000,
+      "opt_learning_rate_warmup_factor": 0.000133,
+      "opt_learning_rate_warmup_steps": 1800
+    },
+    "Epochs to converge": [
+       17, 17, 18, 17, 17, 17, 17, 17, 17, 17]
+  },
+
+  "maskrcnn_nv_128":
+  {
+    "Benchmark": "maskrcnn",
+    "BS": 128,
+    "Hyperparams": {
+      "opt_learning_decay_factor": 0.1,
+      "opt_learning_decay_steps": [9000, 12000],
+      "opt_base_learning_rate": 0.16,
+      "max_image_size": 1333,
+      "min_image_size": 800,
+      "num_image_candidates": 6000,
+      "opt_learning_rate_warmup_factor": 0.00256,
+      "opt_learning_rate_warmup_steps": 625
+    },
+    "Epochs to converge": [
+       14, 14, 14, 14, 14, 14, 14, 14, 14, 14]
+  },
+
+  "maskrcnn_nv_96":
+  {
+    "Benchmark": "maskrcnn",
+    "BS": 96,
+    "Hyperparams": {
+      "opt_learning_decay_factor": 0.1,
+      "opt_learning_decay_steps": [12000, 16000],
+      "opt_base_learning_rate": 0.12,
+      "max_image_size": 1333,
+      "min_image_size": 800,
+      "num_image_candidates": 6000,
+      "opt_learning_rate_warmup_factor": 0.00192,
+      "opt_learning_rate_warmup_steps": 625
+    },
+    "Epochs to converge": [
+       14, 18, 14, 18, 18, 15, 15, 18, 15, 16, 16, 17, 14, 15, 17, 17, 17, 16, 16]
+  },
+
+  "maskrcnn_nv_64":
+  {
+    "Benchmark": "maskrcnn",
+    "BS": 64,
+    "Hyperparams": {
+      "opt_learning_decay_factor": 0.1,
+      "opt_learning_decay_steps": [18000, 24000],
+      "opt_base_learning_rate": 0.08,
+      "max_image_size": 1333,
+      "min_image_size": 800,
+      "num_image_candidates": 6000,
+      "opt_learning_rate_warmup_factor": 0.001,
+      "opt_learning_rate_warmup_steps": 800
+    },
+    "Epochs to converge": [
+       14, 14, 14, 14, 14, 14, 14, 14, 14, 20]
+  },
+
+  "dlrm_google_32768":
+  {
+    "Benchmark": "dlrm",
+    "BS": 32768,
+    "Hyperparams": {
+       "opt_base_learning_rate": 18,
+       "opt_learning_rate_warmup_steps": 8000,
+       "lr_decay_start_steps": 70000,
+       "sgd_opt_base_learning_rate": 18,
+       "sgd_opt_learning_rate_decay_poly_power": 2,
+       "sgd_opt_learning_rate_decay_steps": 30000
+    },
+    "Epochs to converge": [
+       16, 15, 15, 15, 15, 16, 14, 15, 15, 15]
+  },
+
+  "dlrm_intel_32768":
+  {
+    "Benchmark": "dlrm",
+    "BS": 32768,
+    "Hyperparams": {
+       "opt_base_learning_rate": 18,
+       "opt_learning_rate_warmup_steps": 8000,
+       "lr_decay_start_steps": 70000,
+       "sgd_opt_base_learning_rate": 18,
+       "sgd_opt_learning_rate_decay_poly_power": 2,
+       "sgd_opt_learning_rate_decay_steps": 30000
+    },
+    "Epochs to converge": [
+       16, 15, 15, 15, 15, 16, 14, 15, 15, 15]
+  },
+
+  "dlrm_nv_55296":
+  {
+    "Benchmark": "dlrm",
+    "BS": 55296,
+    "Hyperparams": {
+       "opt_base_learning_rate": 24,
+       "opt_learning_rate_warmup_steps": 2750,
+       "lr_decay_start_steps": 49315,
+       "sgd_opt_base_learning_rate": 24,
+       "sgd_opt_learning_rate_decay_poly_power": 2,
+       "sgd_opt_learning_rate_decay_steps": 27772
+    },
+    "Epochs to converge": [
+       18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 18, 17, 18, 18, 18, 18, 19, 18]
+  }
+
+}
+
