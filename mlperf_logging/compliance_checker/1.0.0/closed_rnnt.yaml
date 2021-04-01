@@ -67,7 +67,7 @@
 - KEY:
     NAME: opt_gradient_clip_norm
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == None "
+    CHECK: " v['value'] == 1 "
 
 - KEY:
     NAME: opt_learning_rate_alt_decay_func
