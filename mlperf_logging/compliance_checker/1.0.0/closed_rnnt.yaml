@@ -40,7 +40,7 @@
     CHECK: " v['value'] == 1e-9 "
 
 - KEY:
-    NAME: opt_lamb_learning_rate_poly_decay_power
+    NAME: opt_lamb_learning_rate_decay_poly_power
     REQ:   EXACTLY_ONE
 
 - KEY:
