@@ -13,6 +13,7 @@ import re
 import sys
 
 from ..compliance_checker import mlp_compliance
+from ..rcp_checker import rcp_checker
 
 _ALLOWED_BENCHMARKS_V06 = [
     'resnet',
@@ -263,6 +264,14 @@ def summarize_results(folder, ruleset):
                     .format(desc['submitter'], system, benchmark))
 
             benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores)
+
+            # Setup RCP checker -- TBD: One per dir or one for the whole run?
+            rcp_chk = rcp_checker.make_checker('1.0.0')
+            rcp_chk._compute_rcp_stats()
+
+            # Now go again through result files to do RCP checks
+            rcp_result = rcp_chk.check_directory(benchmark_folder)
+            print(rcp_result)
 
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
