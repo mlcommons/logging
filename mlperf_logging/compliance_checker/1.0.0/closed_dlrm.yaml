@@ -14,7 +14,7 @@
 
 - END:
     CHECK: >
-        tensor_list = [
+        sorted(s['initialized_tensors']) == sorted([
             "embeddings",
             "bottom_mlp_dense1",
             "bottom_mlp_dense2",
@@ -24,8 +24,7 @@
             "top_mlp_dense3",
             "top_mlp_dense4",
             "top_mlp_dense5",
-        ]
-        sorted(s['initialized_tensors']) == sorted(tensor_list)
+        ])
 
 - KEY:
     NAME:  global_batch_size

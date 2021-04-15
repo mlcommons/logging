@@ -14,7 +14,7 @@
 
 - END:
     CHECK: >
-        tensor_list = [
+        sorted(s['initialized_tensors']) == sorted([
             "bert/embeddings/word_embeddings",
             "bert/embeddings/position_embeddings",
             "bert/embeddings/token_type_embeddings",
@@ -414,8 +414,7 @@
             "cls/predictions/decoder/kernel",
             "cls/seq_relationship/output_weights",
             "cls/seq_relationship/output_bias",
-        ]
-        sorted(s['initialized_tensors']) == sorted(tensor_list)
+        ])
 
 - KEY:
     NAME:  global_batch_size

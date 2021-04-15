@@ -14,7 +14,7 @@
 
 - END:
     CHECK: >
-        tensor_list = [
+        sorted(s['initialized_tensors']) == sorted([
             "FPN_inner_block1",
             "FPN_layer_block1",
             "FPN_inner_block2",
@@ -36,8 +36,7 @@
             "ROI_MASK_FEATURE_EXTRACTOR_fcn4",
             "ROI_MASK_PREDICTOR_fcn5",
             "ROI_MASK_PREDICTOR_fcn_logits",
-        ]
-        sorted(s['initialized_tensors']) == sorted(tensor_list)
+        ])
 
 
 - KEY:
