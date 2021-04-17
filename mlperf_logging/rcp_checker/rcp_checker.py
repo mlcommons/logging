@@ -18,9 +18,9 @@ submission_runs = {
     'bert': 10,
     'dlrm': 5,
     'maskrcnn' : 5,
-    'resnet' : 5,
+    'resnet50' : 5,
     'ssd' : 5,
-    'unet3d' : 20,
+    'unet3d' : 40,
     'rnnt': 10,
 }
 
@@ -59,7 +59,6 @@ def get_submission_epochs(result_files):
                         else:
                             subm_epochs.append(-1)
                             not_converged = not_converged + 1
-    subm_epochs.sort()
     if not_converged > 1:
         return None
     return bs, subm_epochs
@@ -67,21 +66,22 @@ def get_submission_epochs(result_files):
 
 def eval_submission_record(rcp_record, subm_epochs):
     '''Compare reference and submission convergence.'''
+    subm_epochs.sort()
     mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
     if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
         # TODO: Print some useful debug info
-        # print('Pass', mean_subm_epochs, rcp_record["RCP Mean"], rcp_record["Max Speedup"])
+        # print(rcp_record, mean_subm_epochs)
         return(True)
     else:
         # TODO: Print some useful debug info
-        # print('Fail', mean_subm_epochs, rcp_record["RCP Mean"], rcp_record["Max Speedup"])
+        # print(rcp_record, mean_subm_epochs)
         return(False)
 
 
 class RCP_Checker:
 
     def __init__(self, ruleset):
-        self.p_value = 0.05
+        self.alpha = 0.05
         self.tolerance = 0.0001
         raw_rcp_data = self._consume_json_file(ruleset)
         self.rcp_data = self._process_raw_rcp_data(raw_rcp_data)
@@ -128,8 +128,8 @@ class RCP_Checker:
                               record_contents['RCP Stdev'],
                               len(epoch_list)-2)
             record_contents['Max Speedup'] = record_contents['RCP Mean'] / min_epochs
-            #print(record, record_contents)
-            #print("\n")
+            # TBD: Print on debug mode
+            # print(record, record_contents, "\n")
 
     def _find_rcp(self, benchmark, bs):
         '''Find RCP based on benchmark and batch size'''
@@ -182,7 +182,7 @@ class RCP_Checker:
 
     def _find_p_value(self, subm_mean, subm_stdev, subm_num_samples,
                       ref_mean, ref_stdev, ref_num_samples,
-                      p_value_lim=0.05):
+                      alpha=0.05):
         '''
         Do t-test between submission and reference and return p-value and
         whether it is larger than the limit
@@ -198,7 +198,7 @@ class RCP_Checker:
             p_value = p_value / 2
         else:
             p_value = 1 - (p_value / 2)
-        return p_value > p_value_lim, p_value
+        return p_value > alpha, p_value
 
 
     def _find_min_acceptable_mean(self, benchmark, mean, stdev, num_samples_ref):
@@ -219,8 +219,8 @@ class RCP_Checker:
             _, p_value = self._find_p_value(
                              mean_mid, stdev, num_samples_ref,
                              mean, stdev, num_samples_subm,
-                             self.p_value)
-            if p_value > self.p_value:
+                             self.alpha)
+            if p_value > self.alpha:
                 mean_max = mean_mid
             else:
                 mean_min = mean_mid
@@ -257,7 +257,9 @@ class RCP_Checker:
                          'RCP Mean': mean,
                          'RCP Stdev': stdev,
                          'Max Speedup': mean / min_epochs}
-
+        # TODO: Print on debug mode
+        # print(low_rcp, high_rcp)
+        # print(interp_record)
         self.rcp_data[interp_record_name] = interp_record
 
     def check_directory(self, dir):
