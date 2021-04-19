@@ -10,9 +10,9 @@ and generate interpolated convergence points.
 
 ## Usage
 
-From the mlperf_logging directory:
+From the base directory of the repo (by default `logging`):
 
-python3 -m rcp_checker
+python3 -m mlperf_logging.rcp_checker
 
 Currently this loads RCPs from 1.0.0/rcps.json and runs a basic test
 
@@ -24,6 +24,5 @@ python3 -m pip install numpy scipy
 ## Tested software versions
 
 TBD
-
 
 
