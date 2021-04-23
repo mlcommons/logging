@@ -6,8 +6,11 @@ parser = rcp_checker.get_parser()
 args = parser.parse_args()
 
 # Results summarizer makes these 3 calls to invoke RCP test
-checker = rcp_checker.make_checker(args.rcp_version)
+checker = rcp_checker.make_checker(args.rcp_version, args.verbose)
 checker._compute_rcp_stats()
-result = checker.check_directory(args.dir)
+test, msg = checker._check_directory(args.dir)
 
-print(result)
+if test:
+    print(msg, ",RCP test passed")
+else:
+    print(msg, ",RCP test failed")
