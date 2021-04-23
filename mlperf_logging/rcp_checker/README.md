@@ -8,7 +8,7 @@ Run Reference Convergence Point checks for a submission directory.
 This consists of testing whether a submission does not converge
 statistically faster than the reference.
 
-RCPs are loaded from directory mlperf_logging/rcp_checker/*.json
+RCPs are loaded from directory mlperf_logging/rcp_checker/1.0.0/*.json
 
 The RCP checker supports only the 1.0.0 version.
 
@@ -31,3 +31,5 @@ python3 -m pip install numpy scipy
 ## Tested software versions
 
 python v3.9.2
+
+
