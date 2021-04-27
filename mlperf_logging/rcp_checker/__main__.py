@@ -14,3 +14,4 @@ if test:
     print(msg, ",RCP test passed")
 else:
     print(msg, ",RCP test failed")
+    sys.exit(1)

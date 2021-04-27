@@ -95,8 +95,7 @@ def check_training_result_files(folder, ruleset, quiet, werror):
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
             system = folder_parts[-2]
-            if benchmark == 'gnmt' or benchmark == 'transformer':
-                continue
+
             # If it is not a recognized benchmark, skip further checks.
             if benchmark not in allowed_benchmarks:
                 print('Skipping benchmark: {}'.format(benchmark))
