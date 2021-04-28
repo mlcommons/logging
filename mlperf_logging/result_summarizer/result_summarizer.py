@@ -277,7 +277,6 @@ def summarize_results(folder, ruleset):
 
             # Setup RCP checker
             if ruleset == '1.0.0' and benchmark != 'minigo':
-                print(benchmark)
                 rcp_chk = rcp_checker.make_checker(ruleset,verbose=False)
                 rcp_chk._compute_rcp_stats()
 

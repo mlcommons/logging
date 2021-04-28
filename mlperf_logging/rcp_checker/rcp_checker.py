@@ -27,7 +27,7 @@ submission_runs = {
 MLLOG_TOKEN = ':::MLLOG '
 
 
-def get_submission_epochs(result_files):
+def get_submission_epochs(result_files, benchmark):
     '''
     Extract convergence epochs from a list of submission files
     Returns the batch size and the list of epochs to converge
@@ -59,8 +59,8 @@ def get_submission_epochs(result_files):
                         else:
                             subm_epochs.append(-1)
                             not_converged = not_converged + 1
-    if not_converged > 1:
-        return None
+    if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
+        subm_epochs = None
     return bs, subm_epochs
 
 
@@ -278,27 +278,26 @@ class RCP_Checker:
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
         Possible cases, the top 3 fail before RCP check.
-        - Fail / did not find global_batch_size in log
-        - Fail / run failed to converge. This will not happen when called
-          from the results summarizer, only standalone
-        - Fail / Benchmark w/o RCP records
-        - Pass / RCP found
-        - Pass / RCP interpolated
-        - Pass / RCP missing but submission converges slower on smaller batch size
-        - Fail / RCP found
-        - Fail / RCP interpolated
-        - Missing RCP / Submit missing RCP
+        - (False) Fail / did not find global_batch_size in log
+        - (False) Fail / run failed to converge
+        - (False) Fail / Benchmark w/o RCP records
+        - (True) Pass / RCP found
+        - (True) Pass / RCP interpolated
+        - (True) Pass / RCP missing but submission converges slower on smaller batch size
+        - (False) Fail / RCP found
+        - (False) Fail / RCP interpolated
+        - (False) Missing RCP / Submit missing RCP
         '''
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
         benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
-        bs, subm_epochs = get_submission_epochs(result_files)
+        bs, subm_epochs = get_submission_epochs(result_files, benchmark)
 
         if bs == -1:
-            return 'Fail', 'Could not detect global_batch_size'
+            return False, 'Could not detect global_batch_size'
         if subm_epochs is None:
-            return 'Fail', 'Insufficient convergence'
+            return False, 'Insufficient convergence'
 
         rcp_record = self._find_rcp(benchmark, bs)
         rcp_msg = ''
