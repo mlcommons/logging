@@ -18,7 +18,7 @@ submission_runs = {
     'bert': 10,
     'dlrm': 5,
     'maskrcnn' : 5,
-    'resnet50' : 5,
+    'resnet' : 5,
     'ssd' : 5,
     'unet3d' : 40,
     'rnnt': 10,
@@ -27,7 +27,7 @@ submission_runs = {
 MLLOG_TOKEN = ':::MLLOG '
 
 
-def get_submission_epochs(result_files):
+def get_submission_epochs(result_files, benchmark):
     '''
     Extract convergence epochs from a list of submission files
     Returns the batch size and the list of epochs to converge
@@ -59,37 +59,29 @@ def get_submission_epochs(result_files):
                         else:
                             subm_epochs.append(-1)
                             not_converged = not_converged + 1
-    if not_converged > 1:
-        return None
+    if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
+        subm_epochs = None
     return bs, subm_epochs
-
-
-def eval_submission_record(rcp_record, subm_epochs):
-    '''Compare reference and submission convergence.'''
-    subm_epochs.sort()
-    mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
-    if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
-        # TODO: Print some useful debug info
-        # print(rcp_record, mean_subm_epochs)
-        return(True)
-    else:
-        # TODO: Print some useful debug info
-        # print(rcp_record, mean_subm_epochs)
-        return(False)
 
 
 class RCP_Checker:
 
-    def __init__(self, ruleset):
+    def __init__(self, ruleset, verbose):
+        if ruleset != '1.0.0':
+            raise Exception('RCP Checker only supported in 1.0.0')
         self.alpha = 0.05
         self.tolerance = 0.0001
-        raw_rcp_data = self._consume_json_file(ruleset)
-        self.rcp_data = self._process_raw_rcp_data(raw_rcp_data)
+        self.verbose = verbose
+        self.rcp_data = {}
+        for benchmark in submission_runs.keys():
+            raw_rcp_data = self._consume_json_file(ruleset, benchmark)
+            processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
+            self.rcp_data.update(processed_rcp_data)
 
 
-    def _consume_json_file(self, ruleset):
+    def _consume_json_file(self, ruleset, benchmark):
         '''Read json file'''
-        json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps.json'
+        json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps_'+ benchmark+ '.json'
         with open(json_file, 'r') as f:
             return json.load(f)
 
@@ -120,16 +112,17 @@ class RCP_Checker:
             epoch_list = record_contents['Epochs to converge']
             # Use olympic mean
             epoch_list.sort()
-            record_contents['RCP Mean'] = np.mean(epoch_list[1:len(epoch_list)-1])
-            record_contents['RCP Stdev'] = np.std(epoch_list[1:len(epoch_list)-1])
+            samples_rejected = 4 if record_contents['Benchmark'] == 'unet3d' else 1
+            record_contents['RCP Mean'] = np.mean(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
+            record_contents['RCP Stdev'] = np.std(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
             min_epochs = self._find_min_acceptable_mean(
                               record_contents['Benchmark'],
                               record_contents['RCP Mean'],
                               record_contents['RCP Stdev'],
-                              len(epoch_list)-2)
+                              len(epoch_list)-samples_rejected*2)
             record_contents['Max Speedup'] = record_contents['RCP Mean'] / min_epochs
-            # TBD: Print on debug mode
-            # print(record, record_contents, "\n")
+            if self.verbose:
+                print(record, record_contents, "\n")
 
     def _find_rcp(self, benchmark, bs):
         '''Find RCP based on benchmark and batch size'''
@@ -257,43 +250,60 @@ class RCP_Checker:
                          'RCP Mean': mean,
                          'RCP Stdev': stdev,
                          'Max Speedup': mean / min_epochs}
-        # TODO: Print on debug mode
-        # print(low_rcp, high_rcp)
-        # print(interp_record)
+        if self.verbose:
+            print(low_rcp, high_rcp)
+            print(interp_record)
         self.rcp_data[interp_record_name] = interp_record
 
-    def check_directory(self, dir):
+
+    def _eval_submission_record(self, rcp_record, subm_epochs):
+        '''Compare reference and submission convergence.'''
+        subm_epochs.sort()
+        samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
+        mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
+        if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
+            if self.verbose:
+                print("Found RCP record:\n",rcp_record)
+                print("\nSubm Mean epochs:", mean_subm_epochs)
+            return(True)
+        else:
+            if self.verbose:
+                print("Found RCP record:\n",rcp_record)
+                print("\nSubm Mean epochs:", mean_subm_epochs)
+            return(False)
+
+
+    def _check_directory(self, dir):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
         Possible cases, the top 3 fail before RCP check.
-        - Fail / did not find global_batch_size in log
-        - Fail / run failed to converge. This will not happen when called
-          from the results summarizer, only standalone
-        - Fail / Benchmark w/o RCP records
-        - Pass / RCP found
-        - Pass / RCP interpolated
-        - Pass / RCP missing but submission converges slower on smaller batch size
-        - Fail / RCP found
-        - Fail / RCP interpolated
-        - Missing RCP / Submit missing RCP
+        - (False) Fail / did not find global_batch_size in log
+        - (False) Fail / run failed to converge
+        - (False) Fail / Benchmark w/o RCP records
+        - (True) Pass / RCP found
+        - (True) Pass / RCP interpolated
+        - (True) Pass / RCP missing but submission converges slower on smaller batch size
+        - (False) Fail / RCP found
+        - (False) Fail / RCP interpolated
+        - (False) Missing RCP / Submit missing RCP
         '''
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
         benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
-        bs, subm_epochs = get_submission_epochs(result_files)
+        bs, subm_epochs = get_submission_epochs(result_files, benchmark)
 
         if bs == -1:
-            return 'Fail', 'Could not detect global_batch_size'
+            return False, 'Could not detect global_batch_size'
         if subm_epochs is None:
-            return 'Fail', 'Insufficient convergence'
+            return False, 'Insufficient convergence'
 
         rcp_record = self._find_rcp(benchmark, bs)
         rcp_msg = ''
         if rcp_record is not None:
             rcp_msg = 'RCP found'
-            rcp_check = eval_submission_record(rcp_record, subm_epochs)
+            rcp_check = self._eval_submission_record(rcp_record, subm_epochs)
         else:
             rcp_min = self._find_top_min_rcp(benchmark, bs)
             rcp_max = self._find_bottom_max_rcp(benchmark, bs)
@@ -301,13 +311,13 @@ class RCP_Checker:
                 rcp_msg = "RCP Interpolation"
                 self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
                 interp_rcp_record = self._find_rcp(benchmark, bs)
-                rcp_check = eval_submission_record(interp_rcp_record, subm_epochs)
+                rcp_check = self._eval_submission_record(interp_rcp_record, subm_epochs)
             elif rcp_min is not None and rcp_max is None:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
                 rcp_check = False
             elif rcp_min is None and rcp_max is not None:
                 rcp_min_record = self._find_min_rcp(benchmark)
-                rcp_check = eval_submission_record(rcp_min_record, subm_epochs)
+                rcp_check = self._eval_submission_record(rcp_min_record, subm_epochs)
                 mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
                 if rcp_check == False:
                    rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
@@ -330,12 +340,14 @@ def get_parser():
                     help='the directory to check for compliance')
     parser.add_argument('--rcp_version', type=str, default='1.0.0',
                     help='what version of rules to check the log against')
+    parser.add_argument('--verbose', action='store_true')
+
     return parser
 
 
-def make_checker(ruleset):
-  return RCP_Checker(ruleset)
+def make_checker(ruleset, verbose=False):
+  return RCP_Checker(ruleset, verbose)
 
 
 def main(checker, dir):
-    return checker.check_directory(dir)
+    return checker._check_directory(dir)

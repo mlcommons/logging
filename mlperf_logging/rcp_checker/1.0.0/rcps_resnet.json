@@ -1,0 +1,80 @@
+{
+
+  "resnet_ref_2048":
+  {
+    "Benchmark": "resnet",
+    "BS": 2048,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 8.5,
+      "opt_end_learning_rate": 1e-4,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 5,
+      "opt_momentum": 0.9,
+      "opt_weight_decay": 2e-3,
+      "opt_learning_rate_decay_steps": 22530
+    },
+    "Epochs to converge": [
+      38, 39, 38, 39, 38, 39, 38, 39, 38, 38]
+  },
+
+  "resnet_ref_4096":
+  {
+    "Benchmark": "resnet",
+    "BS": 4096,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 10,
+      "opt_end_learning_rate": 1e-4,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 5,
+      "opt_momentum": 0.9,
+      "opt_weight_decay": 2e-3,
+      "opt_learning_rate_decay_steps": 42
+    },
+    "Epochs to converge": [
+      39, 42, 40, 41, 39, 40, 41, 39, 40, 39]
+  },
+
+  "resnet_ref_8192":
+  {
+    "Benchmark": "resnet",
+    "BS": 8192,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 17,
+      "opt_end_learning_rate": 1e-4,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 5,
+      "opt_momentum": 0.9,
+      "opt_weight_decay": 2e-3,
+      "opt_learning_rate_decay_steps": 6720
+    },
+    "Epochs to converge": [
+      41, 40, 42, 42, 41, 41, 42, 42, 41, 41]
+  },
+
+  "resnet_ref_32768":
+  {
+    "Benchmark": "resnet",
+    "BS": 32768,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 21.2,
+      "opt_end_learning_rate": 1e-4,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 16,
+      "opt_momentum": 2.5e-5,
+      "opt_weight_decay": 2e-3,
+      "opt_learning_rate_decay_steps": 58
+    },
+    "Epochs to converge": [
+      56, 56, 55, 56, 56, 56, 56, 56, 57, 56]
+  }
+
+}
+

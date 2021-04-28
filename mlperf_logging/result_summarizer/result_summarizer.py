@@ -36,6 +36,17 @@ _ALLOWED_BENCHMARKS_V07 = [
     'transformer',
 ]
 
+_ALLOWED_BENCHMARKS_V10 = [
+    'bert',
+    'dlrm',
+    'maskrcnn',
+    'minigo',
+    'resnet',
+    'ssd',
+    'rnnt',
+    'unet3d',
+]
+
 _RUN_START_REGEX = r':::MLLOG (.*"run_start",.*)'
 _RUN_STOP_REGEX = r':::MLLOG (.*"run_stop",.*)'
 
@@ -142,25 +153,23 @@ def _read_mlperf_score(result_file, ruleset):
     return minutes
 
 
-def _compute_olympic_average(scores, dropped_scores):
-    """There are two possible cases we might handle:
-    If dropped_scores == 0, then we compute a normal olympiic score.
-    If dropped_scores > 0, then the maximum was already dropped
-    (and does not appear in scores) because it did not converge.
+def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
+    """Olympic average by dropping the top and bottom max_dropped_scores:
+    If max_dropped_scores == 1, then we compute a normal olympic score.
+    If max_dropped_scores > 1, then we drop more than one scores from the
+    top and bottom and average the rest.
+    When dropped_scores > 0, then some scores have already been dropped
+    so we should not double count them
+    Precondition: Dropped scores have higher score value than the rest
     """
-    sum_of_scores = sum(scores)
-    count = len(scores)
 
-    # Subtract off the min
-    sum_of_scores -= min(scores)
-    count -= 1
+    # Sort scores first
+    scores.sort()
 
-    # Subtract off the max, only if the max was not already dropped
-    if dropped_scores == 0:
-      sum_of_scores -= max(scores)
-      count -= 1
-
-    return sum_of_scores * 1.0 / count
+    # Remove top and bottom scores
+    countable_scores = scores[max_dropped_scores:len(scores)-(max_dropped_scores-dropped_scores)]
+    sum_of_scores = sum(countable_scores)
+    return sum_of_scores * 1.0 / len(countable_scores)
 
 
 def _is_organization_folder(folder):
@@ -180,7 +189,7 @@ def summarize_results(folder, ruleset):
 
     Args:
         folder: The folder for a submission package.
-        ruleset: The ruleset such as 0.6.0 or 0.7.0.
+        ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
     """
     systems_folder = os.path.join(folder, 'systems')
     results_folder = os.path.join(folder, 'results')
@@ -242,7 +251,6 @@ def summarize_results(folder, ruleset):
         for benchmark_folder in _get_sub_folders(system_folder):
             folder_parts = benchmark_folder.split('/')
             benchmark = _benchmark_alias(folder_parts[-1])
-
             # Read scores from result files.
             pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
             result_files = glob.glob(pattern, recursive=True)
@@ -254,30 +262,40 @@ def summarize_results(folder, ruleset):
                     dropped_scores += 1
                 else:
                     scores.append(score)
-            if dropped_scores > 1:
+            max_dropped_scores = 4 if benchmark == 'unet3d' else 1
+            if dropped_scores > max_dropped_scores:
               print('CRITICAL ERROR: Too many non-converging runs for {} {}/{}'.
                     format(desc['submitter'], system, benchmark))
               print('** CRITICAL ERROR ** Results in the table for {} {}/{} are NOT correct'.
                     format(desc['submitter'], system, benchmark))
-            if dropped_scores == 1:
-              print('NOTICE: Dropping non-converged run for {} {}/{} using olympic scoring.'
+            elif dropped_scores >= 1:
+              print('NOTICE: Dropping non-converged run(s) for {} {}/{} using olympic scoring.'
                     .format(desc['submitter'], system, benchmark))
 
-            benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores)
+            if dropped_scores <= max_dropped_scores:
+                benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores, max_dropped_scores)
 
-            # Setup RCP checker -- TBD: One per dir or one for the whole run?
-            rcp_chk = rcp_checker.make_checker('1.0.0')
-            rcp_chk._compute_rcp_stats()
+            # Setup RCP checker
+            if ruleset == '1.0.0' and benchmark != 'minigo':
+                rcp_chk = rcp_checker.make_checker(ruleset,verbose=False)
+                rcp_chk._compute_rcp_stats()
 
-            # Now go again through result files to do RCP checks
-            rcp_result = rcp_chk.check_directory(benchmark_folder)
-            print(rcp_result)
+                # Now go again through result files to do RCP checks
+                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder)
+                if not rcp_pass:
+                # Have a better error message. Also incorporate rcp_bypass
+                    print('{} for {} {}/{}'.format(rcp_msg, desc['submitter'], system, benchmark))
+                    print('RCP Test Failed')
+                    print('** CRITICAL ERROR ** Results in the table for {} {}/{} are NOT correct'.
+                        format(desc['submitter'], system, benchmark))
 
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
             allowed_benchmarks = _ALLOWED_BENCHMARKS_V06
         elif ruleset == '0.7.0':
             allowed_benchmarks = _ALLOWED_BENCHMARKS_V07
+        elif ruleset == '1.0.0':
+            allowed_benchmarks = _ALLOWED_BENCHMARKS_V10
         for benchmark in allowed_benchmarks:
             if benchmark in benchmark_scores:
                 row += '{:.2f},'.format(benchmark_scores[benchmark])
@@ -306,7 +324,7 @@ def get_parser():
     parser.add_argument('usage', type=str,
                     help='the usage such as training, inference_edge, inference_server')
     parser.add_argument('ruleset', type=str,
-                    help='the ruleset such as 0.6.0 or 0.7.0')
+                    help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
     parser.add_argument('--werror', action='store_true',
                     help='Treat warnings as errors')
     parser.add_argument('--quiet', action='store_true',
@@ -322,7 +340,7 @@ def main():
     if args.usage != 'training':
         print('Usage {} is not supported.'.format(args.usage))
         sys.exit(1)
-    if args.ruleset not in ['0.6.0', '0.7.0']:
+    if args.ruleset not in ['0.6.0', '0.7.0', '1.0.0']:
         print('Ruleset {} is not supported.'.format(args.ruleset))
         sys.exit(1)
 

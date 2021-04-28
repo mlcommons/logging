@@ -4,17 +4,24 @@ MLPerf reference convergence point (RCP) checker
 
 ## Description
 
-Currently this ingests RCP points from json file and provides API
-to run convergence checks using t-tests, find convergence points
-and generate interpolated convergence points.
+Run Reference Convergence Point checks for a submission directory.
+This consists of testing whether a submission does not converge
+statistically faster than the reference.
+
+RCPs are loaded from directory mlperf_logging/rcp_checker/1.0.0/*.json
+
+The RCP checker supports only the 1.0.0 version.
 
 ## Usage
 
-From the base directory of the repo (by default `logging`):
+From the base directory of the repo:
 
-python3 -m mlperf_logging.rcp_checker
+```sh
+python3 -m mlperf_logging.rcp_checker FOLDER
+```
 
-Currently this loads RCPs from 1.0.0/rcps.json and runs a basic test
+FOLDER is a results directory, i.e. it contains the correct number
+of result log files for a benchmark.
 
 ## Requirements
 
@@ -23,6 +30,6 @@ python3 -m pip install numpy scipy
 
 ## Tested software versions
 
-TBD
+python v3.9.2
 
 

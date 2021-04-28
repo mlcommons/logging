@@ -21,7 +21,7 @@ def check_training_system_desc(json_file, ruleset):
 
     Args:
         json_file: The system desc json file to check.
-        ruleset: The ruleset such as 0.6.0 or 0.7.0.
+        ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
 
     Returns:
         Boolean: if the system desc json is valid.
@@ -99,6 +99,7 @@ def check_training_system_desc(json_file, ruleset):
             system_name=contents["system_name"])
     else:
         details_link = ""
+    code_link = ""
     if "submitter" in contents:
         code_link = "{ruleset_prefix}/blob/master/{submitter}/benchmarks".format(
             ruleset_prefix=ruleset_prefix,
@@ -132,7 +133,7 @@ def get_parser():
     parser.add_argument('usage', type=str,
                     help='the usage such as training, inference_edge, inference_server')
     parser.add_argument('ruleset', type=str,
-                    help='the ruleset such as 0.6.0 or 0.7.0')
+                    help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
     parser.add_argument('--werror', action='store_true',
                     help='Treat warnings as errors')
     parser.add_argument('--quiet', action='store_true',
@@ -148,7 +149,7 @@ def main():
     if args.usage != 'training':
         print('Usage {} is not supported.'.format(args.usage))
         sys.exit(1)
-    if args.ruleset not in ['0.6.0', '0.7.0']:
+    if args.ruleset not in ['0.6.0', '0.7.0', '1.0.0']:
         print('Ruleset {} is not supported.'.format(args.ruleset))
         sys.exit(1)
 
