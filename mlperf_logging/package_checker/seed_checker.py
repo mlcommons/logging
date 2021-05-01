@@ -42,12 +42,10 @@ class SeedChecker:
 
     1. All seeds must be logged through mllog (if choose to log seeds). Any seed
        logged via any other method will be discarded.
-    2. All seeds, if choose to be logged, must be valid integer (convertible via
-       int()).
-    3. If any run log at least one seed, we expect all runs to log at least
+    2. All seeds, if choose to be logged, must be valid integers (convertible
+       via int()).
+    3. If any run logs at least one seed, we expect all runs to log at least
        one seed.
-    4. The set of seed(s) that one run logs must be completely different from
-       the set of seed(s) any other run logs.
     4. If one run logs one seed on a certain line in a certain source file, no
        other run can log the same seed on the same line in the same file.
 
@@ -56,10 +54,10 @@ class SeedChecker:
     A warning is raised for the following situations:
 
     1. Any run logs more than one seed.
-    2. No seed is logged. However, the source files contain the keyword whose
-       lowercase is "seed". What files are considered as source files are
-       defined in SOURCE_FILE_EXT and is_source_file().
-
+    2. No seed is logged, however, the source files (after being converted to
+       lowercase characters) contain the keyword "seed". What files are
+       considered as source files are defined in SOURCE_FILE_EXT and
+       is_source_file().
     """
     def __init__(self, ruleset):
         self._ruleset = ruleset
