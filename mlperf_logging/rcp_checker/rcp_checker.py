@@ -273,7 +273,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir):
+    def _check_directory(self, dir, rcp_bypass=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -308,7 +308,7 @@ class RCP_Checker:
             rcp_min = self._find_top_min_rcp(benchmark, bs)
             rcp_max = self._find_bottom_max_rcp(benchmark, bs)
             if rcp_min is not None and rcp_max is not None:
-                rcp_msg = "RCP Interpolation"
+                rcp_msg = 'RCP Interpolation'
                 self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
                 interp_rcp_record = self._find_rcp(benchmark, bs)
                 rcp_check = self._eval_submission_record(interp_rcp_record, subm_epochs)
@@ -326,6 +326,12 @@ class RCP_Checker:
             else:
                 rcp_check = False
                 rcp_msg = 'Cannot find any RCPs'
+
+        if rcp_bypass and not rcp_check:
+            if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation':
+                rcp_msg  = rcp_msg + ' passed using rcp_bypass'
+                print('RCP test failed but allowed to proceed with RCP bypass')
+                rcp_check = True
 
         return rcp_check, rcp_msg
 
