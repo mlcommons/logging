@@ -1,7 +1,8 @@
 - BEGIN:
     CODE: >
         s.update({
-            'initialized_tensors': []
+            'initialized_tensors': [],
+            'expected_eval_epoch_num': 1
         })
 
 - KEY:
@@ -155,5 +156,6 @@
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "'epoch_num' in v['metadata'] and v['metadata']['epoch_num'] == s['expected_eval_epoch_num']"
+    POST: "s['expected_eval_epoch_num'] += 1"
     ATLEAST_ONE_CHECK: "v['value'] <= 0.058 and v['value'] > 0.0"
