@@ -24,7 +24,7 @@ submission_runs = {
     'rnnt': 10,
 }
 
-MLLOG_TOKEN = ':::MLLOG '
+TOKEN = ':::MLLOG '
 
 
 def get_submission_epochs(result_files, benchmark):
@@ -38,11 +38,14 @@ def get_submission_epochs(result_files, benchmark):
     subm_epochs = []
     bs = -1
     for result_file in result_files:
-        with open(result_file, 'r') as f:
+        with open(result_file, 'r', encoding='latin-1') as f:
             file_contents = f.readlines()
             for line in file_contents:
-                if line.startswith(MLLOG_TOKEN):
-                    str = line[len(MLLOG_TOKEN):]
+                if TOKEN not in line:
+                    continue
+                line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+                if line.startswith(TOKEN):
+                    str = line[len(TOKEN):]
                     if "global_batch_size" in str:
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
