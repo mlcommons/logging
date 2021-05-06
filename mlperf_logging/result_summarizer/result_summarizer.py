@@ -275,20 +275,6 @@ def summarize_results(folder, ruleset):
             if dropped_scores <= max_dropped_scores:
                 benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores, max_dropped_scores)
 
-            # Setup RCP checker
-            if ruleset == '1.0.0' and benchmark != 'minigo':
-                rcp_chk = rcp_checker.make_checker(ruleset,verbose=False)
-                rcp_chk._compute_rcp_stats()
-
-                # Now go again through result files to do RCP checks
-                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder)
-                if not rcp_pass:
-                # Have a better error message. Also incorporate rcp_bypass
-                    print('{} for {} {}/{}'.format(rcp_msg, desc['submitter'], system, benchmark))
-                    print('RCP Test Failed')
-                    print('** CRITICAL ERROR ** Results in the table for {} {}/{} are NOT correct'.
-                        format(desc['submitter'], system, benchmark))
-
         # Construct scores portion of the row.
         if ruleset == '0.6.0':
             allowed_benchmarks = _ALLOWED_BENCHMARKS_V06
