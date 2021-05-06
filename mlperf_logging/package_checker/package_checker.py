@@ -42,7 +42,7 @@ _ALLOWED_BENCHMARKS_V10 = [
     'minigo',
     'resnet',
     'ssd',
-    'rnnt'
+    'rnnt',
     'unet3d',
 ]
 
