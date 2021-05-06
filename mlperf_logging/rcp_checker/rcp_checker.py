@@ -24,7 +24,7 @@ submission_runs = {
     'rnnt': 10,
 }
 
-MLLOG_TOKEN = ':::MLLOG '
+TOKEN = ':::MLLOG '
 
 
 def get_submission_epochs(result_files, benchmark):
@@ -38,11 +38,14 @@ def get_submission_epochs(result_files, benchmark):
     subm_epochs = []
     bs = -1
     for result_file in result_files:
-        with open(result_file, 'r') as f:
+        with open(result_file, 'r', encoding='latin-1') as f:
             file_contents = f.readlines()
             for line in file_contents:
-                if line.startswith(MLLOG_TOKEN):
-                    str = line[len(MLLOG_TOKEN):]
+                if TOKEN not in line:
+                    continue
+                line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+                if line.startswith(TOKEN):
+                    str = line[len(TOKEN):]
                     if "global_batch_size" in str:
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
@@ -273,7 +276,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir):
+    def _check_directory(self, dir, rcp_bypass=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -308,7 +311,7 @@ class RCP_Checker:
             rcp_min = self._find_top_min_rcp(benchmark, bs)
             rcp_max = self._find_bottom_max_rcp(benchmark, bs)
             if rcp_min is not None and rcp_max is not None:
-                rcp_msg = "RCP Interpolation"
+                rcp_msg = 'RCP Interpolation'
                 self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
                 interp_rcp_record = self._find_rcp(benchmark, bs)
                 rcp_check = self._eval_submission_record(interp_rcp_record, subm_epochs)
@@ -326,6 +329,12 @@ class RCP_Checker:
             else:
                 rcp_check = False
                 rcp_msg = 'Cannot find any RCPs'
+
+        if rcp_bypass and not rcp_check:
+            if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation':
+                rcp_msg  = rcp_msg + ' passed using rcp_bypass'
+                print('RCP test failed but allowed to proceed with RCP bypass')
+                rcp_check = True
 
         return rcp_check, rcp_msg
 

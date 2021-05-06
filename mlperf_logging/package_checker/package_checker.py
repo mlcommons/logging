@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import argparse
 import glob
+import json
 import os
 import sys
 
@@ -73,7 +74,7 @@ def _print_divider_bar():
     print('------------------------------')
 
 
-def check_training_result_files(folder, ruleset, quiet, werror):
+def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass):
     """Checks all result files for compliance.
 
     Args:
@@ -95,6 +96,14 @@ def check_training_result_files(folder, ruleset, quiet, werror):
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
             system = folder_parts[-2]
+
+            # Find whether submission is closed and only then run seed and RCP checkers
+            system_desc_file = os.path.join(folder, 'systems/') + system + '.json'
+            division = ''
+            with open(system_desc_file, 'r') as f:
+                contents = json.load(f)
+                if contents['division'] == 'closed':
+                    division = 'closed'
 
             # If it is not a recognized benchmark, skip further checks.
             if benchmark not in allowed_benchmarks:
@@ -166,17 +175,17 @@ def check_training_result_files(folder, ruleset, quiet, werror):
                 too_many_errors = True
 
             # Check if each run use unique seeds.
-            if ruleset == '1.0.0':
+            if ruleset == '1.0.0' and division == 'closed':
                 if not seed_checker.check_seeds(result_files, source_files):
                     too_many_errors = True
 
             # Run RCP checker for 1.0.0
-            if ruleset == '1.0.0' and benchmark != 'minigo':
+            if ruleset == '1.0.0' and division == 'closed' and benchmark != 'minigo':
                 rcp_chk = rcp_checker.make_checker(ruleset, verbose=False)
                 rcp_chk._compute_rcp_stats()
 
                 # Now go again through result files to do RCP checks
-                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder)
+                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_bypass)
                 if not rcp_pass:
                     print('WARNING: RCP Test Failed: {}.'.format(rcp_msg))
                     too_many_errors = True
@@ -209,14 +218,14 @@ def check_systems(folder, ruleset):
             'Found too many errors in system checking, see log above for details.')
 
 
-def check_training_package(folder, ruleset, quiet, werror):
+def check_training_package(folder, ruleset, quiet, werror, rcp_bypass):
     """Checks a training package for compliance.
 
     Args:
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
     """
-    check_training_result_files(folder, ruleset, quiet, werror)
+    check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass)
     if ruleset == '1.0.0':
         check_systems(folder, ruleset)
 
@@ -251,7 +260,11 @@ def get_parser():
         action='store_true',
         help='Suppress warnings. Does nothing if --werror is set',
     )
-
+    parser.add_argument(
+        '--rcp_bypass',
+        action='store_true',
+        help='Bypass failed RCP checks so that submission uploads'
+    )
     return parser
 
 
@@ -266,7 +279,7 @@ def main():
         print('Ruleset {} is not yet supported.'.format(args.ruleset))
         sys.exit(1)
 
-    check_training_package(args.folder, args.ruleset, args.quiet, args.werror)
+    check_training_package(args.folder, args.ruleset, args.quiet, args.werror, args.rcp_bypass)
 
 
 if __name__ == '__main__':
