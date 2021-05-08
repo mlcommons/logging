@@ -42,7 +42,7 @@ _ALLOWED_BENCHMARKS_V10 = [
     'minigo',
     'resnet',
     'ssd',
-    'rnnt'
+    'rnnt',
     'unet3d',
 ]
 
@@ -187,7 +187,7 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass):
                 # Now go again through result files to do RCP checks
                 rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_bypass)
                 if not rcp_pass:
-                    print('WARNING: RCP Test Failed: {}.'.format(rcp_msg))
+                    print('ERROR: RCP Test Failed: {}.'.format(rcp_msg))
                     too_many_errors = True
 
             _print_divider_bar()
