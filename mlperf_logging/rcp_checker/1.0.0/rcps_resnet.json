@@ -68,12 +68,31 @@
       "opt_learning_rate_decay_poly_power": 2,
       "epsilon": 0,
       "opt_learning_rate_warmup_epochs": 16,
-      "opt_momentum": 2.5e-5,
+      "opt_momentum": 0.94,
       "opt_weight_decay": 2e-3,
       "opt_learning_rate_decay_steps": 58
     },
     "Epochs to converge": [
       56, 56, 55, 56, 56, 56, 56, 56, 57, 56]
+  },
+
+  "resnet_ref_65536_temporary":
+  {
+    "Benchmark": "resnet",
+    "BS": 65536,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 26.699,
+      "opt_end_learning_rate": 1e-4,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 31,
+      "opt_momentum": 0.951807,
+      "opt_weight_decay": 1e-4,
+      "opt_learning_rate_decay_steps": 1133
+    },
+    "Epochs to converge": [
+      88, 88, 84, 88, 88, 88, 88, 84, 88, 88]
   }
 
 }
