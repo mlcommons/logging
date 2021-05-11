@@ -60,7 +60,7 @@ def get_submission_epochs(result_files, benchmark):
                         if conv_result == "success":
                             subm_epochs.append(conv_epoch)
                         else:
-                            subm_epochs.append(-1)
+                            subm_epochs.append(1e9)
                             not_converged = not_converged + 1
     if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
         subm_epochs = None
