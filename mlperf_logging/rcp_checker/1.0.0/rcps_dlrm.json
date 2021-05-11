@@ -32,6 +32,21 @@
        0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.95,
        0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9,
        0.9, 0.9, 0.85, 0.9, 0.9, 0.9, 0.9, 0.95, 0.9]
+  },
+
+  "dlrm_ref_71680":
+  {
+    "Benchmark": "dlrm",
+    "BS": 71680,
+    "Hyperparams": {
+       "opt_base_learning_rate": 26,
+       "opt_learning_rate_warmup_steps": 2500,
+       "lr_decay_start_steps": 46821,
+       "sgd_opt_base_learning_rate": 26,
+       "sgd_opt_learning_rate_decay_poly_power": 2,
+       "sgd_opt_learning_rate_decay_steps": 15406
+    },
+    "Epochs to converge": []
   }
 
 }
