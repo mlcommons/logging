@@ -46,7 +46,11 @@
        "sgd_opt_learning_rate_decay_poly_power": 2,
        "sgd_opt_learning_rate_decay_steps": 15406
     },
-    "Epochs to converge": []
+    "Epochs to converge": [
+      2.0, 1.95, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+      2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+      2.0, 2.0, 2.0, 2.0
+    ]
   }
 
 }
