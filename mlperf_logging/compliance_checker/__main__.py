@@ -23,3 +23,5 @@ print(result)
 
 if not valid:
     sys.exit(1)
+else:
+    print('SUCCESS')
