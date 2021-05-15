@@ -10,8 +10,9 @@ To check a log file for compliance:
 
     python -m mlperf_logging.compliance_checker [--config YAML] [--ruleset MLPERF_EDITION] FILENAME
 
-By default, 0.7.0 edition rules are used and the default config is set to `0.7.0/common.yaml`.
+By default, 1.0.0 edition rules are used and the default config is set to `1.0.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
+Old editions, still supported are 0.7.0 amd 0.6.0
 
 Prints `SUCCESS` when no issues were found. Otherwise will print error details.
 
@@ -19,20 +20,20 @@ As log examples use [NVIDIA's v0.6 training logs](https://github.com/mlperf/trai
 
 ### Existing config files
 
-    0.7.0/common.yaml        - currently the default config file, checks common fields complience and equeues benchmark-specific config file
-    0.7.0/resnet.yaml
-    0.7.0/ssd.yaml
-    0.7.0/minigo.yaml
-    0.7.0/maskrcnn.yaml
-    0.7.0/gnmt.yaml
-    0.7.0/transformer.yaml
-    0.7.0/bert.yaml
-    0.7.0/dlrm.yaml
+    1.0.0/common.yaml        - currently the default config file, checks common fields complience and equeues benchmark-specific config file
+    1.0.0/resnet.yaml
+    1.0.0/ssd.yaml
+    1.0.0/minigo.yaml
+    1.0.0/maskrcnn.yaml
+    1.0.0/rnnt.yaml
+    1.0.0/unet3d.yaml
+    1.0.0/bert.yaml
+    1.0.0/dlrm.yaml
 
 ### Implementation details
 Compliance checking is done following below algorithm.
 
-1. Parser converts the log into a list of records, each record corresponds to MLL 
+1. Parser converts the log into a list of records, each record corresponds to MLLOG
    line and contains all relevant extracted information
 2. Set of rules to be checked in loaded from provided config yaml file
 3. Process optional `BEGIN` rule if present by executing provided `CODE` section
@@ -114,7 +115,7 @@ Example:
 `ll` is a structure representing current log line that triggered `KEY` record. `ll` has the following fields
 that can be accessed:
 - `full_string` - the complete line as a string
-- `timestamp` - seconds as a float, e.g. 1234.567
+- `timestamp` - milliseconds as an integer
 - `key` - the string key
 - `value` - the parsed value associated with the key, or None if no value
 - `lineno` - line number in the original file of the current key
@@ -143,7 +144,7 @@ Example:
         NAME:  submission_benchmark
         REQ:   EXACTLY_ONE
         CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt'] "
-        POST:  " enqueue_config('0.7.0/{}.yaml'.format(v['value'])) "
+        POST:  " enqueue_config('1.0.0/{}.yaml'.format(v['value'])) "
 
 
 #### Other operations
@@ -158,6 +159,7 @@ For instance, can define rules that would print out information as shown in the 
 Tested and confirmed working using the following software versions:
 - Python 2.7.12 + PyYAML 3.11
 - Python 3.6.8  + PyYAML 5.1
+- Python 2.9.2 + PyYAML 5.3.1
 
 ### How to install PyYaML
 
