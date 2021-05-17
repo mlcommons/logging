@@ -3,7 +3,7 @@
   "rnn_t_ref_1k":
   {
     "Benchmark": "rnnt",
-    "BS": 128,
+    "BS": 1024,
     "Hyperparams": {
       "opt_base_learning_rate": 0.004,
       "opt_lamb_learning_rate_hold_epochs": 40,
@@ -26,7 +26,7 @@
   "rnn_t_ref_2k":
   {
     "Benchmark": "rnnt",
-    "BS": 256,
+    "BS": 2048,
     "Hyperparams": {
       "opt_base_learning_rate": 0.007,
       "opt_lamb_learning_rate_hold_epochs": 40,
