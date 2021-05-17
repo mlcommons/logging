@@ -29,8 +29,9 @@ TOKEN = ':::MLLOG '
 
 def get_submission_epochs(result_files, benchmark):
     '''
-    Extract convergence epochs from a list of submission files
-    Returns the batch size and the list of epochs to converge
+    Extract convergence epochs (or train_samples for BERT)
+    from a list of submission files
+    Returns the batch size and the list of epochs (or samples) to converge
     -1 means run did not converge. Return None if > 1 files
     fail to converge
     '''
@@ -50,13 +51,16 @@ def get_submission_epochs(result_files, benchmark):
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
                         bs = json.loads(str)["value"]
-                    if "eval_accuracy" in str:
+                    if benchmark != 'bert' and "eval_accuracy" in str:
                         eval_accuracy_str = str
+                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
+                    if benchmark == 'bert' and "train_samples" in str:
+                        eval_accuracy_str = str
+                        conv_epoch = json.loads(eval_accuracy_str)["value"]
                     if "run_stop" in str:
                         # Epochs to converge is the the last epochs value on
                         # eval_accuracy line before run_stop
                         conv_result = json.loads(str)["metadata"]["status"]
-                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
                         if conv_result == "success":
                             subm_epochs.append(conv_epoch)
                         else:
