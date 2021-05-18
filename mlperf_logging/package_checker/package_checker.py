@@ -74,7 +74,7 @@ def _print_divider_bar():
     print('------------------------------')
 
 
-def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass):
+def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, bert_train_samples):
     """Checks all result files for compliance.
 
     Args:
@@ -181,7 +181,7 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass):
 
             # Run RCP checker for 1.0.0
             if ruleset == '1.0.0' and division == 'closed' and benchmark != 'minigo':
-                rcp_chk = rcp_checker.make_checker(ruleset, verbose=False)
+                rcp_chk = rcp_checker.make_checker(ruleset, verbose=False, bert_train_samples=bert_train_samples)
                 rcp_chk._compute_rcp_stats()
 
                 # Now go again through result files to do RCP checks
@@ -218,14 +218,14 @@ def check_systems(folder, ruleset):
             'Found too many errors in system checking, see log above for details.')
 
 
-def check_training_package(folder, ruleset, quiet, werror, rcp_bypass):
+def check_training_package(folder, ruleset, quiet, werror, rcp_bypass, bert_train_samples):
     """Checks a training package for compliance.
 
     Args:
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
     """
-    check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass)
+    check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, bert_train_samples)
     if ruleset == '1.0.0':
         check_systems(folder, ruleset)
 
@@ -265,6 +265,13 @@ def get_parser():
         action='store_true',
         help='Bypass failed RCP checks so that submission uploads'
     )
+    parser.add_argument(
+        '--bert_train_samples',
+        action='store_true',
+        help='If set, num samples used for training '
+             'bert benchmark is taken from train_samples, '
+             'istead of epoch_num',
+    )
     return parser
 
 
@@ -279,7 +286,7 @@ def main():
         print('Ruleset {} is not yet supported.'.format(args.ruleset))
         sys.exit(1)
 
-    check_training_package(args.folder, args.ruleset, args.quiet, args.werror, args.rcp_bypass)
+    check_training_package(args.folder, args.ruleset, args.quiet, args.werror, args.rcp_bypass, args.bert_train_samples)
 
 
 if __name__ == '__main__':
