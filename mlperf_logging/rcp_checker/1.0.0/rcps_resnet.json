@@ -77,6 +77,26 @@
     "Epochs to converge": [
       42, 44, 43, 41, 41, 41, 42, 42, 43, 41]
   },
+  
+  "resnet_ref_13056":
+  {
+    "Benchmark": "resnet",
+    "BS": 13056,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 12.8,
+      "opt_end_learning_rate": 0.0001,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 9,
+      "opt_momentum": 0.94,
+      "opt_weight_decay": 2.5e-5,
+      "opt_learning_rate_decay_steps": 48
+    },
+    "Epochs to converge": [
+      44, 45, 47, 45, 45, 45, 45, 44, 44, 44, 45, 45, 45, 45, 44, 44
+    ]
+  },
 
   "resnet_ref_32768":
   {
