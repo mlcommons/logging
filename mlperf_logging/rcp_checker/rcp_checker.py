@@ -27,16 +27,18 @@ submission_runs = {
 TOKEN = ':::MLLOG '
 
 
-def get_submission_epochs(result_files, benchmark):
+def get_submission_epochs(result_files, benchmark, bert_train_samples):
     '''
-    Extract convergence epochs from a list of submission files
-    Returns the batch size and the list of epochs to converge
+    Extract convergence epochs (or train_samples for BERT)
+    from a list of submission files
+    Returns the batch size and the list of epochs (or samples) to converge
     -1 means run did not converge. Return None if > 1 files
     fail to converge
     '''
     not_converged = 0
     subm_epochs = []
     bs = -1
+    use_train_samples = benchmark == 'bert' and bert_train_samples
     for result_file in result_files:
         with open(result_file, 'r', encoding='latin-1') as f:
             file_contents = f.readlines()
@@ -50,13 +52,16 @@ def get_submission_epochs(result_files, benchmark):
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
                         bs = json.loads(str)["value"]
-                    if "eval_accuracy" in str:
+                    if not use_train_samples and "eval_accuracy" in str:
                         eval_accuracy_str = str
+                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
+                    if use_train_samples and "train_samples" in str:
+                        eval_accuracy_str = str
+                        conv_epoch = json.loads(eval_accuracy_str)["value"]
                     if "run_stop" in str:
                         # Epochs to converge is the the last epochs value on
                         # eval_accuracy line before run_stop
                         conv_result = json.loads(str)["metadata"]["status"]
-                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
                         if conv_result == "success":
                             subm_epochs.append(conv_epoch)
                         else:
@@ -69,13 +74,14 @@ def get_submission_epochs(result_files, benchmark):
 
 class RCP_Checker:
 
-    def __init__(self, ruleset, verbose):
+    def __init__(self, ruleset, verbose, bert_train_samples):
         if ruleset != '1.0.0':
             raise Exception('RCP Checker only supported in 1.0.0')
         self.alpha = 0.05
         self.tolerance = 0.0001
         self.verbose = verbose
         self.rcp_data = {}
+        self.bert_train_samples = bert_train_samples
         for benchmark in submission_runs.keys():
             raw_rcp_data = self._consume_json_file(ruleset, benchmark)
             processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
@@ -295,7 +301,7 @@ class RCP_Checker:
         pattern = '{folder}/result_*.txt'.format(folder=dir)
         benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
-        bs, subm_epochs = get_submission_epochs(result_files, benchmark)
+        bs, subm_epochs = get_submission_epochs(result_files, benchmark, self.bert_train_samples)
 
         if bs == -1:
             return False, 'Could not detect global_batch_size'
@@ -350,12 +356,16 @@ def get_parser():
     parser.add_argument('--rcp_version', type=str, default='1.0.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--bert_train_samples', action='store_true',
+                    help='If set, num samples used for training '
+                         'bert benchmark is taken from train_samples, '
+                         'istead of epoch_num')
 
     return parser
 
 
-def make_checker(ruleset, verbose=False):
-  return RCP_Checker(ruleset, verbose)
+def make_checker(ruleset, verbose=False, bert_train_samples=False):
+  return RCP_Checker(ruleset, verbose, bert_train_samples)
 
 
 def main(checker, dir):
