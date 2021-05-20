@@ -55,6 +55,7 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
                     if not use_train_samples and "eval_accuracy" in str:
                         eval_accuracy_str = str
                         conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
+                        conv_epoch = round(conv_epoch, 3)
                     if use_train_samples and "train_samples" in str:
                         eval_accuracy_str = str
                         conv_epoch = json.loads(eval_accuracy_str)["value"]
