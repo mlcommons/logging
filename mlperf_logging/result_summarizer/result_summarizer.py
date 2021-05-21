@@ -325,7 +325,9 @@ def summarize_results(folder, ruleset, csv_obj):
             # Add the header above the first results row
             if csv_obj.csv_rows == list():
                 csv_obj.add_row(csv_header)
-            csv_obj.add_row([*csv.reader([rows[key]])][0])
+            #Read into a csv to manage embedded commas correctly
+            csv_reader = csv.reader([rows[key]])
+            csv_obj.add_row(list(csv_reader)[0])
 
 
 def get_parser():
