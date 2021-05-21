@@ -11,7 +11,6 @@ import json
 import os
 import re
 import sys
-import csv
 
 from ..compliance_checker import mlp_compliance
 from ..rcp_checker import rcp_checker
@@ -184,12 +183,7 @@ def _is_organization_folder(folder):
         return False
     return True
 
-def _CSVBuilder(path, lines_list):
-    with open(path, 'w', newline='') as csvfile:
-        res_writer = csv.writer(csvfile, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        res_writer.writerows(lines_list)
-
-def summarize_results(folder, ruleset, csv_list=None):
+def summarize_results(folder, ruleset, csv_file=None):
     """Summarizes a set of results.
 
     Args:
@@ -221,42 +215,42 @@ def summarize_results(folder, ruleset, csv_list=None):
         if 'division' not in desc:
             print('ERROR: "division" field missing in {}'.format(system_file))
             continue
-        csv_header = ['division']
+        csv_header = 'division'
         row += '"{}",'.format(desc['division'])
         if 'submitter' not in desc:
             print('ERROR: "submitter" field missing in {}'.format(system_file))
             continue
-        csv_header.append('submitter')
+        csv_header += ',submitter'
         row += '"{}",'.format(desc['submitter'])
         if 'system_name' not in desc:
             print('ERROR: "system_name" field missing in {}'.format(system_file))
             continue
-        csv_header.append('system')
+        csv_header += ',system'
         row += '"{}",'.format(_pretty_system_name(desc))
         if 'host_processor_model_name' not in desc:
             print('ERROR: "host_processor_model_name" field missing in {}'.format(system_file))
             continue
-        csv_header.append('host_processor_model_name')
+        csv_header += ',host_processor_model_name'
         row += '"{}",'.format(desc['host_processor_model_name'])
         if 'host_processor_core_count' not in desc:
             print('ERROR: "host_processor_core_count" field missing in {}'.format(system_file))
             continue
-        csv_header.append('host_processor_core_count')
+        csv_header += ',host_processor_core_count'
         row += '{},'.format(int(desc['host_processors_per_node']) * int(desc['number_of_nodes']))
         if 'accelerator_model_name' not in desc:
             print('ERROR: "accelerator_model_name" field missing in {}'.format(system_file))
             continue
-        csv_header.append('accelerator_model_name')
+        csv_header += ',accelerator_model_name'
         row += '"{}",'.format(_pretty_accelerator_model_name(desc))
         if 'accelerators_per_node' not in desc:
             print('ERROR: "accelerators_per_node" field missing in {}'.format(system_file))
             continue
-        csv_header.append('accelerators_count')
+        csv_header += ',accelerators_count'
         row += '{},'.format(int(desc['accelerators_per_node']) * int(desc['number_of_nodes']))
         if 'framework' not in desc:
             print('ERROR: "framework" field missing in {}'.format(system_file))
             continue
-        csv_header.append('framework')
+        csv_header += ',framework'
         row += '"{}",'.format(_pretty_framework(desc))
 
         # Collect scores for benchmarks.
@@ -295,7 +289,7 @@ def summarize_results(folder, ruleset, csv_list=None):
             allowed_benchmarks = _ALLOWED_BENCHMARKS_V07
         elif ruleset == '1.0.0':
             allowed_benchmarks = _ALLOWED_BENCHMARKS_V10
-        csv_header.extend(allowed_benchmarks)
+        csv_header += "," + ",".join(allowed_benchmarks)
         for benchmark in allowed_benchmarks:
             if benchmark in benchmark_scores:
                 row += '{:.2f},'.format(benchmark_scores[benchmark])
@@ -303,9 +297,9 @@ def summarize_results(folder, ruleset, csv_list=None):
                 row += ','
 
         # Construct postfix portion of the row.
-        csv_header.append('details_url')
+        csv_header += ',details_url'
         row += '{},'.format(_details_url(desc, ruleset))
-        csv_header.append('code_url')
+        csv_header += ',code_url'
         row += '{},'.format(_code_url(desc, ruleset))
 
         rows[_row_key(desc)] = row
@@ -313,14 +307,12 @@ def summarize_results(folder, ruleset, csv_list=None):
     # Print rows in order of the sorted keys.
     for key in sorted(rows):
         print(rows[key])
-        # Write the rows to csv list if needed
-        if csv_list is not None:
+        # Write the rows to csv if needed
+        if csv_file is not None:
             # Add the header above the first results row
-            if csv_list == list():
-                csv_list.append(csv_header)
-            #Read into a csv to manage embedded commas correctly
-            csv_reader = csv.reader([rows[key]])
-            csv_list.append(list(csv_reader)[0])
+            if csv_file.tell() == 0:
+                csv_file.write(csv_header)
+            csv_file.write('\n' + rows[key])
 
 
 def get_parser():
@@ -356,9 +348,9 @@ def main():
         print('Ruleset {} is not supported.'.format(args.ruleset))
         sys.exit(1)
 
-    # Setup a csv object if required
+    # Setup a csv file if required
     if args.csv is not None:
-        csv_list = list()
+        csv_file = open(args.csv, 'w')
 
     multiple_folders_regex = r'(.*)\{(.*)\}'
     multiple_folders = re.search(multiple_folders_regex, args.folder)
@@ -375,14 +367,14 @@ def main():
         print('Detected organizations: {}'.format(', '.join(orgs)))
         for org in orgs:
             org_folder = path_prefix + org
-            summarize_results(org_folder, args.ruleset, csv_list)
+            summarize_results(org_folder, args.ruleset, csv_file)
     else:
         # Parse results for single organization.
-        summarize_results(args.folder, args.ruleset, csv_list)
-
-    # Write results out to CSV
+        summarize_results(args.folder, args.ruleset, csv_file)
+    
+    # Close csv file if required
     if args.csv is not None:
-        _CSVBuilder(args.csv, csv_list)
+        csv_file.close()
 
 if __name__ == '__main__':
     main()
