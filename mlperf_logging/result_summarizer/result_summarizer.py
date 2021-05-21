@@ -258,7 +258,7 @@ def summarize_results(folder, ruleset, csv_obj):
         if 'accelerators_per_node' not in desc:
             print('ERROR: "accelerators_per_node" field missing in {}'.format(system_file))
             continue
-        csv_header.append('accelerators_per_node')
+        csv_header.append('accelerators_count')
         row += '{},'.format(int(desc['accelerators_per_node']) * int(desc['number_of_nodes']))
         if 'framework' not in desc:
             print('ERROR: "framework" field missing in {}'.format(system_file))
