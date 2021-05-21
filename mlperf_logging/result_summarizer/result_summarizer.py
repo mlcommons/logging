@@ -184,19 +184,12 @@ def _is_organization_folder(folder):
         return False
     return True
 
-def _csv_writer(path, lines_list):
+def _CSVBuilder(path, lines_list):
     with open(path, 'w', newline='') as csvfile:
         res_writer = csv.writer(csvfile, delimiter=',',quotechar='"', quoting=csv.QUOTE_MINIMAL)
         res_writer.writerows(lines_list)
 
-class _csv_(object):
-    def __init__(self):
-        self.csv_rows = list()
-
-    def add_row(self, row):
-        self.csv_rows.append(row)
-
-def summarize_results(folder, ruleset, csv_obj):
+def summarize_results(folder, ruleset, csv_list=None):
     """Summarizes a set of results.
 
     Args:
@@ -320,14 +313,14 @@ def summarize_results(folder, ruleset, csv_obj):
     # Print rows in order of the sorted keys.
     for key in sorted(rows):
         print(rows[key])
-        # Add rows to csv object
-        if csv_obj is not None:
+        # Write the rows to csv list if needed
+        if csv_list is not None:
             # Add the header above the first results row
-            if csv_obj.csv_rows == list():
-                csv_obj.add_row(csv_header)
+            if csv_list == list():
+                csv_list.append(csv_header)
             #Read into a csv to manage embedded commas correctly
             csv_reader = csv.reader([rows[key]])
-            csv_obj.add_row(list(csv_reader)[0])
+            csv_list.append(list(csv_reader)[0])
 
 
 def get_parser():
@@ -365,9 +358,7 @@ def main():
 
     # Setup a csv object if required
     if args.csv is not None:
-        csv_obj = _csv_()
-    else:
-        csv_obj = None
+        csv_list = list()
 
     multiple_folders_regex = r'(.*)\{(.*)\}'
     multiple_folders = re.search(multiple_folders_regex, args.folder)
@@ -384,14 +375,14 @@ def main():
         print('Detected organizations: {}'.format(', '.join(orgs)))
         for org in orgs:
             org_folder = path_prefix + org
-            summarize_results(org_folder, args.ruleset, csv_obj)
+            summarize_results(org_folder, args.ruleset, csv_list)
     else:
         # Parse results for single organization.
-        summarize_results(args.folder, args.ruleset, csv_obj)
+        summarize_results(args.folder, args.ruleset, csv_list)
 
     # Write results out to CSV
-    if csv_obj is not None:
-        _csv_writer(args.csv, csv_obj.csv_rows)
+    if args.csv is not None:
+        _CSVBuilder(args.csv, csv_list)
 
 if __name__ == '__main__':
     main()
