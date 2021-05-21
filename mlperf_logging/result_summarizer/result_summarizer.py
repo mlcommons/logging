@@ -238,7 +238,7 @@ def summarize_results(folder, ruleset, csv_obj):
         if 'system_name' not in desc:
             print('ERROR: "system_name" field missing in {}'.format(system_file))
             continue
-        csv_header.append('desc')
+        csv_header.append('system')
         row += '"{}",'.format(_pretty_system_name(desc))
         if 'host_processor_model_name' not in desc:
             print('ERROR: "host_processor_model_name" field missing in {}'.format(system_file))
