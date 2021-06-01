@@ -92,7 +92,7 @@
       "start_warmup_step": -700,
       "opt_lamb_beta_1": 0.7206,
       "opt_lamb_beta_2": 0.78921,
-      "opt_lamb_weight_decay_rate": 0.01,
+      "opt_lamb_weight_decay_rate": 0.001,
       "gradient_accumulation_steps": 24
     },
     "Epochs to converge": [
@@ -112,7 +112,7 @@
       "start_warmup_step": -700,
       "opt_lamb_beta_1": 0.7206,
       "opt_lamb_beta_2": 0.78921,
-      "opt_lamb_weight_decay_rate": 0.01,
+      "opt_lamb_weight_decay_rate": 0.001,
       "gradient_accumulation_steps": 27
     },
     "Epochs to converge": [
