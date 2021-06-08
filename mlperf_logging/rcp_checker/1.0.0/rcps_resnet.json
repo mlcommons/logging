@@ -69,7 +69,7 @@
       "epsilon": 0,
       "opt_learning_rate_warmup_epochs": 16,
       "opt_momentum": 0.94,
-      "opt_weight_decay": 2e-3,
+      "opt_weight_decay": 2e-5,
       "opt_learning_rate_decay_steps": 58
     },
     "Epochs to converge": [
