@@ -29,3 +29,17 @@ pip uninstall mlperf-logging
 - [mllog](mlperf_logging/mllog): MLPerf logging library
 - [compliance checker](mlperf_logging/compliance_checker): utility checking compliance of MLPerf log
 - [system_desc_checker](mlperf_logging/system_desc_checker): utility checking compliance of system description json file
+- [rcp_checker](mlperf_logging/rcp_checker): utility running convergence checks in submission directories
+- [package_checker](mlperf_logging/package_checker): top-level checker for a package, it calls compliance checker, system desc checker, and rcp checker
+- [result_summarizer](mlperf_logging/result_summarizer): utility that parses package and prints out result summary
+
+## Instructions
+
+A submission needs to pass the package checker and run the result summarizer.
+For submission 1.0 you can do that with
+
+```sh
+./verify_for_v1.0_training.sh <submission_directory>
+```
+
+If you want to run the individual utilities/checker, please check the README files in the respective subdirectories.
