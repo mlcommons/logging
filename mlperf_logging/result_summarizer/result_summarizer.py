@@ -350,6 +350,7 @@ def main():
         sys.exit(1)
 
     # Setup a csv file if required
+    csv_file = None
     if args.csv is not None:
         csv_file = open(args.csv, 'w')
 
