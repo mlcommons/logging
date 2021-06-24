@@ -216,8 +216,8 @@ def summarize_results(folder, ruleset, csv_file=None):
         if 'division' not in desc:
             print('ERROR: "division" field missing in {}'.format(system_file))
             continue
-        csv_header = 'division'
-        row += '"{}",'.format(desc['division'])
+        csv_header = 'division,availability'
+        row += '"{}",,'.format(desc['division'])
         if 'submitter' not in desc:
             print('ERROR: "submitter" field missing in {}'.format(system_file))
             continue
