@@ -138,6 +138,26 @@
     "Epochs to converge": [
        4251648, 4153344, 4055040, 4177920, 4177920, 4079616, 4276224, 4128768, 4177920, 4153344,
        4177920, 4079616, 4300800, 4153344, 4276224, 4423680, 4276224, 4104192, 4251648, 4153344]
+  },
+
+  "bert_ref_12288":
+  {
+    "Benchmark": "bert",
+    "BS": 12288,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0033,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 500,
+      "num_warmup_steps": 300,
+      "start_warmup_step": -76,
+      "opt_lamb_beta_1": 0.77,
+      "opt_lamb_beta_2": 0.885,
+      "opt_lamb_weight_decay_rate": 0.0147050375,
+      "gradient_accumulation_steps": 4
+    },
+    "Epochs to converge": [
+       4718592, 4816896, 4718592, 5210112, 4816896, 5406720, 5111808, 5210112, 5013504, 4816896,
+	   5210112, 5013504, 4718592, 5111808, 4816896, 4915200, 5111808, 4718592, 4718592, 4620288]
   }
 }
 
