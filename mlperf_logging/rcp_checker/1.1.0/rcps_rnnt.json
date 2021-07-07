@@ -39,11 +39,12 @@
       "opt_gradient_clip_norm": 1.0,
       "opt_gradient_accumulation_steps": 16,
       "model_eva_ema_factor": 0.995,
-      "model_weights_initialization_scale": 0.5
+      "model_weights_initialization_scale": 0.5,
+      "data_train_num_buckets": 1,
     },
     "Epochs to converge": [
-      57, 58, 58, 56, 60, 63, 59, 59, 60, 59,
-      58, 58, 56, 57, 58, 61, 59, 57, 59, 58
+      56, 56, 54, 56, 57, 58, 55, 56, 60, 56,
+      58, 57, 53, 60, 57, 57, 55, 57, 56, 56
     ]
   },
 
