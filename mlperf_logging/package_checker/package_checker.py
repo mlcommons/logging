@@ -113,12 +113,10 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
             # Find all result files for this benchmark.
             pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
             result_files = glob.glob(pattern, recursive=True)
+            any_pattern = '{folder}/*'.format(folder=benchmark_folder)
+            all_files = glob.glob(any_pattern, recursive=True)
 
-            # No result files were found. That is okay, because the organization
-            # may not have submitted any results for this benchmark.
-            if not result_files:
-                print('No Result Files!')
-                continue
+            print("LOOK:", benchmark, result_files)
 
             # Find all source codes for this benchmark.
             source_files = find_source_files_under(
@@ -128,14 +126,23 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
             print('System {}'.format(system))
             print('Benchmark {}'.format(benchmark))
 
-            # If the organization did submit results for this benchmark, the
-            # number of result files must be an exact number.
+            # The number of result files must be an exact number.
+            # Print a comprehensive message if some files in results
+            # directory do not match naming convention (results_*.txt)
             if len(result_files) != _EXPECTED_RESULT_FILE_COUNTS[benchmark]:
                 print('Expected {} runs, but detected {} runs.'.format(
                     _EXPECTED_RESULT_FILE_COUNTS[benchmark],
                     len(result_files),
                 ))
                 too_many_errors = True
+                if len(all_files) > 0:
+                    print(all_files)
+                    print('Detected {} total files in directory {}, but some do not conform '
+                        'to naming convention, should you rename them to result_*.txt ?'.format(
+                        len(all_files), benchmark_folder,
+                    ))
+            if len(result_files) < len(all_files):
+                print('WARNING: Unknown files in results directory {}'.format(benchmark_folder))
 
             errors_found = 0
             result_files.sort()
