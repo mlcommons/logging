@@ -13,14 +13,14 @@
       "opt_lamb_beta_1": 0.9,
       "opt_lamb_beta_2": 0.999,
       "opt_lamb_learning_rate_min": 1e-5,
-      "opt_gradient_clip_norm": "none",
+      "opt_gradient_clip_norm": 1.0,
       "opt_gradient_accumulation_steps": 8,
       "model_eva_ema_factor": 0.999,
       "model_weights_initialization_scale": 0.5
     },
   "Epochs to converge": [
-    59, 63, 64, 61, 59, 60, 59, 63, 60, 62,
-    53, 58, 62, 56, 60, 62, 57, 63, 58, 60]
+    59, 57, 59, 54, 57, 58, 56, 58, 55, 58,
+    58, 58, 62, 61, 63, 60, 57, 59, 57, 63 ]
   },
 
   "rnn_t_ref_2k":
