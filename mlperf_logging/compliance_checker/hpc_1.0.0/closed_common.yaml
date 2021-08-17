@@ -7,10 +7,8 @@
 
 - KEY:
     NAME:  gradient_accumulation_steps
-    REQ:   AT_LEAST_ONE_OR(gradient_accumulation_frequency)
     CHECK: " v['value'] > 0 "
 
 - KEY:
     NAME:  gradient_accumulation_frequency
-    REQ:   AT_LEAST_ONE_OR(gradient_accumulation_steps)
     CHECK: " v['value'] > 0 "
