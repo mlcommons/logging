@@ -13,6 +13,15 @@
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
+    CHECK: >-
+        'epoch_num' in v['metadata']
+        and
+        (
+            (
+                'last_eval_epoch' not in s and v['metadata']['epoch_num'] in {0, 1, 2, 3}
+            ) or (
+                'last_eval_epoch' in s and v['metadata']['epoch_num'] == s['last_eval_epoch'] + 4
+            )
+        )
+    POST: "s['last_eval_epoch'] = v['metadata']['epoch_num']"
     ATLEAST_ONE_CHECK: "v['value'] >= 0.7590 and v['value'] < 1.0"

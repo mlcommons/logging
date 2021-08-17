@@ -1,6 +1,7 @@
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
+    POST:  "s['samples_per_epoch'] = math.ceil(168 / v['value']) * v['value']"
 
 - KEY:
     NAME:  opt_name
@@ -40,8 +41,17 @@
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
+    CHECK: >-
+        'epoch_num' in v['metadata']
+        and
+        (
+            (
+                'last_eval_epoch' not in s and v['metadata']['epoch_num'] == math.ceil(1000 * 168 / s['samples_per_epoch'])
+            ) or (
+                'last_eval_epoch' in s and v['metadata']['epoch_num'] == s['last_eval_epoch'] + math.ceil(20 * 168 / s['samples_per_epoch'])
+            )
+        )
+    POST: "s['last_eval_epoch'] = v['metadata']['epoch_num']"
     ATLEAST_ONE_CHECK: " v['value'] >= 0.908"
 
 - KEY:

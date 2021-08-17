@@ -1,3 +1,8 @@
+- BEGIN:
+    CODE: |-
+        s['eval_count'] = 0
+        s['expected_eval_epoch_nums'] = (40, 50, 55, 60, 65, 70, 75, 80)
+
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
@@ -6,7 +11,6 @@
     NAME:  model_bn_span
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] >= 1"
-
 
 - KEY:
     NAME:  opt_learning_rate_warmup_factor
@@ -40,6 +44,12 @@
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
+    CHECK: >-
+        'epoch_num' in v['metadata']
+        and (
+            s['eval_count'] < len(s['expected_eval_epoch_nums'])
+            and
+            v['metadata']['epoch_num'] == s['expected_eval_epoch_nums'][s['eval_count']]
+        )
+    POST: "s['eval_count'] += 1"
     ATLEAST_ONE_CHECK: "v['value'] >= 0.230 and v['value'] < 1.0"

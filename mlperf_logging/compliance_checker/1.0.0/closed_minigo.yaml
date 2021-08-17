@@ -1,3 +1,6 @@
+- BEGIN:
+    CODE: "s['expected_eval_epoch_num'] = 1"
+
 - KEY:
     NAME:  train_batch_size
     REQ:   EXACTLY_ONE
@@ -26,7 +29,8 @@
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "'epoch_num' in v['metadata'] and v['metadata']['epoch_num'] == s['expected_eval_epoch_num']"
+    POST: "s['expected_eval_epoch_num'] += 1"
     ATLEAST_ONE_CHECK: "v['value'] >= 0.5 and v['value'] < 1.0"
 
 - KEY:
