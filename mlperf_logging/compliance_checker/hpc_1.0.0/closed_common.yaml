@@ -2,7 +2,7 @@
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['deepcam', 'deepcam', 'cosmoflow', 'dimenet'] "
+    CHECK: " v['value'] in ['deepcam', 'deepcam', 'cosmoflow', 'oc20'] "
     POST:  " enqueue_config('hpc_1.0.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:
