@@ -145,12 +145,6 @@
         - "'epoch_num' in v['metadata']"
 
 - KEY:
-    NAME:  eval_accuracy
-    REQ:   AT_LEAST_ONE
-    CHECK:
-        - "'epoch_num' in v['metadata']"
-
-- KEY:
     NAME:  train_samples
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
