@@ -262,7 +262,8 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
 
     Args:
         folder: The folder for a submission package.
-        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0 or hpc_1.0.0.
+        usage: The usage such as training or hpc
+        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0 or 1.0.0.
     """
     check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
     if ruleset == '1.0.0':
