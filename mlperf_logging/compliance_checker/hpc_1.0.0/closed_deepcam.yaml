@@ -2,7 +2,7 @@
 - KEY:
     NAME:  gradient_accumulation_frequency
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] > 0 "	
+    CHECK: " v['value'] > 0 "
 
 - KEY:
     NAME:  seed
