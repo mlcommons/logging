@@ -25,9 +25,9 @@ submission_runs = {
         'rnnt': 10,
     },
     "hpc": {
-        #'cosmoflow': 10,
+        'cosmoflow': 10,
         'deepcam': 5,
-        #'dimenet': 10,
+        #'oc20': 10,
     }
 }
 

@@ -70,13 +70,13 @@ _HPC_BENCHMARKS_V07 = [
 _HPC_BENCHMARKS_V10 = [
         'cosmoflow',
         'deepcam',
-        'dimenet',
+        'oc20',
 ]
 
 _HPC_RESULT_FILE_COUNTS = {
     'deepcam': 5,
     'cosmoflow': 10,
-    'dimenet': 10
+    'oc20': 10
 }
 
 def _get_sub_folders(folder):
