@@ -141,12 +141,13 @@ def _row_key(system_desc):
         system_desc['accelerators_per_node'],
     ])
 
-def _read_mlperf_score(result_file, ruleset):
+def _read_mlperf_score(result_file, usage, ruleset):
     with open(result_file, 'r') as f:
         result = f.read()
 
-    config_file = '{ruleset}/common.yaml'.format(ruleset=ruleset)
+    config_file = f'{usage}_{ruleset}/common.yaml'
     checker = mlp_compliance.make_checker(
+        usage=usage,
         ruleset=ruleset,
         quiet=True,
         werror=False)
@@ -197,7 +198,8 @@ def _is_organization_folder(folder):
         return False
     return True
 
-def summarize_results(folder, ruleset, csv_file=None):
+
+def summarize_results(folder, usage, ruleset, csv_file=None):
     """Summarizes a set of results.
 
     Args:
@@ -278,7 +280,7 @@ def summarize_results(folder, ruleset, csv_file=None):
             scores = []
             dropped_scores = 0
             for result_file in result_files:
-                score = _read_mlperf_score(result_file, ruleset)
+                score = _read_mlperf_score(result_file, usage, ruleset)
                 if score is None:
                     dropped_scores += 1
                 else:
@@ -386,10 +388,10 @@ def main():
         print('Detected organizations: {}'.format(', '.join(orgs)))
         for org in orgs:
             org_folder = path_prefix + org
-            summarize_results(org_folder, args.ruleset, csv_file)
+            summarize_results(org_folder, args.usage, args.ruleset, csv_file)
     else:
         # Parse results for single organization.
-        summarize_results(args.folder, args.ruleset, csv_file)
+        summarize_results(args.folder, args.usage, args.ruleset, csv_file)
     
     # Close csv file if required
     if args.csv is not None:
