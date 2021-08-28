@@ -1,0 +1,15 @@
+{
+    "oc20_ref_64": {
+        "Benchmark": "oc20",
+        "BS": 256,
+        "Epochs to converge": [ 18, 18, 18, 18, 18, 18, 18, 18, 18, 18 ],
+        "Hyperparams": {
+            "global_batch_size": 256,
+            "opt_base_learning_rate": 0.0004,
+            "opt_learning_rate_warmup_steps": 31252,
+            "opt_learning_rate_warmup_factor": 0.2,
+            "opt_learning_rate_decay_boundary_steps": [ 125008, 187512, 250016 ],
+            "opt_learning_rate_decay_factor": 0.1
+        }
+    }
+}
