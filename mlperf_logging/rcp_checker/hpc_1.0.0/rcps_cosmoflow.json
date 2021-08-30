@@ -2,7 +2,7 @@
     "cosmoflow_ref_64": {
         "Benchmark": "cosmoflow",
         "BS": 64,
-        "Epochs to converge": [ 18, 17, 19, 16, 17, 18, 17, 17, 17, 17, 17, 17, 17, 18, 17, 17, 17, 17, 17, 19 ],
+        "Epochs to converge": [ 19, 18, 20, 17, 18, 19, 18, 18, 18, 18, 18, 18, 18, 19, 18, 18, 18, 18, 18, 20 ],
         "Hyperparams": {
             "global_batch_size": 64,
             "opt_name": "SGD",
@@ -18,7 +18,7 @@
     "cosmoflow_ref_1024": {
         "Benchmark": "cosmoflow",
         "BS": 1024,
-        "Epochs to converge": [ 33, 54, 44, 42, 50, 37, 38, 45, 44, 41, 39, 36, 47, 41, 44, 60, 33, 48, 43, 39, 45 ],
+        "Epochs to converge": [ 34, 55, 45, 43, 51, 38, 39, 46, 45, 42, 40, 37, 48, 42, 45, 61, 34, 49, 44, 40, 46 ],
         "Hyperparams": {
             "global_batch_size": 1024,
             "opt_name": "SGD",
