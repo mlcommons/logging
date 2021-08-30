@@ -2,7 +2,7 @@
     "oc20_ref_64": {
         "Benchmark": "oc20",
         "BS": 256,
-        "Epochs to converge": [ 18, 18, 18, 18, 18, 18, 18, 18, 18, 18 ],
+        "Epochs to converge": [ 19, 19, 19, 19, 19, 19, 19, 19, 19, 19 ],
         "Hyperparams": {
             "global_batch_size": 256,
             "opt_base_learning_rate": 0.0004,
