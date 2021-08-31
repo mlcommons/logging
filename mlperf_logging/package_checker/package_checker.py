@@ -10,6 +10,7 @@ import os
 import sys
 
 from ..compliance_checker import mlp_compliance
+from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..rcp_checker import rcp_checker
 from .seed_checker import find_source_files_under, SeedChecker
 from ..system_desc_checker import system_desc_checker
@@ -208,13 +209,13 @@ def get_parser():
     parser.add_argument(
         'usage',
         type=str,
-        choices=["training", "hpc"],
+        choices=usage_choices(),
         help='the usage such as training, inference_edge, inference_server, hpc',
     )
     parser.add_argument(
         'ruleset',
         type=str,
-        choices=["0.6.0", "0.7.0", "1.0.0"],
+        choices=rule_choices(),
         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0'
     )
     parser.add_argument(

@@ -13,6 +13,7 @@ import re
 import sys
 
 from ..compliance_checker import mlp_compliance
+from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..rcp_checker import rcp_checker
 
 from ..benchmark_meta import get_allowed_benchmarks
@@ -293,9 +294,9 @@ def get_parser():
 
     parser.add_argument('folder', type=str,
                     help='the folder for a submission package')
-    parser.add_argument('usage', type=str, default="training", choices=["training", "hpc"],
+    parser.add_argument('usage', type=str, default="training", choices=usage_choices(),
                     help='the usage such as training, hpc, inference_edge, inference_server')
-    parser.add_argument('ruleset', type=str,
+    parser.add_argument('ruleset', type=str, choices=rule_choices(),
                     help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
     parser.add_argument('--werror', action='store_true',
                     help='Treat warnings as errors')
