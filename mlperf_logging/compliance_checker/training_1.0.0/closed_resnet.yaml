@@ -8,7 +8,7 @@
     NAME:  opt_name
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['sgd', 'lars'] "
-    POST:  " enqueue_config('1.0.0/closed_resnet_{}.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('training_1.0.0/closed_resnet_{}.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  eval_accuracy
