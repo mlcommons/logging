@@ -70,3 +70,27 @@ _ALL_ALLOWED_BENCHMARKS = {
         ],
     }
 }
+
+
+def get_allowed_benchmarks(usage, ruleset):
+    # check usage
+    if usage not in _ALL_ALLOWED_BENCHMARKS:
+        raise ValueError('usage {} not supported!'.format(usage))
+
+    # check ruleset
+    if ruleset not in _ALL_ALLOWED_BENCHMARKS[usage]:
+        # try short version:
+        ruleset_short = ".".join(ruleset.split(".")[:-1])
+        if ruleset_short not in _ALL_ALLOWED_BENCHMARKS[usage]:
+            raise ValueError('ruleset {} is not supported in {}'.format(ruleset, usage))
+        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset_short]
+    else:
+        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset]
+
+    return allowed_benchmarks
+
+
+def get_result_file_counts(usage):
+    if usage not in _ALL_RESULT_FILE_COUNTS:
+        raise ValueError('usage {} not supported!'.format(usage))
+    return _ALL_RESULT_FILE_COUNTS[usage]

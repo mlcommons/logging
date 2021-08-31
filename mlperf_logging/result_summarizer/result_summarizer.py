@@ -15,7 +15,7 @@ import sys
 from ..compliance_checker import mlp_compliance
 from ..rcp_checker import rcp_checker
 
-from ..benchmark_meta import _ALL_ALLOWED_BENCHMARKS
+from ..benchmark_meta import get_allowed_benchmarks
 
 
 
@@ -257,17 +257,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
             if dropped_scores <= max_dropped_scores:
                 benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores, max_dropped_scores)
 
-        if usage not in _ALL_ALLOWED_BENCHMARKS:
-            raise ValueError('usage {} not supported!'.format(usage))
-        if ruleset not in _ALL_ALLOWED_BENCHMARKS[usage]:
-            # try short version:
-            ruleset_short = ".".join(ruleset.split(".")[:-1])
-            if ruleset_short not in _ALL_ALLOWED_BENCHMARKS[usage]:
-                raise ValueError('ruleset {} is not supported in {}'.format(ruleset, usage))
-            allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset_short]
-        else:
-            allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset] 
-                
+        allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
                 
         csv_header += "," + ",".join(allowed_benchmarks)
         for benchmark in allowed_benchmarks:

@@ -14,7 +14,7 @@ from ..rcp_checker import rcp_checker
 from .seed_checker import find_source_files_under, SeedChecker
 from ..system_desc_checker import system_desc_checker
 
-from ..benchmark_meta import _ALL_RESULT_FILE_COUNTS, _ALL_ALLOWED_BENCHMARKS
+from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
 
 
@@ -39,17 +39,8 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0
     """
-    if usage not in _ALL_ALLOWED_BENCHMARKS:
-        raise ValueError('usage {} not supported!'.format(usage))
-    if ruleset not in _ALL_ALLOWED_BENCHMARKS[usage]:
-        # try short version:
-        ruleset_short = ".".join(ruleset.split(".")[:-1])
-        if ruleset_short not in _ALL_ALLOWED_BENCHMARKS[usage]:
-            raise ValueError('ruleset {} is not supported in {}'.format(ruleset, usage))
-        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset_short]
-    else:
-        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset]
-    benchmark_file_counts = _ALL_RESULT_FILE_COUNTS[usage]
+    allowed_benchmarks = get_allowed_benchmarks(usage, ruleset) 
+    benchmark_file_counts = get_result_file_counts(usage)
     
     
     seed_checker = SeedChecker(ruleset)
