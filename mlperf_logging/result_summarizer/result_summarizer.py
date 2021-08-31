@@ -15,49 +15,8 @@ import sys
 from ..compliance_checker import mlp_compliance
 from ..rcp_checker import rcp_checker
 
-_TRAINING_BENCHMARKS_V06 = [
-    'resnet',
-    'ssd',
-    'maskrcnn',
-    'gnmt',
-    'transformer',
-    'ncf',
-    'minigo',
-]
+from ..benchmark_meta import _ALL_ALLOWED_BENCHMARKS
 
-_TRAINING_BENCHMARKS_V07 = [
-    'bert',
-    'dlrm',
-    'gnmt',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'transformer',
-]
-
-_TRAINING_BENCHMARKS_V10 = [
-    'bert',
-    'dlrm',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'rnnt',
-    'unet3d',
-]
-
-# HPC benchmarks
-_HPC_BENCHMARKS_V07 = [
-    'cosmoflow',
-    'deepcam',
-]
-
-_HPC_BENCHMARKS_V10 = [
-    'cosmoflow',
-    'deepcam',
-    'ocp20',
-]  
 
 
 _RUN_START_REGEX = r':::MLLOG (.*"run_start",.*)'
@@ -298,19 +257,17 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
             if dropped_scores <= max_dropped_scores:
                 benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores, max_dropped_scores)
 
-        # Construct scores portion of the row.
-        if usage == "training":
-            if ruleset == '0.6.0':
-                allowed_benchmarks = _TRAINING_BENCHMARKS_V06
-            elif ruleset == '0.7.0':
-                allowed_benchmarks = _TRAINING_BENCHMARKS_V07
-            elif ruleset == '1.0.0':
-                allowed_benchmarks = _TRAINING_BENCHMARKS_V10
-        elif usage == "hpc":
-            if ruleset == '0.7.0':
-                allowed_benchmarks = _HPC_BENCHMARKS_V07
-            elif ruleset == '1.0.0':
-                allowed_benchmarks = _HPC_BENCHMARKS_V10
+        if usage not in _ALL_ALLOWED_BENCHMARKS:
+            raise ValueError('usage {} not supported!'.format(usage))
+        if ruleset not in _ALL_ALLOWED_BENCHMARKS[usage]:
+            # try short version:
+            ruleset_short = ".".join(ruleset.split(".")[:-1])
+            if ruleset_short not in _ALL_ALLOWED_BENCHMARKS[usage]:
+                raise ValueError('ruleset {} is not supported in {}'.format(ruleset, usage))
+            allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset_short]
+        else:
+            allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset] 
+                
                 
         csv_header += "," + ",".join(allowed_benchmarks)
         for benchmark in allowed_benchmarks:

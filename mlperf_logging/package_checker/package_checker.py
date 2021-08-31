@@ -14,70 +14,9 @@ from ..rcp_checker import rcp_checker
 from .seed_checker import find_source_files_under, SeedChecker
 from ..system_desc_checker import system_desc_checker
 
-# training benchmarks
-_TRAINING_BENCHMARKS_V06 = [
-    'resnet',
-    'ssd',
-    'maskrcnn',
-    'gnmt',
-    'transformer',
-    'ncf',
-    'minigo',
-]
+from ..benchmark_meta import _ALL_RESULT_FILE_COUNTS, _ALL_ALLOWED_BENCHMARKS
 
-_TRAINING_BENCHMARKS_V07 = [
-    'bert',
-    'dlrm',
-    'gnmt',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'transformer',
-]
 
-_TRAINING_BENCHMARKS_V10 = [
-    'bert',
-    'dlrm',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'rnnt',
-    'unet3d',
-]
-
-_TRAINING_RESULT_FILE_COUNTS = {
-    'bert': 10,
-    'dlrm': 5,
-    'gnmt': 10,
-    'maskrcnn': 5,
-    'minigo': 10,
-    'resnet': 5,
-    'ssd': 5,
-    'transformer': 10,
-    'ncf': 10,
-    'rnnt': 10,
-    'unet3d': 40,
-}
-
-# HPC benchmarks
-_HPC_BENCHMARKS_V07 = [
-            'cosmoflow',
-            'deepcam',
-] 
-
-_HPC_BENCHMARKS_V10 = [
-        'cosmoflow',
-        'deepcam',
-        'oc20',
-]
-
-_HPC_RESULT_FILE_COUNTS = {
-    'deepcam': 5,
-    'cosmoflow': 10,
-    'oc20': 10
-}
 
 def _get_sub_folders(folder):
     sub_folders = [
@@ -100,24 +39,19 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0
     """
-    if ruleset == '0.6.0':
-       assert(usage == "training")
-       allowed_benchmarks = _TRAINING_BENCHMARKS_V06
-    elif ruleset == '0.7.0':
-       if usage == "training":
-           allowed_benchmarks = _TRAINING_BENCHMARKS_V07
-       elif usage == "hpc":
-           allowed_benchmarks = _HPC_BENCHMARKS_V07
-    elif ruleset == '1.0.0':
-       if usage == "training":
-           allowed_benchmarks = _TRAINING_BENCHMARKS_V10
-       elif usage == "hpc":
-           allowed_benchmarks = _HPC_BENCHMARKS_V10
-
-    benchmark_file_counts = _TRAINING_RESULT_FILE_COUNTS
-    if usage == "hpc":
-        benchmark_file_counts = _HPC_RESULT_FILE_COUNTS
-           
+    if usage not in _ALL_ALLOWED_BENCHMARKS:
+        raise ValueError('usage {} not supported!'.format(usage))
+    if ruleset not in _ALL_ALLOWED_BENCHMARKS[usage]:
+        # try short version:
+        ruleset_short = ".".join(ruleset.split(".")[:-1])
+        if ruleset_short not in _ALL_ALLOWED_BENCHMARKS[usage]:
+            raise ValueError('ruleset {} is not supported in {}'.format(ruleset, usage))
+        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset_short]
+    else:
+        allowed_benchmarks = _ALL_ALLOWED_BENCHMARKS[usage][ruleset]
+    benchmark_file_counts = _ALL_RESULT_FILE_COUNTS[usage]
+    
+    
     seed_checker = SeedChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
