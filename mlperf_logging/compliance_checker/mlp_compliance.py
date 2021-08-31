@@ -18,7 +18,7 @@ def is_integer(value):
     return abs(round(value) - value) < 0.00001
 
 
-class CCError(Exception): 
+class CCError(Exception):
     pass
 
 
@@ -169,7 +169,7 @@ class ComplianceChecker:
         key_records = {}
         for k in checks:
             if list(k)[0]=='KEY':
-                key_records.update({k['KEY']['NAME']:k['KEY']}) 
+                key_records.update({k['KEY']['NAME']:k['KEY']})
 
         reported_values = {k:[] for k in key_records.keys()}
 
@@ -283,7 +283,7 @@ class ComplianceChecker:
 def usage_choices():
     return [ x.split("_")[0] for x in os.listdir(os.path.dirname(__file__))
              if re.match('\w+_\d+\.\d+\.\d+', x) ]
-    
+
 def rule_choices():
     return [ x.split("_")[1] for x in os.listdir(os.path.dirname(__file__))
             if re.match('\w+_\d+\.\d+\.\d+', x) ]
