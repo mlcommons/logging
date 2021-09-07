@@ -13,39 +13,12 @@ import re
 import sys
 
 from ..compliance_checker import mlp_compliance
+from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..rcp_checker import rcp_checker
 
-_ALLOWED_BENCHMARKS_V06 = [
-    'resnet',
-    'ssd',
-    'maskrcnn',
-    'gnmt',
-    'transformer',
-    'ncf',
-    'minigo',
-]
+from ..benchmark_meta import get_allowed_benchmarks
 
-_ALLOWED_BENCHMARKS_V07 = [
-    'bert',
-    'dlrm',
-    'gnmt',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'transformer',
-]
 
-_ALLOWED_BENCHMARKS_V10 = [
-    'bert',
-    'dlrm',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'rnnt',
-    'unet3d',
-]
 
 _RUN_START_REGEX = r':::MLLOG (.*"run_start",.*)'
 _RUN_STOP_REGEX = r':::MLLOG (.*"run_stop",.*)'
@@ -101,21 +74,21 @@ def _benchmark_alias(benchmark):
     return benchmark
 
 
-def _ruleset_url_prefix(ruleset):
+def _ruleset_url_prefix(usage, ruleset):
     short_ruleset = ruleset.replace('.0', '')
-    return 'https://github.com/mlperf/training_results_v{}'.format(short_ruleset)
+    return f'https://github.com/mlperf/{usage}_results_v{short_ruleset}'
 
 
-def _details_url(system_desc, ruleset):
+def _details_url(system_desc, usage, ruleset):
     return '{ruleset_prefix}/blob/master/{submitter}/systems/{system}.json'.format(
-        ruleset_prefix=_ruleset_url_prefix(ruleset),
+        ruleset_prefix=_ruleset_url_prefix(usage, ruleset),
         submitter=system_desc['submitter'],
         system=_linkable_system_name(system_desc))
 
 
-def _code_url(system_desc, ruleset):
+def _code_url(system_desc, usage, ruleset):
     return '{ruleset_prefix}/blob/master/{submitter}/benchmarks'.format(
-        ruleset_prefix=_ruleset_url_prefix(ruleset),
+        ruleset_prefix=_ruleset_url_prefix(usage, ruleset),
         submitter=system_desc['submitter'])
 
 
@@ -128,12 +101,13 @@ def _row_key(system_desc):
         system_desc['accelerators_per_node'],
     ])
 
-def _read_mlperf_score(result_file, ruleset):
+def _read_mlperf_score(result_file, usage, ruleset):
     with open(result_file, 'r') as f:
         result = f.read()
 
-    config_file = '{ruleset}/common.yaml'.format(ruleset=ruleset)
+    config_file = f'{usage}_{ruleset}/common.yaml'
     checker = mlp_compliance.make_checker(
+        usage=usage,
         ruleset=ruleset,
         quiet=True,
         werror=False)
@@ -184,7 +158,8 @@ def _is_organization_folder(folder):
         return False
     return True
 
-def summarize_results(folder, ruleset, csv_file=None):
+
+def summarize_results(folder, usage, ruleset, csv_file=None):
     """Summarizes a set of results.
 
     Args:
@@ -265,7 +240,7 @@ def summarize_results(folder, ruleset, csv_file=None):
             scores = []
             dropped_scores = 0
             for result_file in result_files:
-                score = _read_mlperf_score(result_file, ruleset)
+                score = _read_mlperf_score(result_file, usage, ruleset)
                 if score is None:
                     dropped_scores += 1
                 else:
@@ -283,13 +258,8 @@ def summarize_results(folder, ruleset, csv_file=None):
             if dropped_scores <= max_dropped_scores:
                 benchmark_scores[benchmark] = _compute_olympic_average(scores, dropped_scores, max_dropped_scores)
 
-        # Construct scores portion of the row.
-        if ruleset == '0.6.0':
-            allowed_benchmarks = _ALLOWED_BENCHMARKS_V06
-        elif ruleset == '0.7.0':
-            allowed_benchmarks = _ALLOWED_BENCHMARKS_V07
-        elif ruleset == '1.0.0':
-            allowed_benchmarks = _ALLOWED_BENCHMARKS_V10
+        allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
+                
         csv_header += "," + ",".join(allowed_benchmarks)
         for benchmark in allowed_benchmarks:
             if benchmark in benchmark_scores:
@@ -299,9 +269,9 @@ def summarize_results(folder, ruleset, csv_file=None):
 
         # Construct postfix portion of the row.
         csv_header += ',details_url'
-        row += '{},'.format(_details_url(desc, ruleset))
+        row += '{},'.format(_details_url(desc, usage, ruleset))
         csv_header += ',code_url'
-        row += '{},'.format(_code_url(desc, ruleset))
+        row += '{},'.format(_code_url(desc, usage, ruleset))
 
         rows[_row_key(desc)] = row
 
@@ -324,9 +294,9 @@ def get_parser():
 
     parser.add_argument('folder', type=str,
                     help='the folder for a submission package')
-    parser.add_argument('usage', type=str,
-                    help='the usage such as training, inference_edge, inference_server')
-    parser.add_argument('ruleset', type=str,
+    parser.add_argument('usage', type=str, default="training", choices=usage_choices(),
+                    help='the usage such as training, hpc, inference_edge, inference_server')
+    parser.add_argument('ruleset', type=str, choices=rule_choices(),
                     help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
     parser.add_argument('--werror', action='store_true',
                     help='Treat warnings as errors')
@@ -342,9 +312,6 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.usage != 'training':
-        print('Usage {} is not supported.'.format(args.usage))
-        sys.exit(1)
     if args.ruleset not in ['0.6.0', '0.7.0', '1.0.0']:
         print('Ruleset {} is not supported.'.format(args.ruleset))
         sys.exit(1)
@@ -369,10 +336,10 @@ def main():
         print('Detected organizations: {}'.format(', '.join(orgs)))
         for org in orgs:
             org_folder = path_prefix + org
-            summarize_results(org_folder, args.ruleset, csv_file)
+            summarize_results(org_folder, args.usage, args.ruleset, csv_file)
     else:
         # Parse results for single organization.
-        summarize_results(args.folder, args.ruleset, csv_file)
+        summarize_results(args.folder, args.usage, args.ruleset, csv_file)
     
     # Close csv file if required
     if args.csv is not None:

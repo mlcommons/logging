@@ -6,9 +6,10 @@ from . import mlp_compliance
 parser = mlp_compliance.get_parser()
 args = parser.parse_args()
 
-config_file = args.config or f'{args.ruleset}/common.yaml'
+config_file = args.config or f'{args.usage}_{args.ruleset}/common.yaml'
 
 checker = mlp_compliance.make_checker(
+    args.usage,
     args.ruleset,
     args.quiet,
     args.werror,
