@@ -22,8 +22,11 @@
             'run_stopped' : False,
             'in_epoch' : False,
             'last_epoch' : 0,
+            'in_eval' : False,
+            'accuracy_printed' : True,
             'in_block' : False,
             'block_first_epoch' : -1,
+            'last_eval' : 0,
             'first_init_start': 9e99,
         })
 
@@ -41,24 +44,25 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
-    POST:  " enqueue_config('0.7.0/{}_common.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  submission_status
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['cloud', 'onprem', 'preview', 'research'] "
+    CHECK: " v['value'] in ['cloud', 'onprem', 'research'] "
 
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['resnet', 'ssd', 'maskrcnn', 'transformer', 'gnmt', 'minigo', 'dlrm', 'bert'] "
+    POST:  " enqueue_config('training_0.7.0/{}.yaml'.format(v['value'])) "
 
 # at least one record should be found, but any found records must pass the test
 - KEY:
     NAME:  cache_clear
     REQ:   AT_LEAST_ONE
     CHECK:
-        - "'value' in v"
+        - "v['value'] == True"
+        - "s['init_started'] == False"
 
 # frequency not checked
 - KEY:
@@ -92,7 +96,9 @@
     REQ:   EXACTLY_ONE
     CHECK:
         - "s['run_started']"
+        - "not s['in_eval']"
         - "'status' in v['metadata']"
+        - "v['metadata']['status'] == 'success'"
     POST:  " s['run_stopped'] = True "
 
 # FIXME: check epoch_count value match
@@ -101,46 +107,77 @@
     REQ:   AT_LEAST_ONE_OR(epoch_start)
     CHECK:
         - "s['run_started']"
+        - "not s['run_stopped']"
+        - "not s['in_block']"
         - "'epoch_count' in v['metadata']"
         - "'first_epoch_num' in v['metadata']"
         - "v['metadata']['epoch_count'] > 0"
+        - "v['metadata']['first_epoch_num'] == (s['last_eval'] if s['in_epoch'] else s['last_epoch'] + 1)"
+    POST: >
+        s['in_block'] = True;
+        s['accuracy_printed'] = True;
+        s['block_first_epoch'] = v['metadata'].get('first_epoch_num', 'not set in block_start')
 
 - KEY:
     NAME:  block_stop
     REQ:   AT_LEAST_ONE_OR(epoch_stop)
     CHECK:
+        - "s['in_block']"
+        - "s['accuracy_printed']"
         - "'first_epoch_num' in v['metadata']"
+        - "s['block_first_epoch'] == v['metadata']['first_epoch_num']"
+    POST:  " s['in_block'] = False "
 
 - KEY:
     NAME:  epoch_start
     REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
+        - "s['run_started']"
+        - "not s['in_epoch']"
         - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] == s['last_epoch'] + 1"
+        - "not s['run_stopped']"
+    POST:  " s['in_epoch'] = True; s['last_epoch'] = v['metadata'].get('epoch_num', 'not set in eval_start') "
 
 - KEY:
     NAME:  epoch_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
+        - "s['in_epoch']"
         - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] == s['last_epoch']"
+    POST:  " s['in_epoch'] = False "
 
 # making sure previous eval did print it's accuracy result
 - KEY:
     NAME:  eval_start
     REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
+        - "s['run_started']"
+        - "not s['in_eval']"
         - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] > s['last_eval']"
+        - "s['accuracy_printed']"
+        - "v['metadata']['epoch_num'] <= s['last_epoch']"
+        - "not s['run_stopped']"
+    POST:  " s['in_eval'] = True; s['accuracy_printed'] = False; s['last_eval'] = v['metadata'].get('epoch_num', 'not set in eval_start') "
 
 - KEY:
     NAME:  eval_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
+        - "s['in_eval']"
         - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] == s['last_eval']"
+    POST:  " s['in_eval'] = False "
 
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] == s['last_eval']"
+    POST:  " s['accuracy_printed'] = True "
 
 - KEY:
     NAME:  train_samples
@@ -150,5 +187,24 @@
 - KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
+    CHECK: " v['value'] != '' "
+
+- KEY:
+    NAME:  epoch_train_samples
+    CHECK:
+        - "v['value'] != ''"
+        - "'epoch_num' in v['metadata']"
+        - "v['metadata']['epoch_num'] == s['last_epoch']"
+
+- KEY:
+    NAME:  block_train_samples
+    CHECK: " v['value'] != '' "
+
+- KEY:
+    NAME:  epoch_train_throughput
+    CHECK: " v['value'] != '' "
+
+- KEY:
+    NAME:  block_train_throughput
     CHECK: " v['value'] != '' "
 

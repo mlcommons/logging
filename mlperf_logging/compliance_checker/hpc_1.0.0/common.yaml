@@ -41,7 +41,7 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
-    POST:  " enqueue_config('1.0.0/{}_common.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('hpc_1.0.0/{}_common.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  submission_status
@@ -74,6 +74,19 @@
         - "ll.timestamp - s['first_init_start'] < (30*60*1e3)"
     POST:  " s['init_stopped'] = True"
 
+# HPC requires data staging to be included in run timing
+- KEY:
+    NAME: staging_start
+    CHECK:
+        - "s['run_started']"
+    POST: " s['staging_started'] = True "
+
+- KEY:
+    NAME: staging_stop
+    CHECK:
+        - "s['staging_started']"
+
+# run start and run stop
 - KEY:
     NAME:  run_start
     REQ:   EXACTLY_ONE
@@ -128,12 +141,6 @@
 - KEY:
     NAME:  eval_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
-    CHECK:
-        - "'epoch_num' in v['metadata']"
-
-- KEY:
-    NAME:  eval_accuracy
-    REQ:   AT_LEAST_ONE
     CHECK:
         - "'epoch_num' in v['metadata']"
 
