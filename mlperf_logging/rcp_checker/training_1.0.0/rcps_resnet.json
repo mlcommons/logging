@@ -13,7 +13,8 @@
       "opt_learning_rate_warmup_epochs": 2,
       "opt_momentum": 0.9,
       "opt_weight_decay": 5.0e-5,
-      "opt_learning_rate_decay_steps": 35
+      "opt_learning_rate_decay_steps": 35,
+      "model_bn_span": 204
     },
     "Epochs to converge": [
       34, 34, 34, 35, 35,
@@ -56,7 +57,8 @@
       "opt_learning_rate_warmup_epochs": 2,
       "opt_momentum": 0.9,
       "opt_weight_decay": 0.00005,
-      "opt_learning_rate_decay_steps": 37
+      "opt_learning_rate_decay_steps": 37,
+      "model_bn_span": 204
     },
     "Epochs to converge": [
       36, 35, 34, 34, 36, 35, 35, 35, 35, 37,
@@ -117,7 +119,8 @@
       "opt_learning_rate_warmup_epochs": 9,
       "opt_momentum": 0.94,
       "opt_weight_decay": 2.5e-5,
-      "opt_learning_rate_decay_steps": 48
+      "opt_learning_rate_decay_steps": 48,
+      "model_bn_span": 204
     },
     "Epochs to converge": [
       44, 45, 47, 45, 45, 45, 45, 44, 44, 44, 45, 45, 45, 45, 44, 44
@@ -157,7 +160,8 @@
       "opt_learning_rate_warmup_epochs": 31,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 0.0001,
-      "opt_learning_rate_decay_steps": 90
+      "opt_learning_rate_decay_steps": 90,
+      "model_bn_span": 155
     },
     "Epochs to converge": [
       88, 87, 86, 86, 86, 86, 86, 86, 84, 86
