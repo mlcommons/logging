@@ -40,18 +40,30 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0
     """
-    allowed_benchmarks = get_allowed_benchmarks(usage, ruleset) 
+    allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
     benchmark_file_counts = get_result_file_counts(usage)
-    
-    
+
+
     seed_checker = SeedChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
-        for benchmark_folder in _get_sub_folders(system_folder):
+        if usage == 'hpc':
+            benchmark_folders = []
+            for scaling_folder in _get_sub_folders(system_folder):
+                benchmark_folders.extend(_get_sub_folders(scaling_folder))
+        else:
+            benchmark_folders = _get_sub_folders(system_folder)
+        for benchmark_folder in benchmark_folders:
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
-            system = folder_parts[-2]
+            if usage == 'hpc':
+                assert folder_parts[-2] in {'strong', 'weak'}
+                is_weak_scaling = (folder_parts[-2] == 'weak')
+                system = folder_parts[-3]
+            else:
+                is_weak_scaling = False
+                system = folder_parts[-2]
 
             # Find whether submission is closed and only then run seed and RCP checkers
             system_desc_file = os.path.join(folder, 'systems/') + system + '.json'
@@ -82,21 +94,27 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             print('System {}'.format(system))
             print('Benchmark {}'.format(benchmark))
 
-            # The number of result files must be an exact number.
-            # Print a comprehensive message if some files in results
-            # directory do not match naming convention (results_*.txt)
-            if len(result_files) != benchmark_file_counts[benchmark]:
-                print('Expected at least {} runs, but detected {} runs.'.format(
-                    benchmark_file_counts[benchmark],
-                    len(result_files),
-                ))
-                too_many_errors = True
-                if len(all_files) > 0:
-                    print(all_files)
-                    print('Detected {} total files in directory {}, but some do not conform '
-                        'to naming convention, should you rename them to result_*.txt ?'.format(
-                        len(all_files), benchmark_folder,
+            if is_weak_scaling:
+                if len(result_files) < benchmark_file_counts[benchmark]:
+                    print('Expected at least {} runs, but detected {} runs.'.format(
+                        benchmark_file_counts[benchmark],
+                        len(result_files),
                     ))
+                    too_many_errors = True
+            else:
+                # The number of result files must be an exact number.
+                # Print a comprehensive message if some files in results
+                # directory do not match naming convention (results_*.txt)
+                if len(result_files) != benchmark_file_counts[benchmark]:
+                    print('Expected {} runs, but detected {} runs.'.format(
+                        benchmark_file_counts[benchmark],
+                        len(result_files),
+                    ))
+                    too_many_errors = True
+            if len(all_files) > len(result_files):
+                print(all_files)
+                print('Detected {} total files in directory {}, but some do not conform '
+                      'to naming convention, should you rename them to result_*.txt ?'.format(len(all_files), benchmark_folder))
             if len(result_files) < len(all_files):
                 print('WARNING: Unknown files in results directory {}'.format(benchmark_folder))
 
@@ -161,11 +179,12 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             'Found too many errors in logging, see log above for details.')
 
 
-def check_systems(folder, ruleset):
+def check_systems(folder, usage, ruleset):
     """Checks the system decription files
 
     Args:
         folder: The folder for a submission package.
+        usage: The usage such as training, inference_edge, inference_server, hpc.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
     """
     system_folder = os.path.join(folder,'systems')
@@ -174,7 +193,7 @@ def check_systems(folder, ruleset):
     too_many_errors = False
 
     for json_file in json_files:
-        valid, _, _, _ = system_desc_checker.check_training_system_desc(json_file, ruleset)
+        valid, _, _, _ = system_desc_checker.check_system_desc(json_file, usage, ruleset)
         if not valid:
             too_many_errors = True
 
@@ -193,7 +212,7 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
     """
     check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
     if ruleset == '1.0.0':
-        check_systems(folder, ruleset)
+        check_systems(folder, usage, ruleset)
 
 def get_parser():
     parser = argparse.ArgumentParser(
