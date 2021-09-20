@@ -1,5 +1,5 @@
 {
-    "oc20_ref_64": {
+    "oc20_ref_256": {
         "Benchmark": "oc20",
         "BS": 256,
         "Epochs to converge": [ 20, 18, 20, 20, 22, 18, 19, 19, 21, 21 ],
