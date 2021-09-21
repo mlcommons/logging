@@ -13,14 +13,13 @@
       "opt_learning_rate_warmup_epochs": 2,
       "opt_momentum": 0.9,
       "opt_weight_decay": 5.0e-5,
-      "opt_learning_rate_decay_steps": 35,
-      "model_bn_span": 204
+      "opt_learning_rate_decay_steps": 35
     },
     "Epochs to converge": [
-      34, 34, 34, 35, 35,
-      37, 35, 35, 33, 35,
-      35, 37, 37, 35, 35,
-      34, 35
+      34, 34, 34, 35, 35, 
+      37, 35, 35, 33, 35, 
+      35, 37, 37, 35, 35, 
+      34, 35  
     ]
   },
 
@@ -37,8 +36,7 @@
       "opt_learning_rate_warmup_epochs": 5,
       "opt_momentum": 0.9,
       "opt_weight_decay": 2e-3,
-      "opt_learning_rate_decay_steps": 22530,
-      "model_bn_span": 64
+      "opt_learning_rate_decay_steps": 22530
     },
     "Epochs to converge": [
       38, 39, 38, 39, 38, 39, 38, 39, 38, 38]
@@ -57,8 +55,7 @@
       "opt_learning_rate_warmup_epochs": 2,
       "opt_momentum": 0.9,
       "opt_weight_decay": 0.00005,
-      "opt_learning_rate_decay_steps": 37,
-      "model_bn_span": 204
+      "opt_learning_rate_decay_steps": 37
     },
     "Epochs to converge": [
       36, 35, 34, 34, 36, 35, 35, 35, 35, 37,
@@ -79,8 +76,7 @@
       "opt_learning_rate_warmup_epochs": 5,
       "opt_momentum": 0.9,
       "opt_weight_decay": 2e-3,
-      "opt_learning_rate_decay_steps": 42,
-      "model_bn_span": 64
+      "opt_learning_rate_decay_steps": 42
     },
     "Epochs to converge": [
       39, 42, 40, 41, 39, 40, 41, 39, 40, 39]
@@ -99,13 +95,12 @@
       "opt_learning_rate_warmup_epochs": 5,
       "opt_momentum": 0.9,
       "opt_weight_decay": 2e-4,
-      "opt_learning_rate_decay_steps": 6095,
-      "model_bn_span": 64
+      "opt_learning_rate_decay_steps": 6095
     },
     "Epochs to converge": [
       42, 44, 43, 41, 41, 41, 42, 42, 43, 41]
   },
-
+  
   "resnet_ref_13056":
   {
     "Benchmark": "resnet",
@@ -119,8 +114,7 @@
       "opt_learning_rate_warmup_epochs": 9,
       "opt_momentum": 0.94,
       "opt_weight_decay": 2.5e-5,
-      "opt_learning_rate_decay_steps": 48,
-      "model_bn_span": 204
+      "opt_learning_rate_decay_steps": 48
     },
     "Epochs to converge": [
       44, 45, 47, 45, 45, 45, 45, 44, 44, 44, 45, 45, 45, 45, 44, 44
@@ -140,8 +134,7 @@
       "opt_learning_rate_warmup_epochs": 16,
       "opt_momentum": 0.94,
       "opt_weight_decay": 2e-5,
-      "opt_learning_rate_decay_steps": 58,
-      "model_bn_span": 128
+      "opt_learning_rate_decay_steps": 58
     },
     "Epochs to converge": [
       56, 56, 55, 56, 56, 56, 56, 56, 57, 56]
@@ -160,8 +153,7 @@
       "opt_learning_rate_warmup_epochs": 31,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 0.0001,
-      "opt_learning_rate_decay_steps": 90,
-      "model_bn_span": 155
+      "opt_learning_rate_decay_steps": 90
     },
     "Epochs to converge": [
       88, 87, 86, 86, 86, 86, 86, 86, 84, 86
@@ -181,8 +173,7 @@
       "opt_learning_rate_warmup_epochs": 31,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 1e-4,
-      "opt_learning_rate_decay_steps": 1133,
-      "model_bn_span": 128
+      "opt_learning_rate_decay_steps": 1133
     },
     "Epochs to converge": [
       83, 85, 84, 86, 85, 85, 83, 84, 85, 85]

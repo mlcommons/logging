@@ -15,7 +15,12 @@
     CHECK: " v['value'] > 0"
     
 - KEY:
-    NAME:  num_workers
+    NAME:  number_of_nodes
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0"
+
+- KEY:
+    NAME:  accelerators_per_node
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] > 0"
 
