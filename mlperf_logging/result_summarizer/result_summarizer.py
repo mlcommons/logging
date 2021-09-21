@@ -319,6 +319,22 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
 
 
 def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
+    """ Weak scaling experiments aim to measure the "total training capacity" of
+    a given system. Assume a system has T accelerators; it takes TTTa mins to
+    train all M models until convergence, where each model needs S accelerators.
+    Therefore, instead of a single metric TTT, each benchmark now requires a
+    tuple of 4 values to be reported: (T, M, S, TTTa).
+
+    As such, this function determines the M, S and TTTa from the result logs
+    (note that T is provided by the system desc json). If a result log does not
+    meet compliance, this model will not be counted.
+
+    Note:
+        T: accelerators_count
+        M: number_of_models
+        S: instance_scale
+        TTTa: time_to_train_all
+    """
     assert usage == 'hpc'
     # Collect scores for benchmarks.
     benchmark_scores = {}
