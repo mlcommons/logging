@@ -281,12 +281,12 @@ class ComplianceChecker:
         return not self.has_messages()
 
 def usage_choices():
-    return [ x.split("_")[0] for x in os.listdir(os.path.dirname(__file__))
-             if re.match('\w+_\d+\.\d+\.\d+', x) ]
+    return set(( x.split("_")[0] for x in os.listdir(os.path.dirname(__file__))
+             if re.match('\w+_\d+\.\d+\.\d+', x) ))
 
 def rule_choices():
-    return [ x.split("_")[1] for x in os.listdir(os.path.dirname(__file__))
-            if re.match('\w+_\d+\.\d+\.\d+', x) ]
+    return set(( x.split("_")[1] for x in os.listdir(os.path.dirname(__file__))
+            if re.match('\w+_\d+\.\d+\.\d+', x) ))
 
 
 def get_parser():

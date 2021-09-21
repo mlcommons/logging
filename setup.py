@@ -16,9 +16,9 @@
 import setuptools
 
 with open("README.md", "r") as f:
-  long_description = f.read()
+    long_description = f.read()
 with open("VERSION", "r") as f:
-  version = f.read().strip()
+    version = f.read().strip()
 
 setuptools.setup(
     name="mlperf-logging",
@@ -31,11 +31,14 @@ setuptools.setup(
     url="https://github.com/mlperf/logging",
     packages=setuptools.find_packages(),
     classifiers=[
-      "Programming Language :: Python :: 2",
-      "Programming Language :: Python :: 3",
-      "License :: OSI Approved :: Apache Software License",
-      "Operating System :: OS Independent",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
     ],
     license='Apache 2.0',
     include_package_data=True,
+    install_requires=[
+        'pandas',
+    ],
 )
