@@ -33,6 +33,17 @@ submission_runs = {
 
 TOKEN = ':::MLLOG '
 
+def _detect_eval_error(file_contents):
+    for line in file_contents:
+        if TOKEN not in line:
+            continue
+        line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+        if line.startswith(TOKEN):
+            s = line[len(TOKEN):]
+            if 'eval_error' in s:
+                return True
+    return False
+
 
 def get_submission_epochs(result_files, benchmark, bert_train_samples):
     '''
@@ -49,6 +60,7 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
     for result_file in result_files:
         with open(result_file, 'r', encoding='latin-1') as f:
             file_contents = f.readlines()
+            use_eval_error = _detect_eval_error(file_contents)
             for line in file_contents:
                 if TOKEN not in line:
                     continue
@@ -59,7 +71,8 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
                         bs = json.loads(str)["value"]
-                    if not use_train_samples and "eval_accuracy" in str:
+                    if not use_train_samples and (((not use_eval_error) and "eval_accuracy" in str) or
+                                                  (use_eval_error and "eval_error" in str)):
                         eval_accuracy_str = str
                         conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
                         conv_epoch = round(conv_epoch, 3)
@@ -93,7 +106,7 @@ class RCP_Checker:
         self.rcp_data = {}
         self.bert_train_samples = bert_train_samples
         self.submission_runs = submission_runs[usage]
-        
+
         for benchmark in self.submission_runs.keys():
             raw_rcp_data = self._consume_json_file(usage, ruleset, benchmark)
             processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
