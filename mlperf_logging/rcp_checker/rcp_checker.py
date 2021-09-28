@@ -83,8 +83,8 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, verbose, bert_train_samples):
-        if ruleset != '1.0.0':
-            raise Exception('RCP Checker only supported in 1.0.0')
+        if ruleset != '1.0.0'  and ruleset != "1.1.0":
+            raise Exception('RCP Checker only supported in 1.0.0 / 1.1.0')
         self.usage = usage
         self.ruleset = ruleset
         self.alpha = 0.05
@@ -93,7 +93,7 @@ class RCP_Checker:
         self.rcp_data = {}
         self.bert_train_samples = bert_train_samples
         self.submission_runs = submission_runs[usage]
-        
+
         for benchmark in self.submission_runs.keys():
             raw_rcp_data = self._consume_json_file(usage, ruleset, benchmark)
             processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
