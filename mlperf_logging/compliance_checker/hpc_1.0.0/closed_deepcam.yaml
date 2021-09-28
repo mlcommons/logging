@@ -15,16 +15,6 @@
     CHECK: " v['value'] > 0"
     
 - KEY:
-    NAME:  number_of_nodes
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] > 0"
-
-- KEY:
-    NAME:  accelerators_per_node
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] > 0"
-
-- KEY:
     NAME:  batchnorm_group_size
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] > 0"

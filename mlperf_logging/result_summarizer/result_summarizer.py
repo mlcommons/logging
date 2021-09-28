@@ -162,7 +162,7 @@ def _query_instance_scale(loglines):
         raise ValueError('number_of_nodes not recorded')
     if accelerators_per_node is None:
         raise ValueError('accelerators_per_node not recorded')
-    return int(number_of_nodes) * int(accelerators_per_node)
+    return int(number_of_nodes) * max(int(accelerators_per_node), 1)
 
 
 def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
