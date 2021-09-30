@@ -3,7 +3,7 @@
   "dlrm_ref_32768":
   {
     "Benchmark": "dlrm",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 32768,
@@ -22,7 +22,7 @@
   "dlrm_ref_55296":
   {
     "Benchmark": "dlrm",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 55296,
@@ -43,7 +43,7 @@
   "dlrm_ref_71680":
   {
     "Benchmark": "dlrm",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 71680,

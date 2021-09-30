@@ -3,7 +3,7 @@
   "resnet_ref_1632":
   {
     "Benchmark": "resnet",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 1632,
@@ -45,7 +45,7 @@
   "resnet_ref_3264":
   {
     "Benchmark": "resnet",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 3264,
@@ -107,7 +107,7 @@
   "resnet_ref_13056":
   {
     "Benchmark": "resnet",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 13056,
@@ -149,7 +149,7 @@
   "resnet_ref_64480":
   {
     "Benchmark": "resnet",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 64480,

@@ -3,7 +3,7 @@
   "ssd_ref_1024_s128":
   {
     "Benchmark": "ssd",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior 1.0 submission",
     "Platform": "TBD",
     "BS": 1024,
@@ -23,7 +23,7 @@
   "ssd_ref_2048_s16":
   {
     "Benchmark": "ssd",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior 1.0 submission",
     "Platform": "TBD",
     "BS": 2048,
@@ -48,7 +48,7 @@
   "ssd_ref_4096_s64":
   {
     "Benchmark": "ssd",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior 1.0 submission",
     "Platform": "TBD",
     "BS": 4096,

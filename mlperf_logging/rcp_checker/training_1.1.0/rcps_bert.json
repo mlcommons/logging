@@ -164,7 +164,7 @@
   "bert_ref_12288":
   {
     "Benchmark": "bert",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 12288,

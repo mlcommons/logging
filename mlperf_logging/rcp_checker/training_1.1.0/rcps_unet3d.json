@@ -3,7 +3,7 @@
   "unet3d_ref_2_fp32":
   {
     "Benchmark": "unet3d",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 2,
@@ -31,7 +31,7 @@
   "unet3d_ref_32_fp32":
   {
     "Benchmark": "unet3d",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 32,
@@ -60,7 +60,7 @@
   "unet3d_ref_56":
   {
     "Benchmark": "unet3d",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 56,
@@ -89,7 +89,7 @@
   "unet3d_ref_80":
   {
     "Benchmark": "unet3d",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "At 1.0 submission",
     "Platform": "TBD",
     "BS": 80,

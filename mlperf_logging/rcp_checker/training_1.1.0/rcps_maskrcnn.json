@@ -3,7 +3,7 @@
   "maskrcnn_ref_48":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 48,
@@ -21,7 +21,7 @@
   "maskrcnn_ref_64":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 64,
@@ -39,7 +39,7 @@
   "maskrcnn_ref_96":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 96,
@@ -58,7 +58,7 @@
   "maskrcnn_ref_128":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 128,
@@ -76,7 +76,7 @@
   "maskrcnn_ref_256":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 256,
@@ -94,7 +94,7 @@
   "maskrcnn_ref_272":
   {
     "Benchmark": "maskrcnn",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.0 submission",
     "Platform": "TBD",
     "BS": 272,

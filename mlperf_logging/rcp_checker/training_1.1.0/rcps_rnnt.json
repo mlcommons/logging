@@ -3,7 +3,7 @@
   "rnn_t_ref_1k":
   {
     "Benchmark": "rnnt",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.1 submission",
     "Platform": "TBD",
     "BS": 1024,
@@ -30,7 +30,7 @@
   "rnn_t_ref_2k":
   {
     "Benchmark": "rnnt",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.1 submission",
     "Platform": "TBD",
     "BS": 2048,
@@ -58,7 +58,7 @@
   "rnn_t_ref_3k":
   {
     "Benchmark": "rnnt",
-    "Creator": "NVidia",
+    "Creator": "NVIDIA",
     "When": "Prior to 1.1 submission",
     "Platform": "TBD",
     "BS": 3072,
