@@ -41,7 +41,7 @@
             "opt_base_learning_rate": 0.012,
             "opt_learning_rate_warmup_epochs": 0,
             "opt_learning_rate_warmup_factor": 1.0,
-            "opt_learning_rate_decay_boundary_epochs": [ 16, 32 ],
+            "opt_learning_rate_decay_boundary_epochs": [ 32, 64 ],
             "opt_learning_rate_decay_factor": 0.25,
             "dropout": 0.5,
             "opt_weight_decay": 0.0
