@@ -78,6 +78,8 @@ EVAL_START = "eval_start"
 EVAL_STOP = "eval_stop"
 INIT_START = "init_start"
 INIT_STOP = "init_stop"
+STAGING_START = "staging_start"
+STAGING_STOP = "staging_stop"
 RUN_START = "run_start"
 RUN_STOP = "run_stop"
 

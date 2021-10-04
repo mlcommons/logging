@@ -15,16 +15,34 @@ import scipy.stats
 # We use olympic scoring for statistics, so we reject
 # both the top and bottom reference and submission numbers
 submission_runs = {
-    'bert': 10,
-    'dlrm': 5,
-    'maskrcnn' : 5,
-    'resnet' : 5,
-    'ssd' : 5,
-    'unet3d' : 40,
-    'rnnt': 10,
+    "training": {
+        'bert': 10,
+        'dlrm': 5,
+        'maskrcnn' : 5,
+        'resnet' : 5,
+        'ssd' : 5,
+        'unet3d' : 40,
+        'rnnt': 10,
+    },
+    "hpc": {
+        'cosmoflow': 10,
+        'deepcam': 5,
+        #'oc20': 10,
+    }
 }
 
 TOKEN = ':::MLLOG '
+
+def _detect_eval_error(file_contents):
+    for line in file_contents:
+        if TOKEN not in line:
+            continue
+        line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+        if line.startswith(TOKEN):
+            s = line[len(TOKEN):]
+            if 'eval_error' in s:
+                return True
+    return False
 
 
 def get_submission_epochs(result_files, benchmark, bert_train_samples):
@@ -42,6 +60,7 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
     for result_file in result_files:
         with open(result_file, 'r', encoding='latin-1') as f:
             file_contents = f.readlines()
+            use_eval_error = _detect_eval_error(file_contents)
             for line in file_contents:
                 if TOKEN not in line:
                     continue
@@ -52,7 +71,8 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
                         # Do we need to make sure global_batch_size is the same
                         # in all files? If so, this is obviously a bad submission
                         bs = json.loads(str)["value"]
-                    if not use_train_samples and "eval_accuracy" in str:
+                    if not use_train_samples and (((not use_eval_error) and "eval_accuracy" in str) or
+                                                  (use_eval_error and "eval_error" in str)):
                         eval_accuracy_str = str
                         conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
                         conv_epoch = round(conv_epoch, 3)
@@ -75,23 +95,31 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
 
 class RCP_Checker:
 
-    def __init__(self, ruleset, verbose, bert_train_samples):
+    def __init__(self, usage, ruleset, verbose, bert_train_samples):
         if ruleset != '1.0.0':
             raise Exception('RCP Checker only supported in 1.0.0')
+        self.usage = usage
+        self.ruleset = ruleset
         self.alpha = 0.05
         self.tolerance = 0.0001
         self.verbose = verbose
         self.rcp_data = {}
         self.bert_train_samples = bert_train_samples
-        for benchmark in submission_runs.keys():
-            raw_rcp_data = self._consume_json_file(ruleset, benchmark)
+        self.submission_runs = submission_runs[usage]
+
+        for benchmark in self.submission_runs.keys():
+            raw_rcp_data = self._consume_json_file(usage, ruleset, benchmark)
             processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
             self.rcp_data.update(processed_rcp_data)
 
 
-    def _consume_json_file(self, ruleset, benchmark):
+    def _consume_json_file(self, usage, ruleset, benchmark):
         '''Read json file'''
-        json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps_'+ benchmark+ '.json'
+        json_file = os.path.join(os.path.dirname(__file__),
+                                 f"{usage}_{ruleset}",
+                                 f"rcps_{benchmark}.json"
+        )
+        #json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps_'+ benchmark+ '.json'
         with open(json_file, 'r') as f:
             return json.load(f)
 
@@ -212,7 +240,7 @@ class RCP_Checker:
 
         if stdev == 0:
             return mean
-        num_samples_subm = submission_runs[benchmark] - 2
+        num_samples_subm = self.submission_runs[benchmark] - 2
         mean_max = mean
         mean_min = 0.0
         mean_mid = (mean_min + mean_max) / 2
@@ -251,7 +279,7 @@ class RCP_Checker:
                          benchmark,
                          mean,
                          stdev,
-                         submission_runs[benchmark]*2)
+                         self.submission_runs[benchmark]*2)
         interp_record_name = benchmark + '_interp_' + str(target_bs)
         interp_record = {'Benchmark': benchmark,
                          'BS': target_bs,
@@ -354,6 +382,9 @@ def get_parser():
 
     parser.add_argument('dir', type=str,
                     help='the directory to check for compliance')
+    parser.add_argument('--rcp_usage', type=str, default='training',
+                    choices=['training', 'hpc'],
+                    help='what WG does the benchmark come from to check the log against')
     parser.add_argument('--rcp_version', type=str, default='1.0.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
@@ -365,8 +396,8 @@ def get_parser():
     return parser
 
 
-def make_checker(ruleset, verbose=False, bert_train_samples=False):
-  return RCP_Checker(ruleset, verbose, bert_train_samples)
+def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
+  return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
 
 
 def main(checker, dir):

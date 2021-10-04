@@ -18,7 +18,7 @@ def is_integer(value):
     return abs(round(value) - value) < 0.00001
 
 
-class CCError(Exception): 
+class CCError(Exception):
     pass
 
 
@@ -41,7 +41,8 @@ def merge(*dicts,):
 
 class ComplianceChecker:
 
-    def __init__(self, ruleset, quiet, werror):
+    def __init__(self, usage, ruleset, quiet, werror):
+        self.usage = usage
         self.ruleset = ruleset
 
         self.warnings = {}
@@ -168,7 +169,7 @@ class ComplianceChecker:
         key_records = {}
         for k in checks:
             if list(k)[0]=='KEY':
-                key_records.update({k['KEY']['NAME']:k['KEY']}) 
+                key_records.update({k['KEY']['NAME']:k['KEY']})
 
         reported_values = {k:[] for k in key_records.keys()}
 
@@ -279,10 +280,13 @@ class ComplianceChecker:
 
         return not self.has_messages()
 
+def usage_choices():
+    return set(( x.split("_")[0] for x in os.listdir(os.path.dirname(__file__))
+             if re.match('\w+_\d+\.\d+\.\d+', x) ))
 
 def rule_choices():
-    return [ x for x in os.listdir(os.path.dirname(__file__))
-            if re.match('\d+\.\d+\.\d+', x) ]
+    return set(( x.split("_")[1] for x in os.listdir(os.path.dirname(__file__))
+            if re.match('\w+_\d+\.\d+\.\d+', x) ))
 
 
 def get_parser():
@@ -293,11 +297,14 @@ def get_parser():
 
     parser.add_argument('filename', type=str,
                     help='the file to check for compliance')
+    parser.add_argument('--usage', type=str, default='training',
+                    choices=usage_choices(),
+                    help='what WG do the benchmarks come from')
     parser.add_argument('--ruleset', type=str, default='1.0.0',
                     choices=rule_choices(),
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,
-                    help='mlperf logging config, by default it loads {ruleset}/common.yaml', default=None)
+                    help='mlperf logging config, by default it loads {usage}_{ruleset}/common.yaml', default=None)
     parser.add_argument('--werror', action='store_true',
                     help='Treas warnings as errors')
     parser.add_argument('--quiet', action='store_true',
@@ -306,8 +313,9 @@ def get_parser():
     return parser
 
 
-def make_checker(ruleset, quiet, werror):
+def make_checker(usage, ruleset, quiet, werror):
     return ComplianceChecker(
+        usage,
         ruleset,
         quiet,
         werror,

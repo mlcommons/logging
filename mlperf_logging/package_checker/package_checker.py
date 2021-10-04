@@ -10,55 +10,13 @@ import os
 import sys
 
 from ..compliance_checker import mlp_compliance
+from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..rcp_checker import rcp_checker
 from .seed_checker import find_source_files_under, SeedChecker
 from ..system_desc_checker import system_desc_checker
 
-_ALLOWED_BENCHMARKS_V06 = [
-    'resnet',
-    'ssd',
-    'maskrcnn',
-    'gnmt',
-    'transformer',
-    'ncf',
-    'minigo',
-]
+from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
-_ALLOWED_BENCHMARKS_V07 = [
-    'bert',
-    'dlrm',
-    'gnmt',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'transformer',
-]
-
-_ALLOWED_BENCHMARKS_V10 = [
-    'bert',
-    'dlrm',
-    'maskrcnn',
-    'minigo',
-    'resnet',
-    'ssd',
-    'rnnt',
-    'unet3d',
-]
-
-_EXPECTED_RESULT_FILE_COUNTS = {
-    'bert': 10,
-    'dlrm': 5,
-    'gnmt': 10,
-    'maskrcnn': 5,
-    'minigo': 10,
-    'resnet': 5,
-    'ssd': 5,
-    'transformer': 10,
-    'ncf': 10,
-    'rnnt': 10,
-    'unet3d': 40,
-}
 
 
 def _get_sub_folders(folder):
@@ -74,28 +32,38 @@ def _print_divider_bar():
     print('------------------------------')
 
 
-def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples):
+def check_training_result_files(folder, usage, ruleset, quiet, werror,
+                                rcp_bypass, rcp_bert_train_samples):
     """Checks all result files for compliance.
 
     Args:
         folder: The folder for a submission package.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0
     """
+    allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
+    benchmark_file_counts = get_result_file_counts(usage)
 
-    if ruleset == '0.6.0':
-       allowed_benchmarks = _ALLOWED_BENCHMARKS_V06
-    elif ruleset == '0.7.0':
-       allowed_benchmarks = _ALLOWED_BENCHMARKS_V07
-    elif ruleset == '1.0.0':
-       allowed_benchmarks = _ALLOWED_BENCHMARKS_V10
+
     seed_checker = SeedChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
-        for benchmark_folder in _get_sub_folders(system_folder):
+        if usage == 'hpc':
+            benchmark_folders = []
+            for scaling_folder in _get_sub_folders(system_folder):
+                benchmark_folders.extend(_get_sub_folders(scaling_folder))
+        else:
+            benchmark_folders = _get_sub_folders(system_folder)
+        for benchmark_folder in benchmark_folders:
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
-            system = folder_parts[-2]
+            if usage == 'hpc':
+                assert folder_parts[-2] in {'strong', 'weak'}
+                is_weak_scaling = (folder_parts[-2] == 'weak')
+                system = folder_parts[-3]
+            else:
+                is_weak_scaling = False
+                system = folder_parts[-2]
 
             # Find whether submission is closed and only then run seed and RCP checkers
             system_desc_file = os.path.join(folder, 'systems/') + system + '.json'
@@ -126,21 +94,28 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
             print('System {}'.format(system))
             print('Benchmark {}'.format(benchmark))
 
-            # The number of result files must be an exact number.
-            # Print a comprehensive message if some files in results
-            # directory do not match naming convention (results_*.txt)
-            if len(result_files) != _EXPECTED_RESULT_FILE_COUNTS[benchmark]:
-                print('Expected {} runs, but detected {} runs.'.format(
-                    _EXPECTED_RESULT_FILE_COUNTS[benchmark],
-                    len(result_files),
-                ))
-                too_many_errors = True
-                if len(all_files) > 0:
-                    print(all_files)
-                    print('Detected {} total files in directory {}, but some do not conform '
-                        'to naming convention, should you rename them to result_*.txt ?'.format(
-                        len(all_files), benchmark_folder,
+            if is_weak_scaling:
+                if len(result_files) < benchmark_file_counts[benchmark]:
+                    print('Expected at least {} runs, but detected {} runs.'.format(
+                        benchmark_file_counts[benchmark],
+                        len(result_files),
                     ))
+                    too_many_errors = True
+            else:
+                # The number of result files must be an exact number.
+                # Print a comprehensive message if some files in results
+                # directory do not match naming convention (results_*.txt)
+                if len(result_files) != benchmark_file_counts[benchmark]:
+                    print('Expected {} runs, but detected {} runs.'.format(
+                        benchmark_file_counts[benchmark],
+                        len(result_files),
+                    ))
+                    too_many_errors = True
+            if len(all_files) > len(result_files):
+                print(all_files)
+                print('Detected {} total files in directory {}, but some do not conform '
+                      'to naming convention, should you rename them to result_*.txt ?'.format(len(all_files), benchmark_folder))
+
             if len(result_files) < len(all_files):
                 print('WARNING: Unknown files in results directory {}'.format(benchmark_folder))
 
@@ -154,11 +129,13 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
                 # For each result file, run the benchmark's compliance checks.
                 _print_divider_bar()
                 print('Run {}'.format(run))
-                config_file = '{ruleset}/common.yaml'.format(
+                config_file = '{usage}_{ruleset}/common.yaml'.format(
+                    usage=usage,
                     ruleset=ruleset,
                     benchmark=benchmark,
                 )
                 checker = mlp_compliance.make_checker(
+                    usage=usage,
                     ruleset=ruleset,
                     quiet=quiet,
                     werror=werror,
@@ -188,7 +165,7 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
 
             # Run RCP checker for 1.0.0
             if ruleset == '1.0.0' and division == 'closed' and benchmark != 'minigo':
-                rcp_chk = rcp_checker.make_checker(ruleset, verbose=False, bert_train_samples=rcp_bert_train_samples)
+                rcp_chk = rcp_checker.make_checker(usage, ruleset, verbose=False, bert_train_samples=rcp_bert_train_samples)
                 rcp_chk._compute_rcp_stats()
 
                 # Now go again through result files to do RCP checks
@@ -203,11 +180,12 @@ def check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_
             'Found too many errors in logging, see log above for details.')
 
 
-def check_systems(folder, ruleset):
+def check_systems(folder, usage, ruleset):
     """Checks the system decription files
 
     Args:
         folder: The folder for a submission package.
+        usage: The usage such as training, inference_edge, inference_server, hpc.
         ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
     """
     system_folder = os.path.join(folder,'systems')
@@ -216,7 +194,7 @@ def check_systems(folder, ruleset):
     too_many_errors = False
 
     for json_file in json_files:
-        valid, _, _, _ = system_desc_checker.check_training_system_desc(json_file, ruleset)
+        valid, _, _, _ = system_desc_checker.check_system_desc(json_file, usage, ruleset)
         if not valid:
             too_many_errors = True
 
@@ -225,16 +203,17 @@ def check_systems(folder, ruleset):
             'Found too many errors in system checking, see log above for details.')
 
 
-def check_training_package(folder, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples):
+def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples):
     """Checks a training package for compliance.
 
     Args:
         folder: The folder for a submission package.
-        ruleset: The ruleset such as 0.6.0, 0.7.0, or 1.0.0.
+        usage: The usage such as training or hpc
+        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0 or 1.0.0.
     """
-    check_training_result_files(folder, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
     if ruleset == '1.0.0':
-        check_systems(folder, ruleset)
+        check_systems(folder, usage, ruleset)
 
 def get_parser():
     parser = argparse.ArgumentParser(
@@ -250,11 +229,13 @@ def get_parser():
     parser.add_argument(
         'usage',
         type=str,
-        help='the usage such as training, inference_edge, inference_server',
+        choices=usage_choices(),
+        help='the usage such as training, inference_edge, inference_server, hpc',
     )
     parser.add_argument(
         'ruleset',
         type=str,
+        choices=rule_choices(),
         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0'
     )
     parser.add_argument(
@@ -286,14 +267,7 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
-    if args.usage != 'training':
-        print('Usage {} is not yet supported.'.format(args.usage))
-        sys.exit(1)
-    if args.ruleset not in ['0.6.0', '0.7.0', '1.0.0']:
-        print('Ruleset {} is not yet supported.'.format(args.ruleset))
-        sys.exit(1)
-
-    check_training_package(args.folder, args.ruleset, args.quiet, args.werror, args.rcp_bypass, args.rcp_bert_train_samples)
+    check_training_package(args.folder, args.usage, args.ruleset, args.quiet, args.werror, args.rcp_bypass, args.rcp_bert_train_samples)
 
 
 if __name__ == '__main__':
