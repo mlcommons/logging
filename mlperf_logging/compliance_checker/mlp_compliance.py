@@ -60,7 +60,6 @@ class ComplianceChecker:
         if self.werror:
             self.put_message(msg, key)
         elif not self.quiet:
-            print(key, msg)
             self.warnings[key] = msg
 
     def put_message(self, msg, key=None):
@@ -121,9 +120,12 @@ class ComplianceChecker:
         for test in tests:
             try:
                 if not eval(test.strip(), state):
-                    self.put_message(
-                        f"failed test: {test}"
-                        f"\ncurrent context[s]={preety_dict(state['s'])}",
+                   if test.strip().split()[0] == "sorted(s['initialized_tensors'])":
+                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key='')
+                   else:
+                       self.put_message(
+                           f"failed test: {test}"
+                           f"\ncurrent context[s]={preety_dict(state['s'])}",
                     )
             except:
                 self.put_message(
@@ -225,8 +227,11 @@ class ComplianceChecker:
 
             if v['REQ']=='AT_LEAST_ONE':
                 if len(reported_values[k])<1:
-                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
-                                      key=k)
+                   if k == 'weights_initialization':
+                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key=k)
+                   else:
+                       self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
+                                        key=k)
 
             if v['REQ'].startswith('AT_LEAST_ONE_OR'):
                 alternatives.add(tuple({k, *self.parse_alternatives(v['REQ'])}))
