@@ -27,7 +27,7 @@ submission_runs = {
     "hpc": {
         'cosmoflow': 10,
         'deepcam': 5,
-        #'oc20': 10,
+        'oc20': 5,
     }
 }
 
