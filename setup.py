@@ -39,6 +39,6 @@ setuptools.setup(
     license='Apache 2.0',
     include_package_data=True,
     install_requires=[
-        'pandas',
+        'pandas', 'pyyaml', 'numpy', 'scipy'
     ],
 )
