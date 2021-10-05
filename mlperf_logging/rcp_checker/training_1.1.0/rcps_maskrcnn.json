@@ -3,13 +3,13 @@
   "maskrcnn_ref_48":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 48,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [24000, 32000],
       "opt_base_learning_rate": 0.06,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.000096,
       "opt_learning_rate_warmup_steps": 800
@@ -21,13 +21,13 @@
   "maskrcnn_ref_64":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 64,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [18000, 24000],
       "opt_base_learning_rate": 0.08,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.0001,
       "opt_learning_rate_warmup_steps": 800
@@ -39,13 +39,13 @@
   "maskrcnn_ref_96":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 96,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [12000, 16000],
       "opt_base_learning_rate": 0.12,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.000192,
       "opt_learning_rate_warmup_steps": 625
@@ -58,13 +58,13 @@
   "maskrcnn_ref_128":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 128,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [9000, 12000],
       "opt_base_learning_rate": 0.16,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.000256,
       "opt_learning_rate_warmup_steps": 625
@@ -76,13 +76,13 @@
   "maskrcnn_ref_256":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 256,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [5625, 7500],
       "opt_base_learning_rate": 0.24,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.000133,
       "opt_learning_rate_warmup_steps": 1800
@@ -94,13 +94,13 @@
   "maskrcnn_ref_272":
   {
     "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TBD",
     "BS": 272,
     "Hyperparams": {
-      "opt_learning_decay_factor": 0.1,
       "opt_learning_decay_steps": [5294, 7058],
       "opt_base_learning_rate": 0.24,
-      "max_image_size": 1333,
-      "min_image_size": 800,
       "num_image_candidates": 6000,
       "opt_learning_rate_warmup_factor": 0.000133,
       "opt_learning_rate_warmup_steps": 1800

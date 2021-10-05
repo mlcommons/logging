@@ -15,20 +15,36 @@
             "opt_weight_decay": 0.01
         }
     },
+    "cosmoflow_ref_128": {
+        "Benchmark": "cosmoflow",
+        "BS": 128,
+        "Epochs to converge": [ 16, 18, 18, 18, 18, 17, 18, 18, 18, 18, 18, 18, 17, 18, 18, 18, 19, 18, 18, 18 ],
+        "Hyperparams": {
+            "global_batch_size": 128,
+            "opt_name": "SGD",
+            "opt_base_learning_rate": 0.004,
+            "opt_learning_rate_warmup_epochs": 4,
+            "opt_learning_rate_warmup_factor": 4.0,
+            "opt_learning_rate_decay_boundary_epochs": [ 16, 32 ],
+            "opt_learning_rate_decay_factor": 0.25,
+            "dropout": 0.5,
+            "opt_weight_decay": 0.0
+        }
+    },
     "cosmoflow_ref_1024": {
         "Benchmark": "cosmoflow",
         "BS": 1024,
-        "Epochs to converge": [ 34, 55, 45, 43, 51, 38, 39, 46, 45, 42, 40, 37, 48, 42, 45, 61, 34, 49, 44, 40, 46 ],
+        "Epochs to converge": [ 42, 38, 42, 40, 40, 39, 43, 37, 39, 37, 43, 39, 38, 42, 40, 42, 42, 38, 36, 43 ],
         "Hyperparams": {
             "global_batch_size": 1024,
             "opt_name": "SGD",
-            "opt_base_learning_rate": 0.016,
-            "opt_learning_rate_warmup_epochs": 4,
-            "opt_learning_rate_warmup_factor": 16.0,
+            "opt_base_learning_rate": 0.012,
+            "opt_learning_rate_warmup_epochs": 0,
+            "opt_learning_rate_warmup_factor": 1.0,
             "opt_learning_rate_decay_boundary_epochs": [ 32, 64 ],
             "opt_learning_rate_decay_factor": 0.25,
-            "dropout": 0.0,
-            "opt_weight_decay": 0.01
+            "dropout": 0.5,
+            "opt_weight_decay": 0.0
         }
     }
 }
