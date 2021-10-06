@@ -305,7 +305,7 @@ def get_parser():
     parser.add_argument('--usage', type=str, default='training',
                     choices=usage_choices(),
                     help='what WG do the benchmarks come from')
-    parser.add_argument('--ruleset', type=str, default='1.0.0',
+    parser.add_argument('--ruleset', type=str, default='1.1.0',
                     choices=rule_choices(),
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,

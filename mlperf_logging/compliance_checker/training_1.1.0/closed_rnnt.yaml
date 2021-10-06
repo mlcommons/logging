@@ -100,7 +100,7 @@
 - KEY:
     NAME: data_train_num_buckets
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 6 "
+    CHECK: " isinstance(v['value'], int) "
 
 - KEY:
     NAME: data_speed_perturbaton_min
