@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import argparse
 import json
+import logging
 import sys
 
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -114,12 +115,9 @@ def check_system_desc(json_file, usage, ruleset):
     ])
 
     if not valid:
-        print("FAILURE: {}".format(", ".join(invalid_reasons)))
+        logging.error('  System description checker failed for %s : %s', system_name, invalid_reasons)
     else:
-        print("SUCCESS")
-
-    print("Table CSV prefix: {}".format(table_csv_prefix))
-    print("Table CSV postfix: {}".format(table_csv_postfix))
+        logging.info('  System description checker passed for %s', system_name)
 
     return valid, system_name, table_csv_prefix, table_csv_postfix
 
@@ -140,7 +138,8 @@ def get_parser():
                     help='Treat warnings as errors')
     parser.add_argument('--quiet', action='store_true',
                     help='Suppress warnings. Does nothing if --werror is set')
-
+    parser.add_argument('--log_output', type=str, default='system_desc_checker.log',
+                    help='where to store system description checker output log')
     return parser
 
 
@@ -148,7 +147,14 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    logging.basicConfig(filename=args.log_output, encoding='utf-8', level=logging.INFO)
+    logging.getLogger().addHandler(logging.StreamHandler())
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+    logging.getLogger().handlers[0].setFormatter(formatter)
+    logging.getLogger().handlers[1].setFormatter(formatter)
+
     check_system_desc(args.filename, args.usage, args.ruleset)
+    print('** Logging output also at', args.log_output)
 
 
 if __name__ == '__main__':
