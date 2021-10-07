@@ -84,8 +84,6 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             any_pattern = '{folder}/*'.format(folder=benchmark_folder)
             all_files = glob.glob(any_pattern, recursive=True)
 
-            print("LOOK:", benchmark, result_files)
-
             # Find all source codes for this benchmark.
             source_files = find_source_files_under(
                 os.path.join(folder, 'benchmarks', benchmark))
@@ -115,6 +113,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 print(all_files)
                 print('Detected {} total files in directory {}, but some do not conform '
                       'to naming convention, should you rename them to result_*.txt ?'.format(len(all_files), benchmark_folder))
+
             if len(result_files) < len(all_files):
                 print('WARNING: Unknown files in results directory {}'.format(benchmark_folder))
 
@@ -158,12 +157,12 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 too_many_errors = True
 
             # Check if each run use unique seeds.
-            if ruleset == '1.0.0' and division == 'closed':
+            if ruleset in {'1.0.0', '1.1.0'} and division == 'closed':
                 if not seed_checker.check_seeds(result_files, source_files):
                     too_many_errors = True
 
             # Run RCP checker for 1.0.0
-            if ruleset == '1.0.0' and division == 'closed' and benchmark != 'minigo':
+            if ruleset in {'1.0.0', '1.1.0'} and division == 'closed' and benchmark != 'minigo':
                 rcp_chk = rcp_checker.make_checker(usage, ruleset, verbose=False, bert_train_samples=rcp_bert_train_samples)
                 rcp_chk._compute_rcp_stats()
 

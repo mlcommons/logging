@@ -41,7 +41,7 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
-    POST:  " enqueue_config('training_1.0.0/{}_common.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('training_1.1.0/{}_common.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  submission_status

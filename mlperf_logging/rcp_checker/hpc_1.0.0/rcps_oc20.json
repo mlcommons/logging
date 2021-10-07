@@ -24,5 +24,18 @@
             "opt_learning_rate_decay_boundary_steps": [ 31264, 46896 ],
             "opt_learning_rate_decay_factor": 0.1
         }
+    },
+    "oc20_ref_2048": {
+        "Benchmark": "oc20",
+        "BS": 2048,
+        "Epochs to converge": [ 33, 32, 33, 33, 33, 34, 33, 33, 30, 33 ],
+        "Hyperparams": {
+            "global_batch_size": 2048,
+            "opt_base_learning_rate": 0.0016,
+            "opt_learning_rate_warmup_steps": 3908,
+            "opt_learning_rate_warmup_factor": 0.2,
+            "opt_learning_rate_decay_boundary_steps": [ 23448, 31264 ],
+            "opt_learning_rate_decay_factor": 0.1
+        }
     }
 }

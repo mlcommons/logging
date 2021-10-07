@@ -36,10 +36,10 @@ pip uninstall mlperf-logging
 ## Instructions
 
 A submission needs to pass the package checker and run the result summarizer.
-For submission 1.0 you can do that with
+For submission 1.1 (latest) you can do that with. For previous versions use the respective verify script.
 
 ```sh
-./verify_for_v1.0_training.sh <submission_directory>
+./verify_for_v1.1_training.sh <submission_directory>
 ```
 
 If you want to run the individual utilities/checker, please check the README files in the respective subdirectories.
