@@ -5,6 +5,7 @@ RCP checker: Verifies convergence points of submissions by comparing them agains
 import argparse
 import glob
 import json
+import logging
 import os
 import numpy as np
 import re
@@ -32,6 +33,9 @@ submission_runs = {
 }
 
 TOKEN = ':::MLLOG '
+
+def _print_divider_bar():
+    logging.info('------------------------------')
 
 def _detect_eval_error(file_contents):
     for line in file_contents:
@@ -159,6 +163,7 @@ class RCP_Checker:
                               record_contents['RCP Stdev'],
                               len(epoch_list)-samples_rejected*2)
             record_contents['Max Speedup'] = record_contents['RCP Mean'] / min_epochs
+            # TODO emizan: Remove verbose if 1.1 round goes well w.r.to logs
             if self.verbose:
                 print(record, record_contents, "\n")
 
@@ -288,9 +293,10 @@ class RCP_Checker:
                          'RCP Mean': mean,
                          'RCP Stdev': stdev,
                          'Max Speedup': mean / min_epochs}
-        if self.verbose:
-            print(low_rcp, high_rcp)
-            print(interp_record)
+        logging.info(" Creating interpolation record")
+        logging.info(" Low RCP: %s", low_rcp)
+        logging.info(" High RCP: %s", high_rcp)
+        logging.info(" Intepolation record: %s", interp_record)
         self.rcp_data[interp_record_name] = interp_record
 
 
@@ -300,14 +306,12 @@ class RCP_Checker:
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
-            if self.verbose:
-                print("Found RCP record:\n",rcp_record)
-                print("\nSubm Mean epochs:", mean_subm_epochs)
+            logging.info(" RCP Record: %s", rcp_record)
+            logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             return(True)
         else:
-            if self.verbose:
-                print("Found RCP record:\n",rcp_record)
-                print("\nSubm Mean epochs:", mean_subm_epochs)
+            logging.info(" RCP Record: %s", rcp_record)
+            logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             return(False)
 
 
@@ -326,6 +330,9 @@ class RCP_Checker:
         - (False) Fail / RCP interpolated
         - (False) Missing RCP / Submit missing RCP
         '''
+        _print_divider_bar()
+        logging.info(" Running RCP Checker")
+        _print_divider_bar()
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
         benchmark = os.path.split(dir)[1]
@@ -368,7 +375,7 @@ class RCP_Checker:
         if rcp_bypass and not rcp_check:
             if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation':
                 rcp_msg  = rcp_msg + ' passed using rcp_bypass'
-                print('RCP test failed but allowed to proceed with RCP bypass')
+                logging.warning(' RCP test failed but allowed to proceed with RCP bypass')
                 rcp_check = True
 
         return rcp_check, rcp_msg
@@ -385,14 +392,14 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='1.0.0',
+    parser.add_argument('--rcp_version', type=str, default='1.1.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',
-                    help='If set, num samples used for training '
-                         'bert benchmark is taken from train_samples, '
-                         'istead of epoch_num')
-
+                    help='If set, num samples used for training bert benchmark'
+                         'is taken from train_samples, instead of epoch_num')
+    parser.add_argument('--log_output', type=str, default='rcp_checker.log',
+                    help='where to store RCP checker output log')
     return parser
 
 

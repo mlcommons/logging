@@ -1,5 +1,6 @@
 import warnings
 import os
+import logging
 
 from ..compliance_checker import mlp_parser
 
@@ -8,6 +9,10 @@ SOURCE_FILE_EXT = {
     '.py', '.cc', '.cpp', '.cxx', '.c', '.h', '.hh', '.hpp', '.hxx', '.sh',
     '.sub', '.cu', '.cuh'
 }
+
+
+def _print_divider_bar():
+    logging.info('------------------------------')
 
 
 def is_source_file(path):
@@ -137,12 +142,15 @@ class SeedChecker:
                 this benchmark.
 
         """
+        _print_divider_bar()
+        logging.info(" Running Seed Checker")
         no_logged_seed, error_messages = self._assert_unique_seed_per_run(
             result_files)
 
         if len(error_messages) > 0:
-            print("Seed checker failed and found the following "
-                  "errors:\n{}".format('\n'.join(error_messages)))
+            logging.error(" Seed checker failed and found the following errors %s: ", join(error_messages))
+            #print("Seed checker failed and found the following "
+            #      "errors:\n{}".format('\n'.join(error_messages)))
             return False
 
         if no_logged_seed:

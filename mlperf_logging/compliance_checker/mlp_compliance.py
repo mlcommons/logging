@@ -8,6 +8,7 @@ import argparse
 import os
 import yaml
 import json
+import logging
 import re
 import math
 
@@ -82,7 +83,7 @@ class ComplianceChecker:
                     *self.not_overwritable
         ])
         if message:
-          print(message)
+            logging.warning(" %s", message)
 
     def has_messages(self):
         return self.not_overwritable or self.overwritable
@@ -121,7 +122,7 @@ class ComplianceChecker:
             try:
                 if not eval(test.strip(), state):
                    if test.strip().split()[0] == "sorted(s['initialized_tensors'])":
-                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key='')
+                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key='weights_initialization')
                    else:
                        self.put_message(
                            f"failed test: {test}"
@@ -258,6 +259,7 @@ class ComplianceChecker:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         while len(enqueued_configs)>0:
             current_config = enqueued_configs.pop(0)
+            logging.info (' Compliance checks: %s', current_config)
             config_file = general_file = os.path.join(current_dir, current_config)
 
             if not os.path.exists(config_file):
@@ -269,14 +271,14 @@ class ComplianceChecker:
 
     def check_file(self, filename, config_file):
 
+        logging.info('Running compliance on file: %s', filename)
         loglines, errors = mlp_parser.parse_file(filename, ruleset=self.ruleset)
 
         if len(errors) > 0:
-            print('Found parsing errors:')
+            logging.warning(' Found parsing errors:')
             for line, error in errors:
-                print(line)
-                print('  ^^ ', error)
-            print()
+                logging.warning('  %s',line)
+                logging.warning('   ^^  %s', error)
             self.put_message('Log lines had parsing errors.')
 
         self.check_loglines(loglines, config_file)
@@ -311,10 +313,11 @@ def get_parser():
     parser.add_argument('--config',  type=str,
                     help='mlperf logging config, by default it loads {usage}_{ruleset}/common.yaml', default=None)
     parser.add_argument('--werror', action='store_true',
-                    help='Treas warnings as errors')
+                    help='Treat warnings as errors')
     parser.add_argument('--quiet', action='store_true',
                     help='Suppress warnings. Does nothing if --werror is set')
-
+    parser.add_argument('--log_output', type=str, default='compliance_checker.log',
+                    help='where to store compliance checker output log')
     return parser
 
 
