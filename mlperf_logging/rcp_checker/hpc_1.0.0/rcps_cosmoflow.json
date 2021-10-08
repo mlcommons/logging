@@ -46,5 +46,21 @@
             "dropout": 0.5,
             "opt_weight_decay": 0.0
         }
+    },
+    "cosmoflow_ref_2048": {
+        "Benchmark": "cosmoflow",
+        "BS": 2048,
+        "Epochs to converge": [ 70, 69, 68, 67,104, 80, 69, 64, 73, 66, 84 ],
+        "Hyperparams": {
+            "global_batch_size": 2048,
+            "opt_name": "SGD",
+            "opt_base_learning_rate": 0.024,
+            "opt_learning_rate_warmup_epochs": 4,
+            "opt_learning_rate_warmup_factor": 8.0,
+            "opt_learning_rate_decay_boundary_epochs": [ 48, 64 ],
+            "opt_learning_rate_decay_factor": 0.25,
+            "dropout": 0.0,
+            "opt_weight_decay": 0.01
+        }
     }
 }
