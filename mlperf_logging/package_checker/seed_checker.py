@@ -148,7 +148,7 @@ class SeedChecker:
             result_files)
 
         if len(error_messages) > 0:
-            logging.error(" Seed checker failed and found the following errors %s: ", join(error_messages))
+            logging.error(" Seed checker failed and found the following errors: %s", '\n'.join(error_messages))
             #print("Seed checker failed and found the following "
             #      "errors:\n{}".format('\n'.join(error_messages)))
             return False
