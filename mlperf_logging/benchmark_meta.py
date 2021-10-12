@@ -15,9 +15,9 @@ _ALL_RESULT_FILE_COUNTS = {
     },
     
     'hpc' : {
-    'deepcam': 5,
+        'deepcam': 5,
         'cosmoflow': 10,
-        'oc20': 10
+        'oc20': 5
     }
 }
 
