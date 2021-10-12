@@ -6,7 +6,7 @@ from . import mlp_compliance
 parser = mlp_compliance.get_parser()
 args = parser.parse_args()
 
-logging.basicConfig(filename=args.log_output, encoding='utf-8', level=logging.INFO)
+logging.basicConfig(filename=args.log_output, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler())
 formatter = logging.Formatter("%(levelname)s - %(message)s")
 logging.getLogger().handlers[0].setFormatter(formatter)
