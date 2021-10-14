@@ -31,22 +31,6 @@
             "opt_weight_decay": 0.0
         }
     },
-    "cosmoflow_ref_512": {
-        "Benchmark": "cosmoflow",
-        "BS": 512,
-        "Epochs to converge": [ 22, 23, 23, 24, 24, 21, 23, 23, 23, 23, 24, 23, 23, 21, 23, 23, 21, 23, 23, 23 ],
-        "Hyperparams": {
-            "global_batch_size": 512,
-            "opt_name": "SGD",
-            "opt_base_learning_rate": 0.006,
-            "opt_learning_rate_warmup_epochs": 6,
-            "opt_learning_rate_warmup_factor": 4.0,
-            "opt_learning_rate_decay_boundary_epochs": [ 19, 21, 22, 23 ],
-            "opt_learning_rate_decay_factor": [0.5, 0.25, 0.125, 0.0625],
-            "dropout": 0.0,
-            "opt_weight_decay": 0.01
-        }
-    },
     "cosmoflow_ref_1024": {
         "Benchmark": "cosmoflow",
         "BS": 1024,
