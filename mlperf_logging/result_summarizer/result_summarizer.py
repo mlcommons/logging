@@ -452,7 +452,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
-            system_specs['availability'] = None
+            _check_and_update_system_specs('status', 'availability')
             _check_and_update_system_specs('submitter', 'submitter')
             _check_and_update_system_specs('system_name',
                                            'system',
