@@ -22,26 +22,6 @@
     ]
   },
 
-  "resnet_ref_2048":
-  {
-    "Benchmark": "resnet",
-    "Creator": "Google",
-    "When": "Prior to 1.0 submission",
-    "Platform": "TPU-v4-32 / TF2, TF version ~2.4",
-    "BS": 2048,
-    "Hyperparams": {
-      "optimizer": "lars",
-      "opt_base_learning_rate": 8.5,
-      "opt_learning_rate_warmup_epochs": 5,
-      "opt_momentum": 0.9,
-      "opt_weight_decay": 2e-3,
-      "opt_learning_rate_decay_steps": 22530,
-      "model_bn_span": 64
-    },
-    "Epochs to converge": [
-      38, 39, 38, 39, 38, 39, 38, 39, 38, 38]
-  },
-
   "resnet_ref_3264":
   {
     "Benchmark": "resnet",
