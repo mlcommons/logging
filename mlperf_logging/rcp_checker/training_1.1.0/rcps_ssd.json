@@ -20,6 +20,27 @@
        50, 50, 50, 50, 50, 50, 50, 50, 50, 50]
   },
 
+  "ssd_ref_1536_s192":
+  {
+    "Benchmark": "ssd",
+    "Creator": "NVIDIA",
+    "When": "At 1.2 submission",
+    "Platform": "TBD",
+    "BS": 1536,
+    "Hyperparams": {
+      "opt_base_learning_rate": 2.5e-3,
+      "opt_learning_rate_decay_boundary_epochs": [44, 55],
+      "opt_learning_rate_warmup_factor": 0,
+      "opt_learning_rate_warmup_steps": 2.619685,
+      "opt_weight_decay": 1.3e-4,
+      "max_samples": 50,
+      "model_bn_span": 192
+    },
+    "Epochs to converge": [
+       55, 55, 55, 55, 55, 55, 55, 55, 55, 55,
+       55, 55, 55, 55, 55, 55, 55, 55, 55, 55]
+  },
+
   "ssd_ref_2048_s16":
   {
     "Benchmark": "ssd",

@@ -161,27 +161,72 @@
        4177920, 4079616, 4300800, 4153344, 4276224, 4423680, 4276224, 4104192, 4251648, 4153344]
   },
 
+  "bert_ref_8704":
+  {
+    "Benchmark": "bert",
+    "Creator": "NVIDIA",
+    "When": "At 1.1 submission",
+    "Platform": "TBD",
+    "BS": 8704,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.002971656225,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 600,
+      "num_warmup_steps": 287,
+      "start_warmup_step": -76,
+      "opt_lamb_beta_1": 0.88,
+      "opt_lamb_beta_2": 0.88,
+      "opt_lamb_weight_decay_rate": 0.0166629,
+      "gradient_accumulation_steps": 34
+    },
+    "Epochs to converge": [
+      4343040, 4143360, 4143360, 4442880, 4392960, 4243200, 4193280, 4542720, 4492800, 4243200,
+      4243200, 4392960, 4243200, 4193280, 4093440, 4392960, 4093440, 4243200, 4093440, 4392960]
+  },
+
   "bert_ref_12288":
   {
     "Benchmark": "bert",
     "Creator": "NVIDIA",
-    "When": "At 1.0 submission",
+    "When": "At 1.1 submission",
     "Platform": "TBD",
     "BS": 12288,
     "Hyperparams": {
-      "opt_base_learning_rate": 0.0033,
+      "opt_base_learning_rate": 0.0031,
       "opt_epsilon": 1e-6,
       "opt_learning_rate_training_steps": 500,
       "num_warmup_steps": 300,
-      "start_warmup_step": -76,
-      "opt_lamb_beta_1": 0.77,
-      "opt_lamb_beta_2": 0.885,
-      "opt_lamb_weight_decay_rate": 0.0147050375,
-      "gradient_accumulation_steps": 4
+      "start_warmup_step": -100,
+      "opt_lamb_beta_1": 0.80,
+      "opt_lamb_beta_2": 0.925,
+      "opt_lamb_weight_decay_rate": 0.0166629,
+      "gradient_accumulation_steps": 32
     },
     "Epochs to converge": [
-       4718592, 4816896, 4718592, 5210112, 4816896, 5406720, 5111808, 5210112, 5013504, 4816896,
-       5210112, 5013504, 4718592, 5111808, 4816896, 4915200, 5111808, 4718592, 4718592, 4620288]
+      4542720, 4392960, 4642560, 4542720, 4542720, 4492800, 4343040, 4343040, 4442880, 4442880, 
+      4442880, 4442880, 4442880, 4692480, 4492800, 4442880, 4442880, 4442880, 4492800, 4343040]
+  },
+
+  "bert_ref_13056":
+  {
+    "Benchmark": "bert",
+    "Creator": "NVIDIA",
+    "When": "At 1.1 submission",
+    "Platform": "TBD",
+    "BS": 13056,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.00319540686,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 500,
+      "num_warmup_steps": 300,
+      "start_warmup_step": -100,
+      "opt_lamb_beta_1": 0.80,
+      "opt_lamb_beta_2": 0.925,
+      "opt_lamb_weight_decay_rate": 0.0166629,
+      "gradient_accumulation_steps": 34
+    },
+    "Epochs to converge": [
+      4442880, 4592640, 4642560, 4842240, 4742400, 4592640, 4642560, 4692480, 4942080, 4542720,
+      4592640, 4093440, 4442880, 4792320, 4642560, 4592640, 4592640, 4892160, 4742400, 4592640]
   }
 }
-
