@@ -124,7 +124,7 @@
     "Hyperparams": {
       "opt_base_learning_rate": 1.5,
       "opt_momentum": 0.9,
-      "opt_learning_rate_warmup_epochs": 1000,
+      "opt_learning_rate_warmup_epochs": 1500,
       "opt_initial_learning_rate": 1e-4,
       "opt_learning_rate_decay_boundary_epochs": [],
       "opt_learning_rate_decay_factor": 1.0,
