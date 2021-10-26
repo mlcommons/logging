@@ -34,7 +34,7 @@
       "opt_base_learning_rate": 8.5,
       "opt_learning_rate_warmup_epochs": 5,
       "opt_momentum": 0.9,
-      "opt_weight_decay": 2e-3,
+      "opt_weight_decay": 2e-4,
       "opt_learning_rate_decay_steps": 22530,
       "model_bn_span": 64
     },
@@ -76,7 +76,7 @@
       "opt_base_learning_rate": 10,
       "opt_learning_rate_warmup_epochs": 5,
       "opt_momentum": 0.9,
-      "opt_weight_decay": 2e-3,
+      "opt_weight_decay": 2e-4,
       "opt_learning_rate_decay_steps": 13137,
       "model_bn_span": 64
     },
@@ -138,7 +138,7 @@
       "opt_base_learning_rate": 21.2,
       "opt_learning_rate_warmup_epochs": 16,
       "opt_momentum": 0.94,
-      "opt_weight_decay": 2e-5,
+      "opt_weight_decay": 2.5e-5,
       "opt_learning_rate_decay_steps": 2267,
       "model_bn_span": 128
     },
