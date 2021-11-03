@@ -22,26 +22,6 @@
     ]
   },
 
-  "resnet_ref_2048":
-  {
-    "Benchmark": "resnet",
-    "Creator": "Google",
-    "When": "Prior to 1.0 submission",
-    "Platform": "TPU-v4-32 / TF2, TF version ~2.4",
-    "BS": 2048,
-    "Hyperparams": {
-      "optimizer": "lars",
-      "opt_base_learning_rate": 8.5,
-      "opt_learning_rate_warmup_epochs": 5,
-      "opt_momentum": 0.9,
-      "opt_weight_decay": 2e-4,
-      "opt_learning_rate_decay_steps": 22530,
-      "model_bn_span": 64
-    },
-    "Epochs to converge": [
-      38, 39, 38, 39, 38, 39, 38, 39, 38, 38]
-  },
-
   "resnet_ref_3264":
   {
     "Benchmark": "resnet",
@@ -115,14 +95,13 @@
       "optimizer": "lars",
       "opt_base_learning_rate": 12.8,
       "opt_learning_rate_warmup_epochs": 9,
-      "opt_momentum": 0.94,
+      "opt_momentum": 0.9,
       "opt_weight_decay": 2.5e-5,
       "opt_learning_rate_decay_steps": 4710,
       "model_bn_span": 204
     },
     "Epochs to converge": [
-      44, 45, 47, 45, 45, 45, 45, 44, 44, 44,
-      45, 45, 45, 45, 44, 44
+      46, 46, 44, 46, 45, 46, 45, 45, 45, 46
     ]
   },
 
@@ -146,24 +125,51 @@
       56, 56, 55, 56, 56, 56, 56, 56, 57, 56]
   },
 
-  "resnet_ref_64480":
+  "resnet_ref_49152":
   {
     "Benchmark": "resnet",
     "Creator": "NVIDIA",
-    "When": "At 1.0 submission",
+    "When": "At 1.1 submission",
     "Platform": "TBD",
-    "BS": 64480,
+    "BS": 49152,
     "Hyperparams": {
       "optimizer": "lars",
-      "opt_base_learning_rate": 26,
-      "opt_learning_rate_warmup_epochs": 31,
+      "opt_base_learning_rate": 19.405,
+      "opt_end_learning_rate": 0.0001,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 24,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 0.0001,
-      "opt_learning_rate_decay_steps": 1788,
-      "model_bn_span": 155
+      "opt_learning_rate_decay_steps": 1846,
+      "model_bn_span": 256
     },
     "Epochs to converge": [
-      88, 87, 86, 86, 86, 86, 86, 86, 84, 86
+      68, 68, 68, 68, 69, 68, 68, 67, 69, 67
+    ]
+  },
+
+  "resnet_ref_58880":
+  {
+    "Benchmark": "resnet",
+    "Creator": "NVIDIA",
+    "When": "At 1.1 submission",
+    "Platform": "TBD",
+    "BS": 58880,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 23.246,
+      "opt_end_learning_rate": 0.0001,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 29,
+      "opt_momentum": 0.951807,
+      "opt_weight_decay": 0.0001,
+      "opt_learning_rate_decay_steps": 1785,
+      "model_bn_span": 230
+    },
+    "Epochs to converge": [
+      80, 81, 80, 78, 80, 80, 81, 79, 80, 80
     ]
   },
 
