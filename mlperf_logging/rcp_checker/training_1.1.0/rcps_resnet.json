@@ -141,7 +141,7 @@
       "opt_learning_rate_warmup_epochs": 24,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 0.0001,
-      "opt_learning_rate_decay_steps": 71,
+      "opt_learning_rate_decay_steps": 1846,
       "model_bn_span": 256
     },
     "Epochs to converge": [
@@ -165,7 +165,7 @@
       "opt_learning_rate_warmup_epochs": 29,
       "opt_momentum": 0.951807,
       "opt_weight_decay": 0.0001,
-      "opt_learning_rate_decay_steps": 85,
+      "opt_learning_rate_decay_steps": 1785,
       "model_bn_span": 230
     },
     "Epochs to converge": [
