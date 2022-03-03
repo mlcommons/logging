@@ -409,7 +409,6 @@
             "cls/predictions/transform/dense/bias",
             "cls/predictions/transform/LayerNorm/gamma",
             "cls/predictions/transform/LayerNorm/beta",
-            "cls/predictions/decoder/kernel",
             "cls/seq_relationship/output_weights",
             "cls/seq_relationship/output_bias",
         ])
