@@ -15,7 +15,8 @@ logging.getLogger().handlers[1].setFormatter(formatter)
 # Results summarizer makes these 3 calls to invoke RCP test
 checker = rcp_checker.make_checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
 checker._compute_rcp_stats()
-test, msg = checker._check_directory(args.dir)
+# Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
+test, msg = checker._check_directory(args.dir, rcp_pass=args.rcp_pass)
 
 if test:
     logging.info('%s, RCP test PASSED', msg)
@@ -24,4 +25,3 @@ else:
     logging.error('%s, RCP test FAILED, consider adding --rcp_bypass in when running the package_checker if the RCP is NOT missing', msg)
     print('** Logging output also at', args.log_output)
     sys.exit(1)
-

@@ -148,6 +148,57 @@ class RCP_Checker:
         return processed_rcps
 
 
+    def _prune_rcps(self):
+        '''
+        Prune RCPs. We compare convergence of each RCP point with interpolation usgin surrounding points
+        and move RCP points that have min (fastest) convergence to min_rcp_data.
+        min_rcp_data is by default used for RCP tests.
+        '''
+        self.min_rcp_data = {}
+        for benchmark in submission_runs['training'].keys():
+            min_epochs = []
+            for record, record_contents in self.rcp_data.items():
+                if record_contents['Benchmark'] == benchmark:
+                    min_epochs.append(record_contents)
+
+            # Step 1
+            # Find point with fastest convergence and prune all point with smaller batch size
+            # In that way the min batch size point will have the fastest convergenece
+            fastest_conv = min_epochs[0]['Min Epochs']
+            fastest_conv_idx = 0
+            for i, min_epoch in enumerate(min_epochs):
+                if min_epoch['Min Epochs'] < fastest_conv:
+                    fastest_conv_idx = i
+                    fastest_conv = min_epochs[i]['Min Epochs']
+            # print('FASTEST CONV:', benchmark, fastest_conv_idx)
+            for i in range(fastest_conv_idx):
+                del min_epochs[0]
+
+            # Step 2
+            # Run this algorithm for the rest of the points:
+            # for i = 1..N-2
+            #    if RCP[i+1] has slower convergence than interpolation(RCP[i], RCP[i+2]):
+            #      remove it
+            #      decrement i,N
+            list_len = len(min_epochs)
+            i = 1
+            while i < list_len - 1:
+                rcp_min = min_epochs[i-1]
+                rcp_max = min_epochs[i+1]
+                bs = min_epochs[i]['BS']
+                name, rcp = self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max,show_rec=False)
+                if min_epochs[i]['Min Epochs'] > rcp['Min Epochs']:
+                    del min_epochs[i]
+                    i = i-1
+                    list_len = list_len - 1
+                i = i+1
+
+            # Copy pruned epochs to min_rcp_data
+            for min_epoch in min_epochs:
+                for record, record_contents in self.rcp_data.items():
+                    if record_contents['Benchmark'] == min_epoch['Benchmark'] and record_contents['BS'] == min_epoch['BS']:
+                        self.min_rcp_data[record] = record_contents
+
     def _compute_rcp_stats(self):
         '''Compute RCP mean, stdev and min acceptable epochs for RCPs'''
         for record, record_contents in self.rcp_data.items():
@@ -163,28 +214,43 @@ class RCP_Checker:
                               record_contents['RCP Stdev'],
                               len(epoch_list)-samples_rejected*2)
             record_contents['Max Speedup'] = record_contents['RCP Mean'] / min_epochs
+            record_contents['Min Epochs'] = min_epochs
+
             # TODO emizan: Remove verbose if 1.1 round goes well w.r.to logs
             if self.verbose:
                 print(record, record_contents, "\n")
 
-    def _find_rcp(self, benchmark, bs):
+        self._prune_rcps()
+
+
+    def _get_rcp_data(self, rcp_pass = 'pruned_rcps'):
+        if rcp_pass == 'pruned_rcps':
+            rcp_data = self.min_rcp_data
+        elif rcp_pass == 'full_rcps':
+            rcp_data =  self.rcp_data
+        return rcp_data
+
+
+    def _find_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
         '''Find RCP based on benchmark and batch size'''
-        for _, record_contents in self.rcp_data.items():
+        rcp_data = self._get_rcp_data(rcp_pass)
+        for _, record_contents in rcp_data.items():
             if record_contents['Benchmark'] == benchmark and record_contents['BS'] == bs:
                 return record_contents
 
 
-    def _find_min_rcp(self, benchmark):
+    def _find_min_rcp(self, benchmark, rcp_pass = 'full_rcp'):
         '''Find RCP with the smallest batch size for a benchmark'''
         min_bs = 1e9
         min_record = None
-        for _, record_contents in self.rcp_data.items():
+        rcp_data = self._get_rcp_data(rcp_pass)
+        for _, record_contents in rcp_data.items():
             if record_contents['BS'] < min_bs and record_contents['Benchmark'] == benchmark:
                 min_record = record_contents
                 min_bs = record_contents['BS']
         return min_record
 
-    def _find_top_min_rcp(self, benchmark, bs):
+    def _find_top_min_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
         '''
         Find top RCP to serve as min in interpolation.
         For example, if bs = 100 and reference has bs = 10, 20, 110, 120
@@ -192,7 +258,8 @@ class RCP_Checker:
         '''
         min_bs = 0
         min_record = None
-        for _, record_contents in self.rcp_data.items():
+        rcp_data = self._get_rcp_data(rcp_pass)
+        for _, record_contents in rcp_data.items():
             if record_contents['Benchmark'] == benchmark:
                 if record_contents['BS'] < bs and record_contents['BS'] > min_bs:
                     min_bs = record_contents['BS']
@@ -200,7 +267,7 @@ class RCP_Checker:
         return min_record
 
 
-    def _find_bottom_max_rcp(self, benchmark, bs):
+    def _find_bottom_max_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
         '''
         Find bottom RCP to serve as max in interpolation.
         For example, if bs = 100 and reference has bs = 10, 20, 110, 120
@@ -208,7 +275,8 @@ class RCP_Checker:
         '''
         max_bs = 1e9
         max_record = None
-        for _, record_contents in self.rcp_data.items():
+        rcp_data = self._get_rcp_data(rcp_pass)
+        for _, record_contents in rcp_data.items():
             if record_contents['Benchmark'] == benchmark:
                 if record_contents['BS'] > bs and record_contents['BS'] < max_bs:
                     max_bs = record_contents['BS']
@@ -265,7 +333,7 @@ class RCP_Checker:
         return mean_mid
 
 
-    def _create_interp_rcp(self, benchmark, target_bs, low_rcp, high_rcp):
+    def _create_interp_rcp(self, benchmark, target_bs, low_rcp, high_rcp, show_rec=False):
         '''
         Create an interpolation RCP for batch size target_bs by interpolating
         low_rcp and high_rcp. Add the RCP into rcp_data.
@@ -292,12 +360,14 @@ class RCP_Checker:
                          'Epochs to converge': [],
                          'RCP Mean': mean,
                          'RCP Stdev': stdev,
-                         'Max Speedup': mean / min_epochs}
-        logging.info(" Creating interpolation record")
-        logging.info(" Low RCP: %s", low_rcp)
-        logging.info(" High RCP: %s", high_rcp)
-        logging.info(" Intepolation record: %s", interp_record)
-        self.rcp_data[interp_record_name] = interp_record
+                         'Max Speedup': mean / min_epochs,
+                         'Min Epochs': min_epochs}
+        if show_rec:
+            logging.info(" Creating interpolation record")
+            logging.info(" Low RCP: %s", low_rcp)
+            logging.info(" High RCP: %s", high_rcp)
+            logging.info(" Intepolation record: %s", interp_record)
+        return interp_record_name, interp_record
 
 
     def _eval_submission_record(self, rcp_record, subm_epochs):
@@ -315,7 +385,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_bypass=False):
+    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -331,7 +401,7 @@ class RCP_Checker:
         - (False) Missing RCP / Submit missing RCP
         '''
         _print_divider_bar()
-        logging.info(" Running RCP Checker")
+        logging.info(" Running RCP Checker, pass: %s", rcp_pass)
         _print_divider_bar()
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
@@ -344,24 +414,23 @@ class RCP_Checker:
         if subm_epochs is None:
             return False, 'Insufficient convergence'
 
-        rcp_record = self._find_rcp(benchmark, bs)
+        rcp_record = self._find_rcp(benchmark, bs, rcp_pass)
         rcp_msg = ''
         if rcp_record is not None:
             rcp_msg = 'RCP found'
             rcp_check = self._eval_submission_record(rcp_record, subm_epochs)
         else:
-            rcp_min = self._find_top_min_rcp(benchmark, bs)
-            rcp_max = self._find_bottom_max_rcp(benchmark, bs)
+            rcp_min = self._find_top_min_rcp(benchmark, bs, rcp_pass)
+            rcp_max = self._find_bottom_max_rcp(benchmark, bs, rcp_pass)
             if rcp_min is not None and rcp_max is not None:
                 rcp_msg = 'RCP Interpolation'
-                self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
-                interp_rcp_record = self._find_rcp(benchmark, bs)
-                rcp_check = self._eval_submission_record(interp_rcp_record, subm_epochs)
+                interp_record_name, interp_record = self._create_interp_rcp(benchmark, bs, rcp_min, rcp_max, show_rec=True)
+                rcp_check = self._eval_submission_record(interp_record, subm_epochs)
             elif rcp_min is not None and rcp_max is None:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
                 rcp_check = False
             elif rcp_min is None and rcp_max is not None:
-                rcp_min_record = self._find_min_rcp(benchmark)
+                rcp_min_record = self._find_min_rcp(benchmark, rcp_pass)
                 rcp_check = self._eval_submission_record(rcp_min_record, subm_epochs)
                 mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
                 if rcp_check == False:
@@ -400,6 +469,8 @@ def get_parser():
                          'is taken from train_samples, instead of epoch_num')
     parser.add_argument('--log_output', type=str, default='rcp_checker.log',
                     help='where to store RCP checker output log')
+    parser.add_argument('--rcp_pass', type=str, default='pruned_rcps',
+                    help='use "pruned_rcps" or "full_rcps" for convergence checks')
     return parser
 
 
@@ -408,4 +479,4 @@ def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
 
 
 def main(checker, dir):
-    return checker._check_directory(dir)
+    return checker._check_directory(dir, rcp_pass='pruned_rcps')
