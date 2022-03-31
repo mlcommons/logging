@@ -272,6 +272,21 @@ def _assert_in_desc_and_return(desc, desc_keys, query=None):
     return desc[desc_keys[0]] if query is None else query(desc)
 
 
+def _get_scaling_factor(folder):
+    """Apply scaling factor if benchmark dir has json file scaling.json.
+
+    This file can be added only during the review period if the review
+    committee decides score should be scaled.
+    """
+    scaling_file = os.path.join(folder, 'scaling.json')
+    if os.path.exists(scaling_file):
+        contents = _read_json_file(scaling_file)
+        scaling_factor = contents['scaling_factor']
+        print(f'NOTICE: Applying scaling factor {scaling_factor} to dir {folder}')
+        return scaling_factor
+    return 1.0
+
+
 def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     # Collect scores for benchmarks.
     benchmark_scores = {}
@@ -313,6 +328,9 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
         if dropped_scores <= max_dropped_scores:
             benchmark_scores[benchmark] = _compute_olympic_average(
                 scores, dropped_scores, max_dropped_scores)
+
+            scaling_factor = _get_scaling_factor(benchmark_folder)
+            benchmark_scores[benchmark] *= scaling_factor
 
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
     return benchmark_scores
