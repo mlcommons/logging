@@ -25,6 +25,7 @@
             'in_block' : False,
             'block_first_epoch' : -1,
             'first_init_start': 9e99,
+            'compile_time_mins': 0,
         })
 
 - KEY:
@@ -41,7 +42,7 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
-    POST:  " enqueue_config('training_2.0.0/{}_common.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('training_2.0.0/{}_common.yaml'.format(v['value'])); s['compile_time_mins'] = 240 if v['value'] == 'open' else 30 "
 
 - KEY:
     NAME:  submission_status
@@ -71,7 +72,7 @@
     CHECK:
         - "s['init_started']"
         - "not s['run_started']"
-        - "ll.timestamp - s['first_init_start'] < (30*60*1e3)"
+        - "ll.timestamp - s['first_init_start'] < (s['compile_time_mins']*60*1e3)"
     POST:  " s['init_stopped'] = True"
 
 - KEY:
