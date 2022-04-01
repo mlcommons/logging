@@ -243,6 +243,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'accelerator_model_name': str,
         'accelerators_count': int,
         'framework': str,
+        'notes': str,
     }
     if weak_scaling == True:
         benchmarks = get_allowed_benchmarks(usage, ruleset)
@@ -500,6 +501,14 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
             _check_and_update_system_specs('framework',
                                            'framework',
                                            query=_pretty_framework)
+            _check_and_update_system_specs(
+                ['hw_notes', 'sw_notes'],
+                'notes',
+                query=lambda desc: ';'.join(s for s in (
+                    desc['hw_notes'],
+                    desc['sw_notes'],
+                ) if s),
+            )
         except FieldError as e:
             print("{} in {}".format(e, system_file))
             continue

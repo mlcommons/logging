@@ -121,13 +121,10 @@ class ComplianceChecker:
         for test in tests:
             try:
                 if not eval(test.strip(), state):
-                   if test.strip().split()[0] == "sorted(s['initialized_tensors'])":
-                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key='weights_initialization')
-                   else:
-                       self.put_message(
-                           f"failed test: {test}"
-                           f"\ncurrent context[s]={preety_dict(state['s'])}",
-                    )
+                   self.put_message(
+                       f"failed test: {test}"
+                       f"\ncurrent context[s]={preety_dict(state['s'])}",
+                   )
             except:
                 self.put_message(
                     f'Failed executing CHECK code:'
@@ -228,11 +225,8 @@ class ComplianceChecker:
 
             if v['REQ']=='AT_LEAST_ONE':
                 if len(reported_values[k])<1:
-                   if k == 'weights_initialization':
-                       self.put_warning(f" Warning: Failed weights initialization check (can be ignored for 1.1.0)", key=k)
-                   else:
-                       self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
-                                        key=k)
+                    self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
+                                     key=k)
 
             if v['REQ'].startswith('AT_LEAST_ONE_OR'):
                 alternatives.add(tuple({k, *self.parse_alternatives(v['REQ'])}))
@@ -307,7 +301,7 @@ def get_parser():
     parser.add_argument('--usage', type=str, default='training',
                     choices=usage_choices(),
                     help='what WG do the benchmarks come from')
-    parser.add_argument('--ruleset', type=str, default='1.1.0',
+    parser.add_argument('--ruleset', type=str, default='2.0.0',
                     choices=rule_choices(),
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,

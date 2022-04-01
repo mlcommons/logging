@@ -39,7 +39,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
 
     Args:
         folder: The folder for a submission package.
-        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, or 1.1.0
+        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
     allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
     benchmark_file_counts = get_result_file_counts(usage)
@@ -154,13 +154,13 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 logging.error(" %d files do not comply, directory cannot be accepted", errors_found)
 
             # Check if each run use unique seeds.
-            if ruleset in {'1.0.0', '1.1.0'} and division == 'closed':
+            if ruleset in {'1.0.0', '1.1.0', '2.0.0'} and division == 'closed':
                 if not seed_checker.check_seeds(result_files, source_files):
                     too_many_errors = True
                     logging.error('Seed checker failed')
 
             # Run RCP checker for >= 1.0.0
-            if ruleset in {'1.0.0', '1.1.0'} and division == 'closed' and benchmark != 'minigo':
+            if ruleset in {'1.0.0', '1.1.0', '2.0.0'} and division == 'closed' and benchmark != 'minigo':
                 rcp_chk = rcp_checker.make_checker(usage, ruleset, verbose=False, bert_train_samples=rcp_bert_train_samples)
                 rcp_chk._compute_rcp_stats()
 
@@ -187,7 +187,7 @@ def check_systems(folder, usage, ruleset):
     Args:
         folder: The folder for a submission package.
         usage: The usage such as training, inference_edge, inference_server, hpc.
-        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, or 1.1.0.
+        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
     system_folder = os.path.join(folder,'systems')
     pattern = '{folder}/*.json'.format(folder=system_folder)
@@ -207,9 +207,9 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
     Args:
         folder: The folder for a submission package.
         usage: The usage such as training or hpc
-        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0 or 1.1.0.
+        ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
-    if ruleset in {'1.0.0', '1.1.0'}:
+    if ruleset in {'1.0.0', '1.1.0', '2.0.0'}:
         logging.info(' Checking System Description Files')
         if not check_systems(folder, usage, ruleset):
             logging.error('System description file checker failed')
@@ -240,7 +240,7 @@ def get_parser():
         'ruleset',
         type=str,
         choices=rule_choices(),
-        help='the ruleset such as 0.6.0, 0.7.0, 1.0.0, or 1.1.0'
+        help='the ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.'
     )
     parser.add_argument(
         '--werror',
