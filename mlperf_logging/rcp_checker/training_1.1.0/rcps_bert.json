@@ -69,29 +69,6 @@
        2777088, 2801664, 2678784, 2801664, 2703360, 2629632, 2727936, 2703360, 2654208, 2949120]
   },
 
-  "bert_ref_3072":
-  {
-    "Benchmark": "bert",
-    "Creator": "Google",
-    "When": "Prior to 1.0 submission",
-    "Platform": "TPU-v4-128 / TF1, TF version ~2.4",
-    "BS": 3072,
-    "Hyperparams": {
-      "opt_base_learning_rate": 0.002,
-      "opt_epsilon": 1e-6,
-      "opt_learning_rate_training_steps": 1141,
-      "num_warmup_steps": 100,
-      "start_warmup_step": 0,
-      "opt_lamb_beta_1": 0.66,
-      "opt_lamb_beta_2": 0.998,
-      "opt_lamb_weight_decay_rate": 0.01,
-      "gradient_accumulation_steps": 96
-    },
-    "Epochs to converge": [
-       2703360, 2482176, 3072000, 2654208, 2580480, 2727936, 2605056, 2801664, 2777088, 2580480,
-       2875392, 2826240, 2973696, 2850816, 2678784, 2919120, 3121152, 2605056, 2678784, 2850816]
-  },
-
   "bert_ref_4096":
   {
     "Benchmark": "bert",
@@ -113,6 +90,30 @@
     "Epochs to converge": [
        2801664, 3022848, 2801664, 3022848, 3047424, 2727936, 2973696, 2703360, 2924544, 2629632,
        2678784, 2850816, 2777088, 2826240, 2801664, 2850816, 2924544, 2924544, 2727936, 2850816]
+  },
+
+
+  "bert_ref_3072":
+  {
+    "Benchmark": "bert",
+    "Creator": "Google",
+    "When": "Prior to 1.0 submission",
+    "Platform": "TPU-v4-128 / TF1, TF version ~2.4",
+    "BS": 3072,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.002,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 1141,
+      "num_warmup_steps": 100,
+      "start_warmup_step": 0,
+      "opt_lamb_beta_1": 0.66,
+      "opt_lamb_beta_2": 0.998,
+      "opt_lamb_weight_decay_rate": 0.01,
+      "gradient_accumulation_steps": 96
+    },
+    "Epochs to converge": [
+       2703360, 2482176, 3072000, 2654208, 2580480, 2727936, 2605056, 2801664, 2777088, 2580480,
+       2875392, 2826240, 2973696, 2850816, 2678784, 2919120, 3121152, 2605056, 2678784, 2850816]
   },
 
   "bert_ref_6144":

@@ -114,7 +114,8 @@ class RCP_Checker:
         for benchmark in self.submission_runs.keys():
             raw_rcp_data = self._consume_json_file(usage, ruleset, benchmark)
             processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
-            self.rcp_data.update(processed_rcp_data)
+            sorted_rcp_data = dict(sorted(processed_rcp_data.items(), key = lambda item: item[1]['BS']))
+            self.rcp_data.update(sorted_rcp_data)
 
 
     def _consume_json_file(self, usage, ruleset, benchmark):
@@ -151,10 +152,10 @@ class RCP_Checker:
     def _prune_rcps(self):
         '''
         Prune RCPs. We compare convergence of each RCP point with interpolation usgin surrounding points
-        and move RCP points that have min (fastest) convergence to min_rcp_data.
-        min_rcp_data is by default used for RCP tests.
+        and move RCP points that have min (fastest) convergence to pruned_rcp_data.
+        pruned_rcp_data is by default used for RCP tests.
         '''
-        self.min_rcp_data = {}
+        self.pruned_rcp_data = {}
         for benchmark in submission_runs['training'].keys():
             min_epochs = []
             for record, record_contents in self.rcp_data.items():
@@ -164,15 +165,8 @@ class RCP_Checker:
             # Step 1
             # Find point with fastest convergence and prune all point with smaller batch size
             # In that way the min batch size point will have the fastest convergenece
-            fastest_conv = min_epochs[0]['Min Epochs']
-            fastest_conv_idx = 0
-            for i, min_epoch in enumerate(min_epochs):
-                if min_epoch['Min Epochs'] < fastest_conv:
-                    fastest_conv_idx = i
-                    fastest_conv = min_epochs[i]['Min Epochs']
-            # print('FASTEST CONV:', benchmark, fastest_conv_idx)
-            for i in range(fastest_conv_idx):
-                del min_epochs[0]
+            fastest_conv = min(min_epochs, key=lambda rc: rc['Min Epochs'])
+            min_epochs = list(filter(lambda rc: rc['BS'] >= fastest_conv['BS'], min_epochs))
 
             # Step 2
             # Run this algorithm for the rest of the points:
@@ -186,18 +180,18 @@ class RCP_Checker:
                 rcp_min = min_epochs[i-1]
                 rcp_max = min_epochs[i+1]
                 bs = min_epochs[i]['BS']
-                name, rcp = self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max,show_rec=False)
+                name, rcp = self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
                 if min_epochs[i]['Min Epochs'] > rcp['Min Epochs']:
                     del min_epochs[i]
                     i = i-1
                     list_len = list_len - 1
                 i = i+1
 
-            # Copy pruned epochs to min_rcp_data
             for min_epoch in min_epochs:
                 for record, record_contents in self.rcp_data.items():
                     if record_contents['Benchmark'] == min_epoch['Benchmark'] and record_contents['BS'] == min_epoch['BS']:
-                        self.min_rcp_data[record] = record_contents
+                        self.pruned_rcp_data[record] = record_contents
+
 
     def _compute_rcp_stats(self):
         '''Compute RCP mean, stdev and min acceptable epochs for RCPs'''
@@ -216,7 +210,6 @@ class RCP_Checker:
             record_contents['Max Speedup'] = record_contents['RCP Mean'] / min_epochs
             record_contents['Min Epochs'] = min_epochs
 
-            # TODO emizan: Remove verbose if 1.1 round goes well w.r.to logs
             if self.verbose:
                 print(record, record_contents, "\n")
 
@@ -225,7 +218,7 @@ class RCP_Checker:
 
     def _get_rcp_data(self, rcp_pass = 'pruned_rcps'):
         if rcp_pass == 'pruned_rcps':
-            rcp_data = self.min_rcp_data
+            rcp_data = self.pruned_rcp_data
         elif rcp_pass == 'full_rcps':
             rcp_data =  self.rcp_data
         return rcp_data
@@ -333,7 +326,7 @@ class RCP_Checker:
         return mean_mid
 
 
-    def _create_interp_rcp(self, benchmark, target_bs, low_rcp, high_rcp, show_rec=False):
+    def _create_interp_rcp(self, benchmark, target_bs, low_rcp, high_rcp):
         '''
         Create an interpolation RCP for batch size target_bs by interpolating
         low_rcp and high_rcp. Add the RCP into rcp_data.
@@ -362,7 +355,7 @@ class RCP_Checker:
                          'RCP Stdev': stdev,
                          'Max Speedup': mean / min_epochs,
                          'Min Epochs': min_epochs}
-        if show_rec:
+        if self.verbose:
             logging.info(" Creating interpolation record")
             logging.info(" Low RCP: %s", low_rcp)
             logging.info(" High RCP: %s", high_rcp)
@@ -424,7 +417,7 @@ class RCP_Checker:
             rcp_max = self._find_bottom_max_rcp(benchmark, bs, rcp_pass)
             if rcp_min is not None and rcp_max is not None:
                 rcp_msg = 'RCP Interpolation'
-                interp_record_name, interp_record = self._create_interp_rcp(benchmark, bs, rcp_min, rcp_max, show_rec=True)
+                interp_record_name, interp_record = self._create_interp_rcp(benchmark, bs, rcp_min, rcp_max)
                 rcp_check = self._eval_submission_record(interp_record, subm_epochs)
             elif rcp_min is not None and rcp_max is None:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
