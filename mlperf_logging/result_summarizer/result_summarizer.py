@@ -279,13 +279,13 @@ def _get_scaling_factor(folder):
     This file can be added only during the review period if the review
     committee decides score should be scaled.
     """
+    scaling_factor = 1.0
     scaling_file = os.path.join(folder, 'scaling.json')
-    if os.path.exists(scaling_file):
+    if os.path.isfile(scaling_file):
         contents = _read_json_file(scaling_file)
         scaling_factor = contents['scaling_factor']
         print(f'NOTICE: Applying scaling factor {scaling_factor} to dir {folder}')
-        return scaling_factor
-    return 1.0
+    return scaling_factor
 
 
 def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
