@@ -73,7 +73,6 @@
         - "s['init_started']"
         - "not s['run_started']"
         - "ll.timestamp - s['first_init_start'] < (s['compile_time_mins']*60*1e3)"
-        - "ll.timestamp - s['first_init_start'] < (30*60*1e3)"
     POST:  " s['init_stopped'] = True"
 
 - KEY:
