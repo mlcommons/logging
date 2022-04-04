@@ -44,7 +44,6 @@ _ALL_ALLOWED_BENCHMARKS = {
         'ssd',
         'transformer'
     ],
-        
     '1.0': [
         'bert',
         'dlrm',
@@ -55,8 +54,17 @@ _ALL_ALLOWED_BENCHMARKS = {
         'rnnt',
         'unet3d',
     ],
-
     '1.1': [
+        'bert',
+        'dlrm',
+        'maskrcnn',
+        'minigo',
+        'resnet',
+        'ssd',
+        'rnnt',
+        'unet3d',
+    ],
+    '2.0': [
         'bert',
         'dlrm',
         'maskrcnn',

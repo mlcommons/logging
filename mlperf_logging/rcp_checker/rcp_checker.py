@@ -326,9 +326,9 @@ class RCP_Checker:
         - (True) Pass / RCP found
         - (True) Pass / RCP interpolated
         - (True) Pass / RCP missing but submission converges slower on smaller batch size
-        - (False) Fail / RCP found
-        - (False) Fail / RCP interpolated
-        - (False) Missing RCP / Submit missing RCP
+        - (False --> True with --rcp_bypass when running from package checker) Fail / RCP found
+        - (False --> True with --rcp_bypass when running from package checker) Fail / RCP interpolated
+        - (False --> True with --rcp_bypass when running from package checker) Missing RCP / Submit missing RCP
         '''
         _print_divider_bar()
         logging.info(" Running RCP Checker")
@@ -373,9 +373,10 @@ class RCP_Checker:
                 rcp_msg = 'Cannot find any RCPs'
 
         if rcp_bypass and not rcp_check:
-            if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation':
+            if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation' or rcp_msg == 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs):
                 rcp_msg  = rcp_msg + ' passed using rcp_bypass'
-                logging.warning(' RCP test failed but allowed to proceed with RCP bypass')
+                logging.warning(' RCP test failed but allowed to proceed with RCP bypass.')
+                logging.warning(' Please be ready to have this reviewed by the submission committee.')
                 rcp_check = True
 
         return rcp_check, rcp_msg

@@ -21,7 +21,7 @@ if test:
     logging.info('%s, RCP test PASSED', msg)
     print('** Logging output also at', args.log_output)
 else:
-    logging.error('%s, RCP test FAILED, consider adding --rcp_bypass in when running the package_checker if the RCP is NOT missing', msg)
+    logging.error('%s, RCP test FAILED, consider adding --rcp_bypass in when running the package_checker.', msg)
     print('** Logging output also at', args.log_output)
     sys.exit(1)
 
