@@ -151,7 +151,7 @@ class RCP_Checker:
 
     def _prune_rcps(self):
         '''
-        Prune RCPs. We compare convergence of each RCP point with interpolation usgin surrounding points
+        Prune RCPs. We compare convergence of each RCP point with interpolation using surrounding points
         and move RCP points that have min (fastest) convergence to pruned_rcp_data.
         pruned_rcp_data is by default used for RCP tests.
         '''
