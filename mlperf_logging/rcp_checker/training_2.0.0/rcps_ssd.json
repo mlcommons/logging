@@ -11,7 +11,7 @@
       "opt_base_learning_rate": 0.0001,
       "opt_learning_rate_warmup_factor": 1e-3,
       "opt_learning_rate_warmup_epochs": 1,
-      "opt_weight_decay": 0,
+      "opt_weight_decay": 0
     },
     "Epochs to converge": [
       4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
@@ -29,7 +29,7 @@
       "opt_base_learning_rate": 0.0001,
       "opt_learning_rate_warmup_factor": 1e-3,
       "opt_learning_rate_warmup_epochs": 1,
-      "opt_weight_decay": 0,
+      "opt_weight_decay": 0
     },
     "Epochs to converge": [
       5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
@@ -47,11 +47,11 @@
       "opt_base_learning_rate": 0.0001,
       "opt_learning_rate_warmup_factor": 1e-3,
       "opt_learning_rate_warmup_epochs": 1,
-      "opt_weight_decay": 0,
+      "opt_weight_decay": 0
     },
     "Epochs to converge": [
       14, 15, 15, 15, 15, 15, 15, 15, 15, 15,
       15, 15, 16, 16, 16]
-  },
+  }
 }
 
