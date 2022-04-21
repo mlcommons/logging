@@ -368,7 +368,9 @@ class RCP_Checker:
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
-        if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
+        rcp_threshold = (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]) 
+        logging.error("RCP threshold: %.10f ( = %.10f / %.10f)", rcp_threshold, rcp_record["RCP Mean"], rcp_record["Max Speedup"])
+        if mean_subm_epochs >= rcp_threshold:
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             return(True)
@@ -407,6 +409,9 @@ class RCP_Checker:
         if subm_epochs is None:
             return False, 'Insufficient convergence'
 
+        return self._check_rcp(benchmark, bs, rcp_pass, subm_epochs, rcp_bypass) 
+
+    def _check_rcp(self, benchmark, bs, rcp_pass, subm_epochs, rcp_bypass): 
         rcp_record = self._find_rcp(benchmark, bs, rcp_pass)
         rcp_msg = ''
         if rcp_record is not None:
@@ -474,3 +479,16 @@ def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
 
 def main(checker, dir):
     return checker._check_directory(dir, rcp_pass='pruned_rcps')
+
+
+def print_rcp_threshold(batch_size): 
+    logging.basicConfig(level=logging.ERROR)
+    epochs = np.random.randint(low=300000, high=350000, size=[10]).tolist()
+    checker = make_checker("training", "2.0.0", verbose=False, bert_train_samples=True)
+    checker._compute_rcp_stats()
+    checker._check_rcp("bert", batch_size, 'full_rcps', epochs, False)
+
+
+if __name__ == "__main__":
+    print_rcp_threshold(56 * 8)
+    print_rcp_threshold(60 * 8)
