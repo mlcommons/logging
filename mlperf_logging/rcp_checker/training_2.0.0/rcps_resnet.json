@@ -125,6 +125,29 @@
       56, 56, 55, 56, 56, 56, 56, 56, 57, 56]
   },
 
+  "resnet_ref_35840":
+  {
+    "Benchmark": "resnet",
+    "Creator": "NVIDIA",
+    "When": "at 2.0.0 submission",
+    "Platform": "TBD",
+    "BS": 35840,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 21.9,
+      "opt_end_learning_rate": 0.0001,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,	
+      "opt_learning_rate_warmup_epochs": 17,
+      "opt_momentum": 0.94,
+      "opt_weight_decay": 2.5e-5,
+      "opt_learning_rate_decay_steps": 60,
+      "model_bn_span": 35
+    },
+    "Epochs to converge": [
+      60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+  },
+
   "resnet_ref_49152":
   {
     "Benchmark": "resnet",
