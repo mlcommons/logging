@@ -116,6 +116,29 @@
        2875392, 2826240, 2973696, 2850816, 2678784, 2919120, 3121152, 2605056, 2678784, 2850816]
   },
 
+  "bert_ref_4608":
+  {
+    "Benchmark": "bert",
+    "Creator": "Google",
+    "When": "Prior to 2.0 submission",
+    "Platform": "TPU-v4-16 / TF1, TF version ~2.8",
+    "BS": 4608,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0035,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 700,
+      "num_warmup_steps": 0,
+      "start_warmup_step": 0,
+      "opt_lamb_beta_1": 0.62,
+      "opt_lamb_beta_2": 0.9,
+      "opt_lamb_weight_decay_rate": 0.01,
+      "gradient_accumulation_steps": 144
+    },
+    "Epochs to converge": [
+       2626560, 2833920, 2787840, 2949120, 2880000, 2810880, 2880000, 3041280, 2787840, 2833920,
+       2741760, 2810880, 2649600, 2718720, 2488320, 2603520, 2833920, 2787840, 2810880, 3018240]
+  },
+
   "bert_ref_6144":
   {
     "Benchmark": "bert",
