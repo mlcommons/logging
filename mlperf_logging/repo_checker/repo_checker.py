@@ -37,8 +37,9 @@ def _check_file_sizes(submission_dir):
             "-size",
             "+50M",
         ],
-        capture_output=True,
-        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True,
     )
     if len(out.stdout) != 0:
         logging.error('Files > 50MB: %s', out.stdout)

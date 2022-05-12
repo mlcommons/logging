@@ -32,6 +32,7 @@ pip uninstall mlperf-logging
 - [rcp_checker](mlperf_logging/rcp_checker): utility running convergence checks in submission directories
 - [package_checker](mlperf_logging/package_checker): top-level checker for a package, it calls compliance checker, system desc checker, and rcp checker
 - [result_summarizer](mlperf_logging/result_summarizer): utility that parses package and prints out result summary
+- [repo_checker](mlperf_logging/repo_checker): utility that checks source code files for github compliance
 
 ## Instructions
 
