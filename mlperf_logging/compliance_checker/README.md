@@ -8,27 +8,41 @@ The checker works with both python2 and python3, requires PyYaml package.
 
 To check a log file for compliance:
 
-    python -m mlperf_logging.compliance_checker [--config YAML] [--ruleset MLPERF_EDITION] FILENAME
+    python -m mlperf_logging.compliance_checker [--config YAML] [--usage training/hpc] [--ruleset MLPERF_EDITION] FILENAME
 
-By default, 1.0.0 edition rules are used and the default config is set to `1.0.0/common.yaml`.
+By default, 2.0.0 training edition rules are used and the default config is set to `2.0.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
-Old editions, still supported are 0.7.0 amd 0.6.0
+Old training editions, still supported are 1.1.0, 1.0.0, 0.7.0 amd 0.6.0
+
+To check hpc compliance rules (only 1.0.0 ruleset is supported), set --usage hpc --ruleset 1.0.0.
 
 Prints `SUCCESS` when no issues were found. Otherwise will print error details.
 
-As log examples use [NVIDIA's v0.6 training logs](https://github.com/mlperf/training_results_v0.6/tree/master/NVIDIA/results).
+As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_results_v{0.6,0,7,1.0,1.1}/tree/master/NVIDIA/results).
 
-### Existing config files
+### Existing config files for training submissions
 
-    1.0.0/common.yaml        - currently the default config file, checks common fields complience and equeues benchmark-specific config file
-    1.0.0/resnet.yaml
-    1.0.0/ssd.yaml
-    1.0.0/minigo.yaml
-    1.0.0/maskrcnn.yaml
-    1.0.0/rnnt.yaml
-    1.0.0/unet3d.yaml
-    1.0.0/bert.yaml
-    1.0.0/dlrm.yaml
+    2.0.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
+    2.0.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks 
+    2.0.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
+    2.0.0/closed_resnet.yaml   - Per-benchmark rules, closed submissions.
+    2.0.0/closed_ssd.yaml
+    2.0.0/closed_minigo.yaml
+    2.0.0/closed_maskrcnn.yaml
+    2.0.0/closed_rnnt.yaml
+    2.0.0/closed_unet3d.yaml
+    2.0.0/closed_bert.yaml
+    2.0.0/closed_dlrm.yaml
+    2.0.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
+    2.0.0/open_ssd.yaml
+    2.0.0/open__minigo.yaml
+    2.0.0/open_maskrcnn.yaml
+    2.0.0/open_rnnt.yaml
+    2.0.0/open_unet3d.yaml
+    2.0.0/open_bert.yaml
+    2.0.0/open_dlrm.yaml
+
+### Existing config files for HPC submissions
 
 ### Implementation details
 Compliance checking is done following below algorithm.
@@ -160,6 +174,7 @@ Tested and confirmed working using the following software versions:
 - Python 2.7.12 + PyYAML 3.11
 - Python 3.6.8  + PyYAML 5.1
 - Python 2.9.2 + PyYAML 5.3.1
+- Python 3.9.10 + PyYAML 5.4.1
 
 ### How to install PyYaML
 
