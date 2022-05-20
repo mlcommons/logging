@@ -1,5 +1,23 @@
 {
 
+  "maskrcnn_ref_8":
+  {
+    "Benchmark": "maskrcnn",
+    "Creator": "NVIDIA",
+    "When": "Prior to 2.0 submission",
+    "Platform": "TBD",
+    "BS": 8,
+    "Hyperparams": {
+      "opt_learning_decay_steps": [144000, 192000],
+      "opt_base_learning_rate": 0.01,
+      "num_image_candidates": 1000,
+      "opt_learning_rate_warmup_factor": 0.00002,
+      "opt_learning_rate_warmup_steps": 500
+    },
+    "Epochs to converge": [
+       13, 13, 12, 13, 13, 13, 13, 12, 13, 12]
+  },
+
   "maskrcnn_ref_48":
   {
     "Benchmark": "maskrcnn",
