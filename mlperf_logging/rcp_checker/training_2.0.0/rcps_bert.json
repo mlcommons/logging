@@ -189,23 +189,23 @@
   {
     "Benchmark": "bert",
     "Creator": "Google",
-    "When": "Prior to 1.0 submission",
-    "Platform": "TPU-v4-128 / TF1, TF version ~2.4",
+    "When": "At 2.0 submission",
+    "Platform": "TPU-v4-32 / TF1, TF version ~2.8",
     "BS": 8192,
     "Hyperparams": {
-      "opt_base_learning_rate": 0.00288293,
+      "opt_base_learning_rate": 0.0035,
       "opt_epsilon": 1e-6,
-      "opt_learning_rate_training_steps": 600,
-      "num_warmup_steps": 287,
-      "start_warmup_step": -76,
-      "opt_lamb_beta_1": 0.88,
-      "opt_lamb_beta_2": 0.88,
-      "opt_lamb_weight_decay_rate": 0.0166629,
-      "gradient_accumulation_steps": 16
+      "opt_learning_rate_training_steps": 500,
+      "num_warmup_steps": 305,
+      "start_warmup_step": -98,
+      "opt_lamb_beta_1": 0.81,
+      "opt_lamb_beta_2": 0.88239761788543,
+      "opt_lamb_weight_decay_rate": 0.022,
+      "gradient_accumulation_steps": 128
     },
-    "Epochs to converge": [
-       4251648, 4153344, 4055040, 4177920, 4177920, 4079616, 4276224, 4128768, 4177920, 4153344,
-       4177920, 4079616, 4300800, 4153344, 4276224, 4423680, 4276224, 4104192, 4251648, 4153344]
+    "Epochs to converge":[
+       2801664, 3022848, 2801664, 3022848, 3047424, 2727936, 2973696, 2703360, 2924544, 2629632,
+       2678784, 2850816, 2777088, 2826240, 2801664, 2850816, 2924544, 2924544, 2727936, 2850816]
   },
 
   "bert_ref_8704":
@@ -275,5 +275,29 @@
     "Epochs to converge": [
       4442880, 4592640, 4642560, 4842240, 4742400, 4592640, 4642560, 4692480, 4942080, 4542720,
       4592640, 4093440, 4442880, 4792320, 4642560, 4592640, 4592640, 4892160, 4742400, 4592640]
+  },
+
+  "bert_ref_14336":
+  {
+    "Benchmark": "bert",
+    "Creator": "Google",
+    "When": "At 2.0 submission",
+    "Platform": "TPU-v4-32 / TF1, TF version ~2.8",
+    "BS": 14336,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.003409495,
+      "opt_epsilon": 1e-6,
+      "opt_learning_rate_training_steps": 454,
+      "num_warmup_steps": 314,
+      "start_warmup_step": -112,
+      "opt_lamb_beta_1": 0.8069036245,
+      "opt_lamb_beta_2": 0.8731040542,
+      "opt_lamb_weight_decay_rate": 0.02134484419,
+      "gradient_accumulation_steps": 224
+    },
+    "Epochs to converge":[
+       4759552, 4644864, 4960256, 4845568, 4558848, 4902912, 4759552, 4759552, 4902912, 4730880,
+       4816896, 4874240, 4702208, 4902912, 4759552, 4673536, 4845568, 4845568, 4673536, 4616192]
   }
+
 }
