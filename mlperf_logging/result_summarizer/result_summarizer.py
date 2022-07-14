@@ -85,7 +85,7 @@ def _ruleset_url_prefix(usage, ruleset):
 
 
 def _details_url(system_filename, system_desc, usage, ruleset):
-    return '{ruleset_prefix}/blob/master/{submitter}/systems/{system}.json'.format(
+    return '{ruleset_prefix}/blob/main/{submitter}/systems/{system}.json'.format(
         ruleset_prefix=_ruleset_url_prefix(usage, ruleset),
         submitter=system_desc['submitter'],
         system=system_filename
