@@ -84,11 +84,11 @@ def _ruleset_url_prefix(usage, ruleset):
     return f'https://github.com/mlcommons/{usage}_results_v{short_ruleset}'
 
 
-def _details_url(system_desc, usage, ruleset):
+def _details_url(system_filename, system_desc, usage, ruleset):
     return '{ruleset_prefix}/blob/master/{submitter}/systems/{system}.json'.format(
         ruleset_prefix=_ruleset_url_prefix(usage, ruleset),
         submitter=system_desc['submitter'],
-        system=_linkable_system_name(system_desc),
+        system=system_filename
     )
 
 
@@ -522,7 +522,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
 
         # Construct postfix portion of the row.
         urls = {
-            'details_url': _details_url(desc, usage, ruleset),
+            'details_url': _details_url(system, desc, usage, ruleset),
             'code_url': _code_url(desc, usage, ruleset)
         }
         # Update the summaries.
