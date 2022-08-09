@@ -156,7 +156,7 @@ class RCP_Checker:
         pruned_rcp_data is by default used for RCP tests.
         '''
         self.pruned_rcp_data = {}
-        for benchmark in submission_runs['training'].keys():
+        for benchmark in submission_runs[self.usage].keys():
             min_epochs = []
             for record, record_contents in self.rcp_data.items():
                 if record_contents['Benchmark'] == benchmark:
