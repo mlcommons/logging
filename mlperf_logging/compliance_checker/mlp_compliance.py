@@ -178,6 +178,7 @@ class ComplianceChecker:
 
         at_least_one_checks = {}
         # executing the rules through log records
+        has_been_exec = set([])
         for line in loglines:
             key_record = None
             try:
@@ -186,10 +187,10 @@ class ComplianceChecker:
             except:
                 # unknown key - it's allowed, skip to next record
                 continue
-
-            if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
-            if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
-            if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
+            if line.key not in has_been_exec:
+                if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
+                if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
+                if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
             if 'ATLEAST_ONE_CHECK' in key_record:
               if line.key not in at_least_one_checks:
                 at_least_one_checks[line.key] = [0, key_record['ATLEAST_ONE_CHECK']]
@@ -197,6 +198,8 @@ class ComplianceChecker:
                            state, {'ll': line, 'v': line.value})
               if check:
                 at_least_one_checks[line.key][0] += 1
+            if "submission_" in line.key and line.key not in has_been_exec:
+                has_been_exec.add(line.key)
         for name in at_least_one_checks:
           if at_least_one_checks[name][0] == 0:
             self.put_message('Failed checks for {} : {}'
