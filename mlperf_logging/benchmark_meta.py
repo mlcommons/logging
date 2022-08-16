@@ -87,6 +87,11 @@ _ALL_ALLOWED_BENCHMARKS = {
             'deepcam',
             'oc20',
         ],
+        '2.0': [
+            'cosmoflow',
+            'deepcam',
+            'oc20',
+        ],
     }
 }
 

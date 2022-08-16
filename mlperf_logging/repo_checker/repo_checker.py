@@ -80,7 +80,7 @@ def get_parser():
     parser.add_argument(
         'usage',
         type=str,
-        choices=['training'],
+        choices=['training', 'hpc'],
         help='the usage -- only training is currently supported.',
     )
     parser.add_argument(
