@@ -378,7 +378,37 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, benchmark=None):
+    def _find_benchmark_in_file(self, file):
+        with open(file, 'r', encoding='latin-1') as f:
+            file_contents = f.readlines()
+            for line in file_contents:
+                if line.startswith(TOKEN):
+                    str = line[len(TOKEN):]
+                    d = json.loads(str)
+                    if d["key"] == "submission_benchmark":
+                        return d["value"]
+        return None
+
+
+    def _benchmark_exists(self, benchmark):
+        return benchmark in self.submission_runs
+
+
+    def _get_benchmark_from_files(self, result_files):
+        current_benchmark = None
+        check = False
+        for file in result_files:
+            benchmark = self._find_benchmark_in_file(file)
+            if (benchmark != current_benchmark) and (current_benchmark is not None):
+                return current_benchmark, False
+            current_benchmark = benchmark
+            check = self._benchmark_exists(current_benchmark)
+            if not check:
+                return current_benchmark, check
+        return current_benchmark, check
+
+
+    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, benchmark=None, folder_required = True):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -398,9 +428,22 @@ class RCP_Checker:
         _print_divider_bar()
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
-        if benchmark is None:
-            benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
+
+        if folder_required:
+            benchmark = os.path.split(dir)[1]
+            valid_benchmark = self._benchmark_exists(benchmark)
+        elif benchmark is None:
+            benchmark = os.path.split(dir)[1]
+            valid_benchmark = True
+            if not self._benchmark_exists(benchmark):
+                benchmark, valid_benchmark = self._get_benchmark_from_files(result_files)
+        else:
+            valid_benchmark = self._benchmark_exists(benchmark)
+        
+        if not valid_benchmark:
+            return False, 'Desired benchmark is not supported'
+
         bs, subm_epochs = get_submission_epochs(result_files, benchmark, self.bert_train_samples)
 
         if bs == -1:
@@ -468,6 +511,8 @@ def get_parser():
                     help='use "pruned_rcps" or "full_rcps" for convergence checks')
     parser.add_argument('--benchmark', type=str, required=False,
                     help='Which benchmark is being used')
+    parser.add_argument('--folder_required', action='store_true',
+                    help='Require the fort')
     return parser
 
 

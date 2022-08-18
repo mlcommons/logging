@@ -16,7 +16,7 @@ logging.getLogger().handlers[1].setFormatter(formatter)
 checker = rcp_checker.make_checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
 checker._compute_rcp_stats()
 # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-test, msg = checker._check_directory(args.dir, rcp_pass=args.rcp_pass, benchmark=args.benchmark)
+test, msg = checker._check_directory(args.dir, rcp_pass=args.rcp_pass, benchmark=args.benchmark,folder_required=args.folder_required)
 
 if test:
     logging.info('%s, RCP test PASSED', msg)
