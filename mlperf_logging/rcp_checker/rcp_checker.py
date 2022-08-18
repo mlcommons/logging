@@ -378,7 +378,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False):
+    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, benchmark=None):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -398,7 +398,8 @@ class RCP_Checker:
         _print_divider_bar()
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
-        benchmark = os.path.split(dir)[1]
+        if benchmark is None:
+            benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
         bs, subm_epochs = get_submission_epochs(result_files, benchmark, self.bert_train_samples)
 
@@ -465,6 +466,8 @@ def get_parser():
                     help='where to store RCP checker output log')
     parser.add_argument('--rcp_pass', type=str, default='pruned_rcps',
                     help='use "pruned_rcps" or "full_rcps" for convergence checks')
+    parser.add_argument('--benchmark', type=str, required=False,
+                    help='Which benchmark is being used')
     return parser
 
 
