@@ -633,11 +633,18 @@ def main():
                     args.usage,
                     args.ruleset,
                     weak_scaling=weak_scaling,
-                ))
+                )
+            )
             if weak_scaling:
                 print('Weak Scaling Scores:')
             else:
                 print('Strong Scaling Scores:')
+
+            # Get the columns
+            cols = list(summaries.columns)
+
+            # Sort rows by their values
+            summaries = summaries.sort_values(by=cols)
             print(summaries)
             if args.csv is not None:
                 summaries.to_csv(args.csv, index=False, mode=mode)
