@@ -86,7 +86,7 @@ def get_parser():
     parser.add_argument(
         'ruleset',
         type=str,
-        choices=['2.0.0'],
+        choices=['2.0.0', '2.1.0'],
         help='the ruleset. Only 2.0.0 is currently supported.'
     )
     parser.add_argument(

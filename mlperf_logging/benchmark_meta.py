@@ -74,6 +74,16 @@ _ALL_ALLOWED_BENCHMARKS = {
         'rnnt',
         'unet3d',
     ],
+    '2.1': [
+        'bert',
+        'dlrm',
+        'maskrcnn',
+        'minigo',
+        'resnet',
+        'ssd',
+        'rnnt',
+        'unet3d',
+    ],
     },
     
     'hpc': {
