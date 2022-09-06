@@ -86,14 +86,13 @@ def get_parser():
     parser.add_argument(
         'ruleset',
         type=str,
-        choices=['2.0.0'],
-        help='the ruleset. Only 2.0.0 is currently supported.'
+        choices=['2.0.0', '2.1.0'],
+        help='the ruleset. 2.0.0 and 2.1.0 are currently supported.'
     )
     parser.add_argument(
         '--log_output',
         type=str,
         default='repo_checker.log',
-        help='the ruleset. Only 2.0.0 is currently supported.'
     )
     return parser
 
