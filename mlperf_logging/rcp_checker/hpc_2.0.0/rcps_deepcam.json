@@ -2,24 +2,26 @@
     "deepcam_ref_128": {
         "Benchmark": "deepcam",
         "BS": 128,
-        "Epochs to converge": [ 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9 ],
+        "Epochs to converge": [ 7, 7, 7, 7, 7, 7, 7, 8, 8, 6, 7, 8, 7, 6, 6, 7, 7, 6, 7, 7 ],
         "Hyperparams": {
             "batchnorm_groupsize": 1,
             "global_batch_size": 128,
             "gradient_accumulation_frequency": 1,
+            "num_workers": 32,
             "opt_betas": [ 0.9, 0.999 ],
             "opt_bias_correction": true,
             "opt_eps": 1e-06,
             "opt_grad_averaging": true,
-            "opt_lr": 0.001,
+            "opt_lr": 0.00155,
             "opt_max_grad_norm": 1.0,
             "opt_weight_decay": 0.01,
             "opt_name": "LAMB",
             "scheduler_decay_rate": "0.1",
             "scheduler_lr_warmup_factor": 1.0,
             "scheduler_lr_warmup_steps": 0,
-            "scheduler_milestones": [ 8192, 16384 ],
-            "scheduler_type": "multistep"
+            "scheduler_t_max": "9000",
+            "scheduler_eta_min": "0.0",
+            "scheduler_type": "cosine_annealing"
         }
     },
     "deepcam_ref_256": {
