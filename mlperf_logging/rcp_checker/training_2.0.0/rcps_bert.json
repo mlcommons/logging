@@ -27,7 +27,7 @@
   {
     "Benchmark": "bert",
     "Creator": "Google",
-    "When": "Prior to 2.0 submission, with Habana's HP set",
+    "When": "Prior to 2.1 submission, with Habana's HP set",
     "Platform": "TPU-v4-32 / TF1, TF version ~2.10",
     "BS": 448,
     "Hyperparams": {
