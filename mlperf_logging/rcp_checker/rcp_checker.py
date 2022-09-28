@@ -100,8 +100,8 @@ def get_submission_epochs(result_files, benchmark, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, verbose, bert_train_samples):
-        if ruleset not in {'1.0.0', "1.1.0", "2.0.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0')
+        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0"}:
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0')
         self.usage = usage
         self.ruleset = ruleset
         self.alpha = 0.05
@@ -455,7 +455,7 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='2.0.0',
+    parser.add_argument('--rcp_version', type=str, default='2.1.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',

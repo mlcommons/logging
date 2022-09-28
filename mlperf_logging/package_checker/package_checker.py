@@ -154,13 +154,13 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 logging.error(" %d files do not comply, directory cannot be accepted", errors_found)
 
             # Check if each run use unique seeds.
-            if ruleset in {'1.0.0', '1.1.0', '2.0.0'} and division == 'closed':
+            if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0'} and division == 'closed':
                 if not seed_checker.check_seeds(result_files, source_files):
                     too_many_errors = True
                     logging.error('Seed checker failed')
 
             # Run RCP checker for >= 1.0.0
-            if ruleset in {'1.0.0', '1.1.0', '2.0.0'} and division == 'closed' and benchmark != 'minigo':
+            if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0'} and division == 'closed' and benchmark != 'minigo':
                 rcp_chk = rcp_checker.make_checker(usage, ruleset, verbose=False, bert_train_samples=rcp_bert_train_samples)
                 rcp_chk._compute_rcp_stats()
 
@@ -209,7 +209,7 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
         usage: The usage such as training or hpc
         ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
-    if ruleset in {'1.0.0', '1.1.0', '2.0.0'}:
+    if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0'}:
         logging.info(' Checking System Description Files')
         if not check_systems(folder, usage, ruleset):
             logging.error('System description file checker failed')

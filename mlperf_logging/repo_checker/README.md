@@ -12,7 +12,7 @@ review process.
 python3 -m mlperf_logging.repo_checker FOLDER USAGE RULESET
 ```
 
-Currently, USAGE in ["training"] and only RULESET 2.0.0 is supported.
+Currently, USAGE in ["training", "hpc"] and RULESETS 2.0.0 and 2.1.0 are supported.
 
 The repo checker checks:
 1. Whether the repo contains filenames that github does not like, e.g. files with spaces,
