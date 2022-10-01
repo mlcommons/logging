@@ -371,6 +371,8 @@ class RCP_Checker:
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
+            if mean_subm_epochs < rcp_record["RCP Mean"]:
+                logging.info(" Submission mean epochs faster than RCP mean but within max speedup range. Score should be normalized. ")
             return(True)
         else:
             logging.info(" RCP Record: %s", rcp_record)
