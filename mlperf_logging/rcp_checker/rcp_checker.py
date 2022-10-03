@@ -362,6 +362,8 @@ class RCP_Checker:
             logging.info(" Intepolation record: %s", interp_record)
         return interp_record_name, interp_record
 
+    def _find_norm_factor(self, rcp_record, mean_subm_epochs):
+        return rcp_record['RCP Mean'] / mean_subm_epochs
 
     def _eval_submission_record(self, rcp_record, subm_epochs):
         '''Compare reference and submission convergence.'''
@@ -373,7 +375,7 @@ class RCP_Checker:
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             if mean_subm_epochs < rcp_record["RCP Mean"]:
                 mesg = " Submission mean epochs faster than RCP mean but within max speedup range. Score should be normalized by factor of {} / {} = {}"
-                mesg = mesg.format(rcp_record['RCP Mean'], mean_subm_epochs, rcp_record['RCP Mean'] / mean_subm_epochs)
+                mesg = mesg.format(rcp_record['RCP Mean'], mean_subm_epochs, self._find_norm_factor(rcp_record, mean_subm_epochs))
                 logging.info(mesg)
             return(True)
         else:
