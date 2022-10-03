@@ -363,19 +363,21 @@ class RCP_Checker:
         return interp_record_name, interp_record
 
     def _find_norm_factor(self, rcp_record, mean_subm_epochs):
-        return rcp_record['RCP Mean'] / mean_subm_epochs
+        norm_factor = rcp_record["RCP Mean"] / mean_subm_epochs
+        return 1.0 if norm_factor < 1 else norm_factor
 
     def _eval_submission_record(self, rcp_record, subm_epochs):
         '''Compare reference and submission convergence.'''
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
+        norm_factor = self._find_norm_factor(rcp_record, mean_subm_epochs)
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             if mean_subm_epochs < rcp_record["RCP Mean"]:
                 mesg = " Submission mean epochs faster than RCP mean but within max speedup range. Score should be normalized by factor of {} / {} = {}"
-                mesg = mesg.format(rcp_record['RCP Mean'], mean_subm_epochs, self._find_norm_factor(rcp_record, mean_subm_epochs))
+                mesg = mesg.format(rcp_record['RCP Mean'], mean_subm_epochs, norm_factor)
                 logging.info(mesg)
             return(True)
         else:
