@@ -366,7 +366,14 @@ class RCP_Checker:
         norm_factor = rcp_record["RCP Mean"] / mean_subm_epochs
         return 1.0 if norm_factor < 1 else norm_factor
 
-    def _eval_submission_record(self, rcp_record, subm_epochs):
+    def _set_results_scaling(self, scale_factor, results_dir):
+        scaling = {'scaling_factor': scale_factor}
+        json_content = json.dumps(scaling)
+        filepath = results_dir+'/scaling.json'
+        with open(filepath, "w") as scaling_file:
+            scaling_file.write(json_content)
+
+    def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
@@ -377,8 +384,11 @@ class RCP_Checker:
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
             if mean_subm_epochs < rcp_record["RCP Mean"]:
                 mesg = " Submission mean epochs faster than RCP mean but within max speedup range. Score should be normalized by factor of {} / {} = {}"
-                mesg = mesg.format(rcp_record['RCP Mean'], mean_subm_epochs, norm_factor)
+                mesg = mesg.format(rcp_record["RCP Mean"], mean_subm_epochs, norm_factor)
                 logging.info(mesg)
+                if results_dir != '':
+                    self._set_results_scaling(norm_factor, results_dir)
+                    logging.info(" Results scaling set to normalization factor of ", norm_factor)
             return(True)
         else:
             logging.info(" RCP Record: %s", rcp_record)
@@ -386,7 +396,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False):
+    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -419,20 +429,20 @@ class RCP_Checker:
         rcp_msg = ''
         if rcp_record is not None:
             rcp_msg = 'RCP found'
-            rcp_check = self._eval_submission_record(rcp_record, subm_epochs)
+            rcp_check = self._eval_submission_record(rcp_record, subm_epochs, (dir if set_scaling else ''))
         else:
             rcp_min = self._find_top_min_rcp(benchmark, bs, rcp_pass)
             rcp_max = self._find_bottom_max_rcp(benchmark, bs, rcp_pass)
             if rcp_min is not None and rcp_max is not None:
                 rcp_msg = 'RCP Interpolation'
                 interp_record_name, interp_record = self._create_interp_rcp(benchmark, bs, rcp_min, rcp_max)
-                rcp_check = self._eval_submission_record(interp_record, subm_epochs)
+                rcp_check = self._eval_submission_record(interp_record, subm_epochs, (dir if set_scaling else ''))
             elif rcp_min is not None and rcp_max is None:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
                 rcp_check = False
             elif rcp_min is None and rcp_max is not None:
                 rcp_min_record = self._find_min_rcp(benchmark, rcp_pass)
-                rcp_check = self._eval_submission_record(rcp_min_record, subm_epochs)
+                rcp_check = self._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
                 mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
                 if rcp_check == False:
                    rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)

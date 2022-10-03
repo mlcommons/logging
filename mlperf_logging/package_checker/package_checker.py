@@ -165,7 +165,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 rcp_chk._compute_rcp_stats()
 
                 # Now go again through result files to do RCP checks
-                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_pass='pruned_rcps', rcp_bypass=rcp_bypass)
+                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_pass='pruned_rcps', rcp_bypass=rcp_bypass, set_scaling=True)
                 if not rcp_pass:
                     logging.error('RCP Test Failed: %s', rcp_msg)
                     too_many_errors = True
