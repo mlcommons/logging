@@ -388,7 +388,7 @@ class RCP_Checker:
                 logging.info(mesg)
                 if results_dir != '':
                     self._set_results_scaling(norm_factor, results_dir)
-                    logging.info(" Results scaling set to normalization factor of ", norm_factor)
+                    logging.info(" Results scaling set to normalization factor of %.4f", norm_factor)
             return(True)
         else:
             logging.info(" RCP Record: %s", rcp_record)
