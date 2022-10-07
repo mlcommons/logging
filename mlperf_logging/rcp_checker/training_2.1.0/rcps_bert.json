@@ -27,13 +27,13 @@
   {
     "Benchmark": "bert",
     "Creator": "Google",
-    "When": "Prior to 1.0 submission",
-    "Platform": "TPU-v4-16 / TF1, TF version ~2.4",
+    "When": "Prior to 2.1 submission, with Habana's HP set",
+    "Platform": "TPU-v4-32 / TF1, TF version ~2.10",
     "BS": 448,
     "Hyperparams": {
-      "opt_base_learning_rate": 0.0004,
+      "opt_base_learning_rate": 0.000425,
       "opt_epsilon": 1e-6,
-      "opt_learning_rate_training_steps": 8103,
+      "opt_learning_rate_training_steps": 6700,
       "num_warmup_steps": 0,
       "start_warmup_step": 0,
       "opt_lamb_beta_1": 0.9,
@@ -42,8 +42,9 @@
       "gradient_accumulation_steps": 1
     },
     "Epochs to converge": [
-       2558976, 2634240, 2885120, 2734592, 3010560, 2383360, 2458624, 2609152, 2558976, 2684416,
-       2508800, 2458624, 2684416, 2533888, 2533888, 2784768, 2308096, 2784768, 2584064, 2809856]
+       2132480, 2333184, 2408448, 2483712, 2684416, 2107392, 2157568, 2709504, 2533888, 2584064,
+       1981952, 2182656, 2408448, 2433536, 2333184, 2533888, 2458624, 2558976, 2584064, 2358272,
+       2358272, 2358272, 2759680]
   },
 
   "bert_ref_1536":
