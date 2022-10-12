@@ -34,7 +34,7 @@ def _print_divider_bar():
 
 
 def check_training_result_files(folder, usage, ruleset, quiet, werror,
-                                rcp_bypass, rcp_bert_train_samples):
+                                rcp_bypass, rcp_bert_train_samples, rcp_set_norm):
     """Checks all result files for compliance.
 
     Args:
@@ -165,7 +165,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 rcp_chk._compute_rcp_stats()
 
                 # Now go again through result files to do RCP checks
-                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_pass='pruned_rcps', rcp_bypass=rcp_bypass, set_scaling=True)
+                rcp_pass, rcp_msg = rcp_chk._check_directory(benchmark_folder, rcp_pass='pruned_rcps', rcp_bypass=rcp_bypass, set_scaling=rcp_set_norm)
                 if not rcp_pass:
                     logging.error('RCP Test Failed: %s', rcp_msg)
                     too_many_errors = True
@@ -201,7 +201,7 @@ def check_systems(folder, usage, ruleset):
 
     return not too_many_errors
 
-def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, log_output):
+def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, log_output, rcp_set_norm):
     """Checks a training package for compliance.
 
     Args:
@@ -214,7 +214,7 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
         if not check_systems(folder, usage, ruleset):
             logging.error('System description file checker failed')
 
-    check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, rcp_set_norm)
     _print_divider_bar()
     print('\n** Detailed log output is also at', log_output)
 
@@ -270,6 +270,12 @@ def get_parser():
         default='package_checker.log',
         help='where to store package checker output log'
     )
+    parser.add_argument(
+        '--rcp_set_norm',
+        action='store_true',
+        help='If set, RCP checker will create scaling.json '
+             'files to normalize score if faster than RCP'
+    )
     return parser
 
 
@@ -284,7 +290,7 @@ def main():
     logging.getLogger().handlers[1].setFormatter(formatter)
 
     check_training_package(args.folder, args.usage, args.ruleset, args.quiet, args.werror,
-                           args.rcp_bypass, args.rcp_bert_train_samples, args.log_output)
+                           args.rcp_bypass, args.rcp_bert_train_samples, args.log_output, args.rcp_set_norm)
 
 
 if __name__ == '__main__':
