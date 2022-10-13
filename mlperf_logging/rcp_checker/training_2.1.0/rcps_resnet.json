@@ -191,6 +191,30 @@
     },
     "Epochs to converge": [
       83, 85, 84, 86, 85, 85, 83, 84, 85, 85]
+  },
+
+  "resnet_ref_67840":
+  {
+    "Benchmark": "resnet",
+    "Creator": "NVIDIA",
+    "When": "At 2.0 submission",
+    "Platform": "TBD",
+    "BS": 67840,
+    "Hyperparams": {
+      "optimizer": "lars",
+      "opt_base_learning_rate": 24.699,
+      "opt_end_learning_rate": 0.0001,
+      "opt_learning_rate_decay_poly_power": 2,
+      "epsilon": 0,
+      "opt_learning_rate_warmup_epochs": 31,
+      "opt_momentum": 0.951807,
+      "opt_weight_decay": 0.0001,
+      "opt_learning_rate_decay_steps": 1133,
+      "model_bn_span": 424
+    },
+    "Epochs to converge": [
+	    86, 87, 86, 87, 86, 85, 86, 86, 86, 85, 86, 86, 86, 86, 86, 85, 86, 86, 87, 85, 85, 86, 85, 87, 86, 85, 85, 86
+    ]
   }
 
 }

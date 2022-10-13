@@ -275,5 +275,28 @@
     "Epochs to converge": [
       4442880, 4592640, 4642560, 4842240, 4742400, 4592640, 4642560, 4692480, 4942080, 4542720,
       4592640, 4093440, 4442880, 4792320, 4642560, 4592640, 4592640, 4892160, 4742400, 4592640]
-  }
+  },
+ 
+  "bert_ref_16384":
+  {
+    "Benchmark": "bert",
+    "Creator": "NVIDIA",
+    "When": "At 2.0 submission",
+    "Platform": "TPU-v3-128",
+    "BS": 16384,
+    "Hyperparams": {
+        "opt_base_learning_rate": 0.0033,
+        "opt_epsilon": 1e-6,
+        "opt_learning_rate_training_steps": 600,
+        "num_warmup_steps": 290,
+        "start_warmup_step": -100,
+        "opt_lamb_beta_1": 0.75,
+        "opt_lamb_beta_2": 0.9,
+        "opt_lamb_weight_decay_rate": 0.0166629,
+        "gradient_accumulation_steps": 32
+    },
+    "Epochs to converge": [
+      5619712, 5770240, 5720064, 5419008, 5519360, 5569536, 5218304, 5469184, 5419008, 5218304,
+      5669888, 5669888, 5519360, 5569536, 5368832, 5469184, 5569536, 5469184, 5368832, 5469184]  
+    }
 }
