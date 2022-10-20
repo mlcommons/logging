@@ -4,46 +4,81 @@ import os
 import subprocess
 
 
-def _check_bad_filenames(submission_dir):
+def list_files_recursively(*path):
+    path = os.path.join(*path)
+    return [
+        os.path.join(dirpath, file)
+        for dirpath, dirs, files in os.walk(path)
+        for file in files
+    ]
+
+
+def list_dirs_recursively(*path):
+    path = os.path.join(*path)
+    return [dirpath for dirpath, dirs, files in os.walk(path)]
+
+
+def _check_bad_filenames(files, dirs):
     """Checks for filename errors.
     Git does not like filenames with spaces or that start with ., or /. .
     """
-    logging.info('Running git-unfriendly file name checks.')
-    names = [
-        os.path.join(dirpath, filename)
-        for dirpath, _, filenames in os.walk(submission_dir)
-        for filename in filenames
-        if filename.startswith(".") or "/." in filename or " " in filename
+    logging.info("Running git-unfriendly file name checks.")
+    dir_names = [(dir_, os.path.basename(dir_)) for dir_ in dirs]
+    file_names = [(file_, os.path.basename(file_)) for file_ in files]
+    git_error_names = [
+        name[0]
+        for name in dir_names
+        if name[1].startswith(".") or " " in name[1]
+    ] + [
+        name[0]
+        for name in file_names
+        if name[1].startswith(".") or " " in name[1]
     ]
-    if len(names) > 0:
-        error = "\n".join(names)
-        logging.error('Files with git-unfriendly name: %s ', error)
-        logging.error('Please remove spaces from filenamed and make sure they do not start with ".", or "/."')
+    if len(git_error_names) > 0:
+        error = "\n".join(git_error_names)
+        logging.error("Files with git-unfriendly name: %s ", error)
+        logging.error(
+            'Please remove spaces from filenamed and make sure they do not start with ".", or "/."'
+        )
         return False
     return True
 
 
-def _check_file_sizes(submission_dir):
+def _check_file_sizes(files, file_size_limit_mb=50):
     """Checks for large file sizes.
     Git does not like file sizes > 50MB.
     """
     logging.info('Running large file checks.')
-    out = subprocess.run(
-        [
-            "find",
-            submission_dir,
-            "-type",
-            "f",
-            "-size",
-            "+50M",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-    )
-    if len(out.stdout) != 0:
-        logging.error('Files > 50MB: %s', out.stdout)
+    MB_TO_BYTES = 1024 * 1024
+    files_over_size_limit = [
+        f
+        for f in files
+        if not os.path.islink(f)
+        and os.path.getsize(f) > file_size_limit_mb * MB_TO_BYTES
+    ]
+    if len(files_over_size_limit) > 0:
+        error = '\n'.join(files_over_size_limit)
+        logging.error('Files > 50MB: %s', error)
         logging.error('Please remove or reduce the size of these files.')
+        return False
+    return True
+
+
+def _check_symbolic_links(submission_dir, files):
+    """Check folder for broken symbolic links
+    """
+    broken_symbolic_links = [
+        f
+        for f in files
+        if os.path.islink(f) and not os.path.exists(os.readlink(f))
+    ]
+    if len(broken_symbolic_links) > 0:
+        error = '\n'.join(broken_symbolic_links)
+        logging.error(
+            "%s contains broken symbolic links: %s",
+            submission_dir,
+            error,
+        )
         return False
     return True
 
@@ -54,10 +89,16 @@ def run_checks(submission_dir):
     """
     logging.info('Running repository checks.')
 
-    bad_filename_error = _check_bad_filenames(submission_dir)
-    large_file_error = _check_file_sizes(submission_dir)
+    # Get files and directories
+    files = list_files_recursively(submission_dir)
+    dirs = list_dirs_recursively(submission_dir)
 
-    if not (bad_filename_error and large_file_error):
+    # Execute checks
+    bad_filename_error = _check_bad_filenames(files, dirs)
+    large_file_error = _check_file_sizes(files)
+    symlinks_error = _check_symbolic_links(submission_dir, files)
+
+    if not (bad_filename_error and large_file_error and symlinks_error):
         logging.info('CHECKS FAILED.')
         return False
 
