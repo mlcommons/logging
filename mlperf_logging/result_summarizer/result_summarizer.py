@@ -5,7 +5,6 @@ Summarizes a set of results.
 from __future__ import print_function
 
 import argparse
-import copy
 import glob
 import json
 import os
@@ -13,6 +12,7 @@ import re
 import sys
 import itertools
 import pandas as pd
+import yaml
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -582,6 +582,11 @@ def get_parser():
         '--csv',
         type=str,
         help='Exports a csv of the results to the path specified')
+    parser.add_argument(
+        '-xlsx',
+        '--xlsx',
+        type=str,
+        help='Exports a xlsx of the results to the path specified')
 
     return parser
 
@@ -589,6 +594,9 @@ def get_parser():
 def main():
     parser = get_parser()
     args = parser.parse_args()
+    config_path = os.path.join(os.path.dirname(__file__), "xlsx_config.yaml")
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
 
     strong_scaling_summaries = []
     weak_scaling_summaries = []
@@ -625,6 +633,87 @@ def main():
         # Parse results for single organization.
         _update_summaries(args.folder)
 
+    def _map_availability(availability):
+        map_ = config["availability"]
+        return map_.get(availability, availability)
+
+    def _map_columns_index(column):
+        map_ = config["columns"][args.usage][args.ruleset]
+        return tuple(map_.get(column, map_.get("default") + [column]))
+
+    def _summaries_to_xlsx(summaries: pd.DataFrame, path, version):
+        writer = pd.ExcelWriter(path, engine="xlsxwriter")
+        index = 0
+        workbook = writer.book
+        merge_format = workbook.add_format(
+            {"bold": 1, "valign": "vcenter", "fg_color": "gray"}
+        )
+        cell_format = workbook.add_format(
+            {
+                "bold": 1,
+                "border": 1,
+                "align": "center",
+                "valign": "vcenter",
+            }
+        )
+        for division in ["closed", "open"]:
+            sheet_data = summaries[summaries["division"] == division]
+            sheet_data["availability"] = sheet_data["availability"].apply(
+                _map_availability
+            )
+            aux_df = pd.DataFrame(
+                [],
+                columns=pd.MultiIndex.from_tuples(
+                    [_map_columns_index(c) for c in sheet_data.columns]
+                ),
+            )
+            aux_df.to_excel(writer, sheet_name=division)
+            worksheet = workbook.get_worksheet_by_name(division)
+            worksheet.write_string(aux_df.columns.nlevels - 1, 0, "ID", cell_format)
+            start = aux_df.columns.nlevels
+            for availability in [
+                "Available on-premise",
+                "Available cloud",
+                "Research, Development, or Internal (RDI)",
+            ]:
+                section = sheet_data[
+                    sheet_data["availability"] == availability
+                ]
+                if len(section) > 0:
+                    worksheet.merge_range(
+                        start,
+                        0,
+                        start,
+                        len(sheet_data.columns),
+                        availability,
+                        merge_format,
+                    )
+                    start += 1
+                    section.to_excel(
+                        writer,
+                        sheet_name=division,
+                        header=False,
+                        startcol=1,
+                        startrow=start,
+                        index=False,
+                    )
+                    ids = pd.Series(
+                        [
+                            f"{version}-{i:04}"
+                            for i in range(index, index + len(section))
+                        ]
+                    )
+                    ids.to_excel(
+                        writer,
+                        sheet_name=division,
+                        header=False,
+                        startrow=start,
+                        index=False,
+                    )
+                    start += len(section)
+                    index += len(section)
+
+        writer.save()
     # Print and write back results.
     def _print_and_write(summaries, weak_scaling=False, mode='w'):
         if len(summaries) > 0:
@@ -648,6 +737,10 @@ def main():
             print(summaries)
             if args.csv is not None:
                 summaries.to_csv(args.csv, index=False, mode=mode)
+            
+            if args.xlsx is not None:
+                _summaries_to_xlsx(summaries, args.xlsx, args.ruleset[:3])
+                
 
     with pd.option_context('display.max_rows', None, 'display.max_columns',
                            None, 'display.max_colwidth', None):
