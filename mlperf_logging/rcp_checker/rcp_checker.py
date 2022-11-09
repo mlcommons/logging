@@ -397,7 +397,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
+    def check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -505,7 +505,7 @@ def main():
     checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
     checker._compute_rcp_stats()
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-    test, msg = checker._check_directory(args.dir, rcp_pass=args.rcp_pass)
+    test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
 
     if test:
         logging.info('%s, RCP test PASSED', msg)
