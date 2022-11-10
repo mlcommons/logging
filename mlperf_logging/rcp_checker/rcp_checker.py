@@ -194,7 +194,7 @@ class RCP_Checker:
                         self.pruned_rcp_data[record] = record_contents
 
 
-    def _compute_rcp_stats(self):
+    def compute_rcp_stats(self):
         '''Compute RCP mean, stdev and min acceptable epochs for RCPs'''
         for record, record_contents in self.rcp_data.items():
             epoch_list = record_contents['Epochs to converge']
@@ -503,7 +503,7 @@ def main():
 
     # Results summarizer makes these 3 calls to invoke RCP test
     checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
-    checker._compute_rcp_stats()
+    checker.compute_rcp_stats()
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
     test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
 
