@@ -424,7 +424,7 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_epsilon
+    NAME:  opt_lamb_epsilon
     REQ:   EXACTLY_ONE
 
 - KEY:
