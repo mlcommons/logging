@@ -42,6 +42,7 @@ def read_submission_file(result_file, use_train_samples):
     not_converged = 0
     subm_epochs = None
     bs = -1
+    benchmark = None
 
     with open(result_file, 'r', encoding='latin-1') as f:
         # TODO: use mlperf_logging.compliance_checker.mlp_parser instead
@@ -54,6 +55,10 @@ def read_submission_file(result_file, use_train_samples):
                 str = line[len(TOKEN):]
                 if "global_batch_size" in str:
                     bs = json.loads(str)["value"]
+                if "submission_benchmark" in str:
+                    benchmark = json.loads(str)["value"]
+                    if benchmark != "bert" and use_train_samples:
+                        use_train_samples = False
                 if not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
@@ -71,29 +76,45 @@ def read_submission_file(result_file, use_train_samples):
                         subm_epochs = 1e9
                         not_converged = 1
 
-    return not_converged, subm_epochs, bs
+    return not_converged, subm_epochs, bs, benchmark
 
-def get_submission_epochs(result_files, benchmark, bert_train_samples):
+def get_submission_epochs(result_files, bert_train_samples):
     '''
     Extract convergence epochs (or train_samples for BERT)
     from a list of submission files
-    Returns the batch size and the list of epochs (or samples) to converge
+    Returns the batch size, the list of epochs (or samples) to converge, and benchmark name
     bs of -1 means batch size could not be determined. subm_epochs is None
-    if > 1 files fail to converge
+    if > 1 files fail to converge.
     '''
     not_converged = 0
     subm_epochs = []
     bs = -1
-    use_train_samples = benchmark == 'bert' and bert_train_samples
+    benchmark = None
     for result_file in result_files:
-        # TODO: Do we need to make sure global_batch_size is the same
-        # in all files? If so, this is obviously a bad submission
-        curr_not_converged, curr_subm_epochs, bs = read_submission_file(result_file, use_train_samples)
+        curr_not_converged, curr_subm_epochs, curr_bs, curr_benchmark = read_submission_file(result_file, bert_train_samples)
+
         subm_epochs.append(curr_subm_epochs)
         not_converged += curr_not_converged
+
+        if bs == -1:
+            bs = curr_bs
+        else:
+            if curr_bs != bs:
+                logging.warning(' Batch sizes in files do not match.')
+                return -1, None, None
+
+        if benchmark is None:
+            benchmark = curr_benchmark
+        else:
+            if curr_benchmark != benchmark:
+                logging.warning(' Benchmark names in files do not match.')
+                return -1, None, None
+
+    if (bert_train_samples and benchmark != "bert"):
+        logging.info(' bert_train_samples set for submission that is not bert')
     if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
         subm_epochs = None
-    return bs, subm_epochs
+    return bs, subm_epochs, benchmark
 
 
 class RCP_Checker:
@@ -415,9 +436,8 @@ class RCP_Checker:
         _print_divider_bar()
         dir = dir.rstrip("/")
         pattern = '{folder}/result_*.txt'.format(folder=dir)
-        benchmark = os.path.split(dir)[1]
         result_files = glob.glob(pattern, recursive=True)
-        bs, subm_epochs = get_submission_epochs(result_files, benchmark, self.bert_train_samples)
+        bs, subm_epochs, benchmark = get_submission_epochs(result_files, self.bert_train_samples)
 
         if bs == -1:
             return False, 'Could not detect global_batch_size'
