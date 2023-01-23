@@ -1,5 +1,3 @@
-'''Hi'''
-
 '''
 RCP checker: Verifies convergence points of submissions by comparing them against RCPs (Reference Convergence Points)
 '''
@@ -40,61 +38,59 @@ TOKEN = ':::MLLOG '
 def _print_divider_bar():
     logging.info('------------------------------')
 
-def _detect_eval_error(file_contents):
-    for line in file_contents:
-        if TOKEN not in line:
-            continue
-        line = re.sub(".*"+TOKEN, TOKEN, line).strip()
-        if line.startswith(TOKEN):
-            s = line[len(TOKEN):]
-            if 'eval_error' in s:
-                return True
-    return False
+def read_submission_file(result_file, use_train_samples):
+    not_converged = 0
+    subm_epochs = None
+    bs = -1
 
+    with open(result_file, 'r', encoding='latin-1') as f:
+        # TODO: use mlperf_logging.compliance_checker.mlp_parser instead
+        file_contents = f.readlines()
+        for line in file_contents:
+            if TOKEN not in line:
+                continue
+            line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+            if line.startswith(TOKEN):
+                str = line[len(TOKEN):]
+                if "global_batch_size" in str:
+                    bs = json.loads(str)["value"]
+                if not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
+                    eval_accuracy_str = str
+                    conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
+                    conv_epoch = round(conv_epoch, 3)
+                if use_train_samples and "train_samples" in str:
+                    eval_accuracy_str = str
+                    conv_epoch = json.loads(eval_accuracy_str)["value"]
+                if "run_stop" in str:
+                    # Epochs to converge is the the last epochs value on
+                    # eval_accuracy line before run_stop
+                    conv_result = json.loads(str)["metadata"]["status"]
+                    if conv_result == "success":
+                        subm_epochs = conv_epoch
+                    else:
+                        subm_epochs = 1e9
+                        not_converged = 1
+
+    return not_converged, subm_epochs, bs
 
 def get_submission_epochs(result_files, benchmark, bert_train_samples):
     '''
     Extract convergence epochs (or train_samples for BERT)
     from a list of submission files
     Returns the batch size and the list of epochs (or samples) to converge
-    -1 means run did not converge. Return None if > 1 files
-    fail to converge
+    bs of -1 means batch size could not be determined. subm_epochs is None
+    if > 1 files fail to converge
     '''
     not_converged = 0
     subm_epochs = []
     bs = -1
     use_train_samples = benchmark == 'bert' and bert_train_samples
     for result_file in result_files:
-        with open(result_file, 'r', encoding='latin-1') as f:
-            file_contents = f.readlines()
-            use_eval_error = _detect_eval_error(file_contents)
-            for line in file_contents:
-                if TOKEN not in line:
-                    continue
-                line = re.sub(".*"+TOKEN, TOKEN, line).strip()
-                if line.startswith(TOKEN):
-                    str = line[len(TOKEN):]
-                    if "global_batch_size" in str:
-                        # Do we need to make sure global_batch_size is the same
-                        # in all files? If so, this is obviously a bad submission
-                        bs = json.loads(str)["value"]
-                    if not use_train_samples and (((not use_eval_error) and "eval_accuracy" in str) or
-                                                  (use_eval_error and "eval_error" in str)):
-                        eval_accuracy_str = str
-                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
-                        conv_epoch = round(conv_epoch, 3)
-                    if use_train_samples and "train_samples" in str:
-                        eval_accuracy_str = str
-                        conv_epoch = json.loads(eval_accuracy_str)["value"]
-                    if "run_stop" in str:
-                        # Epochs to converge is the the last epochs value on
-                        # eval_accuracy line before run_stop
-                        conv_result = json.loads(str)["metadata"]["status"]
-                        if conv_result == "success":
-                            subm_epochs.append(conv_epoch)
-                        else:
-                            subm_epochs.append(1e9)
-                            not_converged = not_converged + 1
+        # TODO: Do we need to make sure global_batch_size is the same
+        # in all files? If so, this is obviously a bad submission
+        curr_not_converged, curr_subm_epochs, bs = read_submission_file(result_file, use_train_samples)
+        subm_epochs.append(curr_subm_epochs)
+        not_converged += curr_not_converged
     if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
         subm_epochs = None
     return bs, subm_epochs
