@@ -1,3 +1,5 @@
+'''Hi'''
+
 '''
 RCP checker: Verifies convergence points of submissions by comparing them against RCPs (Reference Convergence Points)
 '''
