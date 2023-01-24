@@ -35,8 +35,10 @@ submission_runs = {
 
 TOKEN = ':::MLLOG '
 
+
 def _print_divider_bar():
     logging.info('------------------------------')
+
 
 def read_submission_file(result_file, use_train_samples):
     not_converged = 1
@@ -80,6 +82,7 @@ def read_submission_file(result_file, use_train_samples):
     if not_converged:
         logging.warning(' Run incomplete or did not converge. Marking as infinite.')
     return not_converged, subm_epochs, bs, benchmark
+
 
 def get_submission_epochs(result_files, bert_train_samples):
     '''
@@ -235,7 +238,7 @@ class RCP_Checker:
         if rcp_pass == 'pruned_rcps':
             rcp_data = self.pruned_rcp_data
         elif rcp_pass == 'full_rcps':
-            rcp_data =  self.rcp_data
+            rcp_data = self.rcp_data
         return rcp_data
 
     def _find_rcp(self, bs, rcp_pass='full_rcp'):
@@ -450,7 +453,6 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_pass='
         elif rcp_min is None and rcp_max is not None:
             rcp_min_record = checker._find_min_rcp(rcp_pass)
             rcp_check = checker._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
-            mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
             if rcp_check is False:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
             else:
@@ -494,7 +496,7 @@ def get_parser():
 
 
 def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
-  return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
+    return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
 
 
 def main():
@@ -507,10 +509,7 @@ def main():
     logging.getLogger().handlers[0].setFormatter(formatter)
     logging.getLogger().handlers[1].setFormatter(formatter)
 
-    # Results summarizer makes these 3 calls to invoke RCP test
-    # checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
-    # checker.compute_rcp_stats()
-    # test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
+    # Package checker makes this call to invoke RCP test
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
     passed, msg = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_pass=args.rcp_pass)
 
