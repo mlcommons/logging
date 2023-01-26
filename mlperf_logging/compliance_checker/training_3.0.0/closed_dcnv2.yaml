@@ -12,7 +12,7 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_adagrad_lr_decay
+    NAME:  opt_adagrad_learning_rate_decay
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 0 "
 
@@ -22,12 +22,12 @@
     CHECK: " v['value'] == 0 "
 
 - KEY:
-    NAME:  opt_adagrad_init_acc_value
+    NAME:  opt_adagrad_initial_accumulator_value
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 0 "
 
 - KEY:
-    NAME:  opt_adagrad_eps
+    NAME:  opt_adagrad_epsilon
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 1e-10 "
 
