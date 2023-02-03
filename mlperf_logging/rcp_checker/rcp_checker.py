@@ -39,8 +39,8 @@ def _print_divider_bar():
     logging.info('------------------------------')
 
 def read_submission_file(result_file, use_train_samples):
-    not_converged = 0
-    subm_epochs = None
+    not_converged = 1
+    subm_epochs = 1e9
     bs = -1
     benchmark = None
 
@@ -72,10 +72,13 @@ def read_submission_file(result_file, use_train_samples):
                     conv_result = json.loads(str)["metadata"]["status"]
                     if conv_result == "success":
                         subm_epochs = conv_epoch
+                        not_converged = 0
                     else:
                         subm_epochs = 1e9
                         not_converged = 1
 
+    if not_converged:
+        logging.warning(' Run incomplete or did not converge. Marking as infinite.')
     return not_converged, subm_epochs, bs, benchmark
 
 def get_submission_epochs(result_files, bert_train_samples):
