@@ -523,9 +523,9 @@ def main():
     checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
     checker.compute_rcp_stats()
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-    test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
+    passed, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
 
-    if test:
+    if passed:
         logging.info('%s, RCP test PASSED', msg)
         print('** Logging output also at', args.log_output)
     else:
