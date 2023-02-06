@@ -10,6 +10,7 @@ import os
 import numpy as np
 import re
 import scipy.stats
+import sys
 
 # Number of submission runs for each benchmark
 # References need 2x of these runs
@@ -193,7 +194,7 @@ class RCP_Checker:
                         self.pruned_rcp_data[record] = record_contents
 
 
-    def _compute_rcp_stats(self):
+    def compute_rcp_stats(self):
         '''Compute RCP mean, stdev and min acceptable epochs for RCPs'''
         for record, record_contents in self.rcp_data.items():
             epoch_list = record_contents['Epochs to converge']
@@ -396,7 +397,7 @@ class RCP_Checker:
             return(False)
 
 
-    def _check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
+    def check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
         '''
         Check directory for RCP compliance.
         Returns (Pass/Fail, string with explanation)
@@ -490,5 +491,29 @@ def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
   return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
 
 
-def main(checker, dir):
-    return checker._check_directory(dir, rcp_pass='pruned_rcps')
+def main():
+    parser = get_parser()
+    args = parser.parse_args()
+
+    logging.basicConfig(filename=args.log_output, level=logging.INFO)
+    logging.getLogger().addHandler(logging.StreamHandler())
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+    logging.getLogger().handlers[0].setFormatter(formatter)
+    logging.getLogger().handlers[1].setFormatter(formatter)
+
+    # Results summarizer makes these 3 calls to invoke RCP test
+    checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
+    checker.compute_rcp_stats()
+    # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
+    test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
+
+    if test:
+        logging.info('%s, RCP test PASSED', msg)
+        print('** Logging output also at', args.log_output)
+    else:
+        logging.error('%s, RCP test FAILED, consider adding --rcp_bypass in when running the package_checker.', msg)
+        print('** Logging output also at', args.log_output)
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
