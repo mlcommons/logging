@@ -29,7 +29,7 @@
 - KEY:
     NAME:  opt_adagrad_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-10 "
+    CHECK: " v['value'] == 1e-8 "
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
