@@ -125,7 +125,7 @@ def get_submission_epochs(result_files, bert_train_samples):
 
 class RCP_Checker:
 
-    def __init__(self, usage, ruleset, benchmark, verbose):
+    def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
         if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0"}:
             raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0')
         self.usage = usage
@@ -136,22 +136,25 @@ class RCP_Checker:
         self.verbose = verbose
         self.submission_runs = submission_runs[usage][benchmark]
 
-        raw_rcp_data = self._consume_json_file(usage, ruleset, self.benchmark)
+        raw_rcp_data = {}
+        if rcp_file:
+            raw_rcp_data = json.load(rcp_file)
+            # TODO Add warnings keys missing or doesn't match benchmark
+        else:
+            json_file = self._construct_json_filename(usage, ruleset, benchmark)
+            with open(json_file) as f:
+                raw_rcp_data = json.load(f)
+
         processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
         sorted_rcp_data = dict(sorted(processed_rcp_data.items(), key=lambda item: item[1]['BS']))
         self.rcp_data = sorted_rcp_data
 
         self.compute_rcp_stats()
 
-    def _consume_json_file(self, usage, ruleset, benchmark):
-        '''Read json file'''
-        json_file = os.path.join(os.path.dirname(__file__),
-                                 f"{usage}_{ruleset}",
-                                 f"rcps_{benchmark}.json"
-        )
-        #json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps_'+ benchmark+ '.json'
-        with open(json_file, 'r') as f:
-            return json.load(f)
+    def _construct_json_filename(self, usage, ruleset, benchmark):
+        '''Form RCP json filename'''
+        return os.path.join(os.path.dirname(__file__), f"{usage}_{ruleset}",
+                            f"rcps_{benchmark}.json")
 
     def _process_raw_rcp_data(self, raw_rcp_data):
         '''
