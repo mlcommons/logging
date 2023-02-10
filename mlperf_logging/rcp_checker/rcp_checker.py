@@ -139,7 +139,15 @@ class RCP_Checker:
         raw_rcp_data = {}
         if rcp_file:
             raw_rcp_data = json.load(rcp_file)
-            # TODO Add warnings keys missing or doesn't match benchmark
+
+            first_bmark = ''
+            for _, record_contents in raw_rcp_data.items():
+                if record_contents['Benchmark'] != self.benchmark:
+                    logging.warning(' RCP in specified json file does not match benchmark name in results.')
+                if first_bmark == '':
+                    first_bmark = record_contents['Benchmark']
+                elif first_bmark != record_contents['Benchmark']:
+                        logging.warning(' RCPs in specified json file are for different benchmarks.')
         else:
             json_file = self._construct_json_filename(usage, ruleset, benchmark)
             with open(json_file) as f:
