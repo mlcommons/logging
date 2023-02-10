@@ -17,7 +17,6 @@ import pandas as pd
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..compliance_checker.mlp_parser import parse_file
-from ..rcp_checker import rcp_checker
 
 from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
