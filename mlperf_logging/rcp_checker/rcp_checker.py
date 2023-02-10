@@ -492,6 +492,8 @@ def get_parser():
                     help='where to store RCP checker output log')
     parser.add_argument('--rcp_pass', type=str, default='pruned_rcps',
                     help='use "pruned_rcps" or "full_rcps" for convergence checks')
+    parser.add_argument('--custom_rcps', type=argparse.FileType('r'),
+                    help='specify an RCP json file to use')
     return parser
 
 
