@@ -408,7 +408,7 @@ class RCP_Checker:
             return False
 
 
-def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
+def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=None, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
     '''
     Check directory for RCP compliance.
     Returns (Pass/Fail, string with explanation)
@@ -431,7 +431,7 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_pass='
     result_files = glob.glob(pattern, recursive=True)
     bs, subm_epochs, benchmark = get_submission_epochs(result_files, bert_train_samples)
 
-    checker = RCP_Checker(usage, version, benchmark, verbose)
+    checker = RCP_Checker(usage, version, benchmark, verbose, rcp_file)
 
     if bs == -1:
         return False, 'Could not detect global_batch_size'
@@ -516,7 +516,7 @@ def main():
 
     # Package checker makes this call to invoke RCP test
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-    passed, msg = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_pass=args.rcp_pass)
+    passed, msg = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_file=args.custom_rcps, rcp_pass=args.rcp_pass)
 
     if passed:
         logging.info('%s, RCP test PASSED', msg)
