@@ -35,89 +35,113 @@ submission_runs = {
 
 TOKEN = ':::MLLOG '
 
+
 def _print_divider_bar():
     logging.info('------------------------------')
 
-def _detect_eval_error(file_contents):
-    for line in file_contents:
-        if TOKEN not in line:
-            continue
-        line = re.sub(".*"+TOKEN, TOKEN, line).strip()
-        if line.startswith(TOKEN):
-            s = line[len(TOKEN):]
-            if 'eval_error' in s:
-                return True
-    return False
+
+def read_submission_file(result_file, use_train_samples):
+    not_converged = 1
+    subm_epochs = 1e9
+    bs = -1
+    benchmark = None
+
+    with open(result_file, 'r', encoding='latin-1') as f:
+        # TODO: use mlperf_logging.compliance_checker.mlp_parser instead
+        file_contents = f.readlines()
+        for line in file_contents:
+            if TOKEN not in line:
+                continue
+            line = re.sub(".*"+TOKEN, TOKEN, line).strip()
+            if line.startswith(TOKEN):
+                str = line[len(TOKEN):]
+                if "global_batch_size" in str:
+                    bs = json.loads(str)["value"]
+                if "submission_benchmark" in str:
+                    benchmark = json.loads(str)["value"]
+                    if benchmark != "bert" and use_train_samples:
+                        use_train_samples = False
+                if not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
+                    eval_accuracy_str = str
+                    conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
+                    conv_epoch = round(conv_epoch, 3)
+                if use_train_samples and "train_samples" in str:
+                    eval_accuracy_str = str
+                    conv_epoch = json.loads(eval_accuracy_str)["value"]
+                if "run_stop" in str:
+                    # Epochs to converge is the the last epochs value on
+                    # eval_accuracy line before run_stop
+                    conv_result = json.loads(str)["metadata"]["status"]
+                    if conv_result == "success":
+                        subm_epochs = conv_epoch
+                        not_converged = 0
+                    else:
+                        subm_epochs = 1e9
+                        not_converged = 1
+
+    if not_converged:
+        logging.warning(' Run incomplete or did not converge. Marking as infinite.')
+    return not_converged, subm_epochs, bs, benchmark
 
 
-def get_submission_epochs(result_files, benchmark, bert_train_samples):
+def get_submission_epochs(result_files, bert_train_samples):
     '''
     Extract convergence epochs (or train_samples for BERT)
     from a list of submission files
-    Returns the batch size and the list of epochs (or samples) to converge
-    -1 means run did not converge. Return None if > 1 files
-    fail to converge
+    Returns the batch size, the list of epochs (or samples) to converge, and benchmark name
+    bs of -1 means batch size could not be determined. subm_epochs is None
+    if > 1 files fail to converge.
     '''
     not_converged = 0
     subm_epochs = []
     bs = -1
-    use_train_samples = benchmark == 'bert' and bert_train_samples
+    benchmark = None
     for result_file in result_files:
-        with open(result_file, 'r', encoding='latin-1') as f:
-            file_contents = f.readlines()
-            use_eval_error = _detect_eval_error(file_contents)
-            for line in file_contents:
-                if TOKEN not in line:
-                    continue
-                line = re.sub(".*"+TOKEN, TOKEN, line).strip()
-                if line.startswith(TOKEN):
-                    str = line[len(TOKEN):]
-                    if "global_batch_size" in str:
-                        # Do we need to make sure global_batch_size is the same
-                        # in all files? If so, this is obviously a bad submission
-                        bs = json.loads(str)["value"]
-                    if not use_train_samples and (((not use_eval_error) and "eval_accuracy" in str) or
-                                                  (use_eval_error and "eval_error" in str)):
-                        eval_accuracy_str = str
-                        conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
-                        conv_epoch = round(conv_epoch, 3)
-                    if use_train_samples and "train_samples" in str:
-                        eval_accuracy_str = str
-                        conv_epoch = json.loads(eval_accuracy_str)["value"]
-                    if "run_stop" in str:
-                        # Epochs to converge is the the last epochs value on
-                        # eval_accuracy line before run_stop
-                        conv_result = json.loads(str)["metadata"]["status"]
-                        if conv_result == "success":
-                            subm_epochs.append(conv_epoch)
-                        else:
-                            subm_epochs.append(1e9)
-                            not_converged = not_converged + 1
+        curr_not_converged, curr_subm_epochs, curr_bs, curr_benchmark = read_submission_file(result_file, bert_train_samples)
+
+        subm_epochs.append(curr_subm_epochs)
+        not_converged += curr_not_converged
+
+        if bs == -1:
+            bs = curr_bs
+        else:
+            if curr_bs != bs:
+                logging.warning(' Batch sizes in files do not match.')
+                return -1, None, None
+
+        if benchmark is None:
+            benchmark = curr_benchmark
+        else:
+            if curr_benchmark != benchmark:
+                logging.warning(' Benchmark names in files do not match.')
+                return -1, None, None
+
+    if (bert_train_samples and benchmark != "bert"):
+        logging.info(' bert_train_samples set for submission that is not bert')
     if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
         subm_epochs = None
-    return bs, subm_epochs
+    return bs, subm_epochs, benchmark
 
 
 class RCP_Checker:
 
-    def __init__(self, usage, ruleset, verbose, bert_train_samples):
+    def __init__(self, usage, ruleset, benchmark, verbose):
         if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0"}:
             raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0')
         self.usage = usage
         self.ruleset = ruleset
+        self.benchmark = benchmark
         self.alpha = 0.05
         self.tolerance = 0.0001
         self.verbose = verbose
-        self.rcp_data = {}
-        self.bert_train_samples = bert_train_samples
-        self.submission_runs = submission_runs[usage]
+        self.submission_runs = submission_runs[usage][benchmark]
 
-        for benchmark in self.submission_runs.keys():
-            raw_rcp_data = self._consume_json_file(usage, ruleset, benchmark)
-            processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
-            sorted_rcp_data = dict(sorted(processed_rcp_data.items(), key = lambda item: item[1]['BS']))
-            self.rcp_data.update(sorted_rcp_data)
+        raw_rcp_data = self._consume_json_file(usage, ruleset, self.benchmark)
+        processed_rcp_data = self._process_raw_rcp_data(raw_rcp_data)
+        sorted_rcp_data = dict(sorted(processed_rcp_data.items(), key=lambda item: item[1]['BS']))
+        self.rcp_data = sorted_rcp_data
 
+        self.compute_rcp_stats()
 
     def _consume_json_file(self, usage, ruleset, benchmark):
         '''Read json file'''
@@ -128,7 +152,6 @@ class RCP_Checker:
         #json_file = os.getcwd() + '/mlperf_logging/rcp_checker/' + ruleset + '/rcps_'+ benchmark+ '.json'
         with open(json_file, 'r') as f:
             return json.load(f)
-
 
     def _process_raw_rcp_data(self, raw_rcp_data):
         '''
@@ -149,7 +172,6 @@ class RCP_Checker:
             # numbers out of bounds, etc.
         return processed_rcps
 
-
     def _prune_rcps(self):
         '''
         Prune RCPs. We compare convergence of each RCP point with interpolation using surrounding points
@@ -157,42 +179,39 @@ class RCP_Checker:
         pruned_rcp_data is by default used for RCP tests.
         '''
         self.pruned_rcp_data = {}
-        for benchmark in submission_runs[self.usage].keys():
-            min_epochs = []
+        # TODO: pruning should be done in dictionary instead of list to avoid nested loop at the end
+        min_epochs = list(self.rcp_data.values())
+
+        # Step 1
+        # Find point with fastest convergence and prune all point with smaller batch size
+        # In that way the min batch size point will have the fastest convergenece
+        fastest_conv = min(min_epochs, key=lambda rc: rc['Min Epochs'])
+        min_epochs = list(filter(lambda rc: rc['BS'] >= fastest_conv['BS'], min_epochs))
+
+        # Step 2
+        # Run this algorithm for the rest of the points:
+        # for i = 1..N-2
+        #    if RCP[i+1] has slower convergence than interpolation(RCP[i], RCP[i+2]):
+        #      remove it
+        #      decrement i,N
+        list_len = len(min_epochs)
+        i = 1
+        # this loop does pruning, but it's not calculating the lower convex envelope
+        while i < list_len - 1:
+            rcp_min = min_epochs[i-1]
+            rcp_max = min_epochs[i+1]
+            bs = min_epochs[i]['BS']
+            name, rcp = self._create_interp_rcp(bs, rcp_min, rcp_max)
+            if min_epochs[i]['Min Epochs'] > rcp['Min Epochs']:
+                del min_epochs[i]
+                i = i-1
+                list_len = list_len - 1
+            i = i+1
+
+        for min_epoch in min_epochs:
             for record, record_contents in self.rcp_data.items():
-                if record_contents['Benchmark'] == benchmark:
-                    min_epochs.append(record_contents)
-
-            # Step 1
-            # Find point with fastest convergence and prune all point with smaller batch size
-            # In that way the min batch size point will have the fastest convergenece
-            fastest_conv = min(min_epochs, key=lambda rc: rc['Min Epochs'])
-            min_epochs = list(filter(lambda rc: rc['BS'] >= fastest_conv['BS'], min_epochs))
-
-            # Step 2
-            # Run this algorithm for the rest of the points:
-            # for i = 1..N-2
-            #    if RCP[i+1] has slower convergence than interpolation(RCP[i], RCP[i+2]):
-            #      remove it
-            #      decrement i,N
-            list_len = len(min_epochs)
-            i = 1
-            while i < list_len - 1:
-                rcp_min = min_epochs[i-1]
-                rcp_max = min_epochs[i+1]
-                bs = min_epochs[i]['BS']
-                name, rcp = self._create_interp_rcp(benchmark,bs,rcp_min,rcp_max)
-                if min_epochs[i]['Min Epochs'] > rcp['Min Epochs']:
-                    del min_epochs[i]
-                    i = i-1
-                    list_len = list_len - 1
-                i = i+1
-
-            for min_epoch in min_epochs:
-                for record, record_contents in self.rcp_data.items():
-                    if record_contents['Benchmark'] == min_epoch['Benchmark'] and record_contents['BS'] == min_epoch['BS']:
-                        self.pruned_rcp_data[record] = record_contents
-
+                if record_contents['Benchmark'] == min_epoch['Benchmark'] and record_contents['BS'] == min_epoch['BS']:
+                    self.pruned_rcp_data[record] = record_contents
 
     def compute_rcp_stats(self):
         '''Compute RCP mean, stdev and min acceptable epochs for RCPs'''
@@ -204,7 +223,6 @@ class RCP_Checker:
             record_contents['RCP Mean'] = np.mean(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
             record_contents['RCP Stdev'] = np.std(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
             min_epochs = self._find_min_acceptable_mean(
-                              record_contents['Benchmark'],
                               record_contents['RCP Mean'],
                               record_contents['RCP Stdev'],
                               len(epoch_list)-samples_rejected*2)
@@ -216,35 +234,32 @@ class RCP_Checker:
 
         self._prune_rcps()
 
-
-    def _get_rcp_data(self, rcp_pass = 'pruned_rcps'):
+    def _get_rcp_data(self, rcp_pass='pruned_rcps'):
         if rcp_pass == 'pruned_rcps':
             rcp_data = self.pruned_rcp_data
         elif rcp_pass == 'full_rcps':
-            rcp_data =  self.rcp_data
+            rcp_data = self.rcp_data
         return rcp_data
 
-
-    def _find_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
-        '''Find RCP based on benchmark and batch size'''
+    def _find_rcp(self, bs, rcp_pass='full_rcp'):
+        '''Find RCP based on batch size'''
         rcp_data = self._get_rcp_data(rcp_pass)
         for _, record_contents in rcp_data.items():
-            if record_contents['Benchmark'] == benchmark and record_contents['BS'] == bs:
+            if record_contents['BS'] == bs:
                 return record_contents
 
-
-    def _find_min_rcp(self, benchmark, rcp_pass = 'full_rcp'):
+    def _find_min_rcp(self, rcp_pass='full_rcp'):
         '''Find RCP with the smallest batch size for a benchmark'''
         min_bs = 1e9
         min_record = None
         rcp_data = self._get_rcp_data(rcp_pass)
         for _, record_contents in rcp_data.items():
-            if record_contents['BS'] < min_bs and record_contents['Benchmark'] == benchmark:
+            if record_contents['BS'] < min_bs:
                 min_record = record_contents
                 min_bs = record_contents['BS']
         return min_record
 
-    def _find_top_min_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
+    def _find_top_min_rcp(self, bs, rcp_pass='full_rcp'):
         '''
         Find top RCP to serve as min in interpolation.
         For example, if bs = 100 and reference has bs = 10, 20, 110, 120
@@ -254,14 +269,12 @@ class RCP_Checker:
         min_record = None
         rcp_data = self._get_rcp_data(rcp_pass)
         for _, record_contents in rcp_data.items():
-            if record_contents['Benchmark'] == benchmark:
-                if record_contents['BS'] < bs and record_contents['BS'] > min_bs:
-                    min_bs = record_contents['BS']
-                    min_record = record_contents
+            if record_contents['BS'] < bs and record_contents['BS'] > min_bs:
+                min_bs = record_contents['BS']
+                min_record = record_contents
         return min_record
 
-
-    def _find_bottom_max_rcp(self, benchmark, bs, rcp_pass = 'full_rcp'):
+    def _find_bottom_max_rcp(self, bs, rcp_pass='full_rcp'):
         '''
         Find bottom RCP to serve as max in interpolation.
         For example, if bs = 100 and reference has bs = 10, 20, 110, 120
@@ -271,12 +284,10 @@ class RCP_Checker:
         max_record = None
         rcp_data = self._get_rcp_data(rcp_pass)
         for _, record_contents in rcp_data.items():
-            if record_contents['Benchmark'] == benchmark:
-                if record_contents['BS'] > bs and record_contents['BS'] < max_bs:
-                    max_bs = record_contents['BS']
-                    max_record = record_contents
+            if record_contents['BS'] > bs and record_contents['BS'] < max_bs:
+                max_bs = record_contents['BS']
+                max_record = record_contents
         return max_record
-
 
     def _find_p_value(self, subm_mean, subm_stdev, subm_num_samples,
                       ref_mean, ref_stdev, ref_num_samples,
@@ -298,8 +309,7 @@ class RCP_Checker:
             p_value = 1 - (p_value / 2)
         return p_value > alpha, p_value
 
-
-    def _find_min_acceptable_mean(self, benchmark, mean, stdev, num_samples_ref):
+    def _find_min_acceptable_mean(self, mean, stdev, num_samples_ref):
         '''
         Do a binary search to find the min acceptable epoch mean to converge
         The limits are 0 and the reference mean, anything above reference is acceptable
@@ -307,7 +317,7 @@ class RCP_Checker:
 
         if stdev == 0:
             return mean
-        num_samples_subm = self.submission_runs[benchmark] - 2
+        num_samples_subm = self.submission_runs - 2
         mean_max = mean
         mean_min = 0.0
         mean_mid = (mean_min + mean_max) / 2
@@ -326,8 +336,7 @@ class RCP_Checker:
 
         return mean_mid
 
-
-    def _create_interp_rcp(self, benchmark, target_bs, low_rcp, high_rcp):
+    def _create_interp_rcp(self, target_bs, low_rcp, high_rcp):
         '''
         Create an interpolation RCP for batch size target_bs by interpolating
         low_rcp and high_rcp. Add the RCP into rcp_data.
@@ -343,12 +352,11 @@ class RCP_Checker:
                     [low_rcp['RCP Stdev'], high_rcp['RCP Stdev']])
 
         min_epochs = self._find_min_acceptable_mean(
-                         benchmark,
                          mean,
                          stdev,
-                         self.submission_runs[benchmark]*2)
-        interp_record_name = benchmark + '_interp_' + str(target_bs)
-        interp_record = {'Benchmark': benchmark,
+                         self.submission_runs*2)
+        interp_record_name = self.benchmark + '_interp_' + str(target_bs)
+        interp_record = {'Benchmark': self.benchmark,
                          'BS': target_bs,
                          'Hyperparams': {},
                          'Epochs to converge': [],
@@ -390,77 +398,77 @@ class RCP_Checker:
                 if results_dir != '':
                     self._set_results_scaling(norm_factor, results_dir)
                     logging.info(" Results scaling set to normalization factor of %.4f", norm_factor)
-            return(True)
+            return True
         else:
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
-            return(False)
+            return False
 
 
-    def check_directory(self, dir, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
-        '''
-        Check directory for RCP compliance.
-        Returns (Pass/Fail, string with explanation)
-        Possible cases, the top 3 fail before RCP check.
-        - (False) Fail / did not find global_batch_size in log
-        - (False) Fail / run failed to converge
-        - (False) Fail / Benchmark w/o RCP records
-        - (True) Pass / RCP found
-        - (True) Pass / RCP interpolated
-        - (True) Pass / RCP missing but submission converges slower on smaller batch size
-        - (False --> True with --rcp_bypass when running from package checker) Fail / RCP found
-        - (False --> True with --rcp_bypass when running from package checker) Fail / RCP interpolated
-        - (False --> True with --rcp_bypass when running from package checker) Missing RCP / Submit missing RCP
-        '''
-        _print_divider_bar()
-        logging.info(" Running RCP Checker, pass: %s", rcp_pass)
-        _print_divider_bar()
-        dir = dir.rstrip("/")
-        pattern = '{folder}/result_*.txt'.format(folder=dir)
-        benchmark = os.path.split(dir)[1]
-        result_files = glob.glob(pattern, recursive=True)
-        bs, subm_epochs = get_submission_epochs(result_files, benchmark, self.bert_train_samples)
+def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
+    '''
+    Check directory for RCP compliance.
+    Returns (Pass/Fail, string with explanation)
+    Possible cases, the top 3 fail before RCP check.
+    - (False) Fail / did not find global_batch_size in log
+    - (False) Fail / run failed to converge
+    - (False) Fail / Benchmark w/o RCP records
+    - (True) Pass / RCP found
+    - (True) Pass / RCP interpolated
+    - (True) Pass / RCP missing but submission converges slower on smaller batch size
+    - (False --> True with --rcp_bypass when running from package checker) Fail / RCP found
+    - (False --> True with --rcp_bypass when running from package checker) Fail / RCP interpolated
+    - (False --> True with --rcp_bypass when running from package checker) Missing RCP / Submit missing RCP
+    '''
+    _print_divider_bar()
+    logging.info(" Running RCP Checker, pass: %s", rcp_pass)
+    _print_divider_bar()
+    dir = dir.rstrip("/")
+    pattern = '{folder}/result_*.txt'.format(folder=dir)
+    result_files = glob.glob(pattern, recursive=True)
+    bs, subm_epochs, benchmark = get_submission_epochs(result_files, bert_train_samples)
 
-        if bs == -1:
-            return False, 'Could not detect global_batch_size'
-        if subm_epochs is None:
-            return False, 'Insufficient convergence'
+    checker = RCP_Checker(usage, version, benchmark, verbose)
 
-        rcp_record = self._find_rcp(benchmark, bs, rcp_pass)
-        rcp_msg = ''
-        if rcp_record is not None:
-            rcp_msg = 'RCP found'
-            rcp_check = self._eval_submission_record(rcp_record, subm_epochs, (dir if set_scaling else ''))
-        else:
-            rcp_min = self._find_top_min_rcp(benchmark, bs, rcp_pass)
-            rcp_max = self._find_bottom_max_rcp(benchmark, bs, rcp_pass)
-            if rcp_min is not None and rcp_max is not None:
-                rcp_msg = 'RCP Interpolation'
-                interp_record_name, interp_record = self._create_interp_rcp(benchmark, bs, rcp_min, rcp_max)
-                rcp_check = self._eval_submission_record(interp_record, subm_epochs, (dir if set_scaling else ''))
-            elif rcp_min is not None and rcp_max is None:
+    if bs == -1:
+        return False, 'Could not detect global_batch_size'
+    if subm_epochs is None:
+        return False, 'Insufficient convergence'
+
+    rcp_record = checker._find_rcp(bs, rcp_pass)
+    rcp_msg = ''
+    if rcp_record is not None:
+        rcp_msg = 'RCP found'
+        rcp_check = checker._eval_submission_record(rcp_record, subm_epochs, (dir if set_scaling else ''))
+    else:
+        rcp_min = checker._find_top_min_rcp(bs, rcp_pass)
+        rcp_max = checker._find_bottom_max_rcp(bs, rcp_pass)
+        if rcp_min is not None and rcp_max is not None:
+            rcp_msg = 'RCP Interpolation'
+            interp_record_name, interp_record = checker._create_interp_rcp(bs, rcp_min, rcp_max)
+            rcp_check = checker._eval_submission_record(interp_record, subm_epochs, (dir if set_scaling else ''))
+        elif rcp_min is not None and rcp_max is None:
+            rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
+            rcp_check = False
+        elif rcp_min is None and rcp_max is not None:
+            rcp_min_record = checker._find_min_rcp(rcp_pass)
+            rcp_check = checker._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
+            if rcp_check is False:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
-                rcp_check = False
-            elif rcp_min is None and rcp_max is not None:
-                rcp_min_record = self._find_min_rcp(benchmark, rcp_pass)
-                rcp_check = self._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
-                mean_subm_epochs = np.mean(subm_epochs[1:len(subm_epochs)-1])
-                if rcp_check == False:
-                   rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
-                else:
-                   rcp_msg = 'RCP not found but slower convergence on smaller batch size'
             else:
-                rcp_check = False
-                rcp_msg = 'Cannot find any RCPs'
+                rcp_msg = 'RCP not found but slower convergence on smaller batch size'
+        else:
+            rcp_check = False
+            rcp_msg = 'Cannot find any RCPs'
 
-        if rcp_bypass and not rcp_check:
-            if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation' or rcp_msg == 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs):
-                rcp_msg  = rcp_msg + ' passed using rcp_bypass'
-                logging.warning(' RCP test failed but allowed to proceed with RCP bypass.')
-                logging.warning(' Please be ready to have this reviewed by the submission committee.')
-                rcp_check = True
+    if rcp_bypass and not rcp_check:
+        if rcp_msg == 'RCP found' or rcp_msg == 'RCP Interpolation' or rcp_msg == 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs):
+            rcp_msg = rcp_msg + ' passed using rcp_bypass'
+            logging.warning(' RCP test failed but allowed to proceed with RCP bypass.')
+            logging.warning(' Please be ready to have this reviewed by the submission committee.')
+            rcp_check = True
 
-        return rcp_check, rcp_msg
+    return rcp_check, rcp_msg
 
 
 def get_parser():
@@ -488,7 +496,7 @@ def get_parser():
 
 
 def make_checker(usage, ruleset, verbose=False, bert_train_samples=False):
-  return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
+    return RCP_Checker(usage, ruleset, verbose, bert_train_samples)
 
 
 def main():
@@ -501,19 +509,18 @@ def main():
     logging.getLogger().handlers[0].setFormatter(formatter)
     logging.getLogger().handlers[1].setFormatter(formatter)
 
-    # Results summarizer makes these 3 calls to invoke RCP test
-    checker = RCP_Checker(args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples)
-    checker.compute_rcp_stats()
+    # Package checker makes this call to invoke RCP test
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-    test, msg = checker.check_directory(args.dir, rcp_pass=args.rcp_pass)
+    passed, msg = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_pass=args.rcp_pass)
 
-    if test:
+    if passed:
         logging.info('%s, RCP test PASSED', msg)
         print('** Logging output also at', args.log_output)
     else:
         logging.error('%s, RCP test FAILED, consider adding --rcp_bypass in when running the package_checker.', msg)
         print('** Logging output also at', args.log_output)
         sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
