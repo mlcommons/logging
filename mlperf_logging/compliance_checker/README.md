@@ -10,9 +10,9 @@ To check a log file for compliance:
 
     python -m mlperf_logging.compliance_checker [--config YAML] [--usage training/hpc] [--ruleset MLPERF_EDITION] FILENAME
 
-By default, 2.1.0 training edition rules are used and the default config is set to `2.1.0/common.yaml`.
+By default, 3.0.0 training edition rules are used and the default config is set to `3.0.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
-Old training editions, still supported are 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
+Old training editions, still supported are 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
 
 To check hpc compliance rules (only 1.0.0 ruleset is supported), set --usage hpc --ruleset 1.0.0.
 
@@ -22,25 +22,25 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
 
 ### Existing config files for training submissions
 
-    2.1.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
-    2.1.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks 
-    2.1.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
-    2.1.0/closed_resnet.yaml   - Per-benchmark rules, closed submissions.
-    2.1.0/closed_ssd.yaml
-    2.1.0/closed_minigo.yaml
-    2.1.0/closed_maskrcnn.yaml
-    2.1.0/closed_rnnt.yaml
-    2.1.0/closed_unet3d.yaml
-    2.1.0/closed_bert.yaml
-    2.1.0/closed_dlrm.yaml
-    2.1.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
-    2.1.0/open_ssd.yaml
-    2.1.0/open__minigo.yaml
-    2.1.0/open_maskrcnn.yaml
-    2.1.0/open_rnnt.yaml
-    2.1.0/open_unet3d.yaml
-    2.1.0/open_bert.yaml
-    2.1.0/open_dlrm.yaml
+    3.0.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
+    3.0.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks 
+    3.0.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
+    3.0.0/closed_resnet.yaml   - Per-benchmark rules, closed submissions.
+    3.0.0/closed_ssd.yaml
+    3.0.0/closed_minigo.yaml
+    3.0.0/closed_maskrcnn.yaml
+    3.0.0/closed_rnnt.yaml
+    3.0.0/closed_unet3d.yaml
+    3.0.0/closed_bert.yaml
+    3.0.0/closed_dlrm.yaml
+    3.0.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
+    3.0.0/open_ssd.yaml
+    3.0.0/open__minigo.yaml
+    3.0.0/open_maskrcnn.yaml
+    3.0.0/open_rnnt.yaml
+    3.0.0/open_unet3d.yaml
+    3.0.0/open_bert.yaml
+    3.0.0/open_dlrm.yaml
 
 ### Existing config files for HPC submissions
 
