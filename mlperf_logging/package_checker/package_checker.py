@@ -162,7 +162,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             # Run RCP checker for >= 1.0.0
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0'} and division == 'closed' and benchmark != 'minigo':
                 # Now go again through result files to do RCP checks
-                rcp_pass, rcp_msg = rcp_checker.check_directory(
+                rcp_pass, rcp_msg, _ = rcp_checker.check_directory(
                         benchmark_folder,
                         usage,
                         ruleset,

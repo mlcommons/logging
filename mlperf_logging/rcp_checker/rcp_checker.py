@@ -409,11 +409,11 @@ class RCP_Checker:
                 if results_dir != '':
                     self._set_results_scaling(norm_factor, results_dir)
                     logging.info(" Results scaling set to normalization factor of %.4f", norm_factor)
-            return True
+            return True, norm_factor
         else:
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
-            return False
+            return False, norm_factor
 
 
 def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=None, rcp_pass='full_rcp', rcp_bypass=False, set_scaling=False):
@@ -442,28 +442,28 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=N
     checker = RCP_Checker(usage, version, benchmark, verbose, rcp_file)
 
     if bs == -1:
-        return False, 'Could not detect global_batch_size'
+        return False, 'Could not detect global_batch_size', 1.0
     if subm_epochs is None:
-        return False, 'Insufficient convergence'
+        return False, 'Insufficient convergence', 1.0
 
     rcp_record = checker._find_rcp(bs, rcp_pass)
     rcp_msg = ''
     if rcp_record is not None:
         rcp_msg = 'RCP found'
-        rcp_check = checker._eval_submission_record(rcp_record, subm_epochs, (dir if set_scaling else ''))
+        rcp_check, rcp_score_norm = checker._eval_submission_record(rcp_record, subm_epochs, (dir if set_scaling else ''))
     else:
         rcp_min = checker._find_top_min_rcp(bs, rcp_pass)
         rcp_max = checker._find_bottom_max_rcp(bs, rcp_pass)
         if rcp_min is not None and rcp_max is not None:
             rcp_msg = 'RCP Interpolation'
             interp_record_name, interp_record = checker._create_interp_rcp(bs, rcp_min, rcp_max)
-            rcp_check = checker._eval_submission_record(interp_record, subm_epochs, (dir if set_scaling else ''))
+            rcp_check, rcp_score_norm = checker._eval_submission_record(interp_record, subm_epochs, (dir if set_scaling else ''))
         elif rcp_min is not None and rcp_max is None:
             rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
             rcp_check = False
         elif rcp_min is None and rcp_max is not None:
             rcp_min_record = checker._find_min_rcp(rcp_pass)
-            rcp_check = checker._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
+            rcp_check, rcp_score_norm = checker._eval_submission_record(rcp_min_record, subm_epochs, (dir if set_scaling else ''))
             if rcp_check is False:
                 rcp_msg = 'Missing RCP, please submit RCP with BS = {b}'.format(b=bs)
             else:
@@ -479,7 +479,7 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=N
             logging.warning(' Please be ready to have this reviewed by the submission committee.')
             rcp_check = True
 
-    return rcp_check, rcp_msg
+    return rcp_check, rcp_msg, rcp_score_norm
 
 
 def get_parser():
@@ -524,7 +524,7 @@ def main():
 
     # Package checker makes this call to invoke RCP test
     # Check pruned RCPs by default. Use rcp_pass='full_rcp' for full check
-    passed, msg = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_file=args.custom_rcps, rcp_pass=args.rcp_pass)
+    passed, msg, _ = check_directory(args.dir, args.rcp_usage, args.rcp_version, args.verbose, args.bert_train_samples, rcp_file=args.custom_rcps, rcp_pass=args.rcp_pass)
 
     if passed:
         logging.info('%s, RCP test PASSED', msg)
