@@ -3,13 +3,6 @@
         s.update({
             'initialized_tensors': []
         })
-- KEY:
-    NAME: weights_initialization
-    REQ: AT_LEAST_ONE
-    CHECK:
-        - "'tensor' in v['metadata']"
-    POST: >
-        s['initialized_tensors'] += [v['metadata']['tensor']]
 - END:
     CHECK: >
         sorted(s['initialized_tensors']) == sorted([
