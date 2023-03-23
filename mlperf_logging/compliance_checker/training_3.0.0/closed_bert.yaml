@@ -1,9 +1,3 @@
-- BEGIN:
-    CODE: >
-        s.update({
-            'initialized_tensors': []
-        })
-
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
