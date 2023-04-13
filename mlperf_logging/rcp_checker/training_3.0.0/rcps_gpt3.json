@@ -5,7 +5,7 @@
     "Benchmark": "gpt3",
     "Creator": "Google & NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "TPU-v4-1536 / PaxML, 64 A100-80GB / Megatron-LM",
+    "Platform": "TPU-v4-1536 / PaxML, 1024 A100-80GB / Megatron-LM",
     "BS": 1536,
     "Hyperparams": {
       "opt_base_learning_rate": 2e-5
@@ -20,7 +20,7 @@
     "Benchmark": "gpt3",
     "Creator": "Google & NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "TPU-v4-2048 / PaxML, 64 A100-80GB / Megatron-LM",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
     "BS": 2048,
     "Hyperparams": {
       "opt_base_learning_rate": 2e-5
@@ -35,7 +35,7 @@
     "Benchmark": "gpt3",
     "Creator": "Google & NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "TPU-v4-1536 / PaxML, 64 A100-80GB / Megatron-LM",
+    "Platform": "TPU-v4-1536 / PaxML, 1024 A100-80GB / Megatron-LM",
     "BS": 3072,
     "Hyperparams": {
       "opt_base_learning_rate": 2e-5
@@ -50,7 +50,7 @@
     "Benchmark": "gpt3",
     "Creator": "Google & NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "TPU-v4-2048 / PaxML, 64 A100-80GB / Megatron-LM",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
     "BS": 4096,
     "Hyperparams": {
       "opt_base_learning_rate": 3e-5
@@ -65,7 +65,7 @@
     "Benchmark": "gpt3",
     "Creator": "Google & NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "TPU-v4-2048 / PaxML, 64 A100-80GB / Megatron-LM",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
     "BS": 8192,
     "Hyperparams": {
       "opt_base_learning_rate": 3e-5
