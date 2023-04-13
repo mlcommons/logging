@@ -44,12 +44,12 @@
 - KEY:
     NAME:  opt_adam_beta_2
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 0.995 "
+    CHECK: " v['value'] == 0.95 "
 
 - KEY:
     NAME:  opt_adam_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 0.1 "
+    CHECK: " v['value'] == 1e-8 "
 
 - KEY:
     NAME:  opt_gradient_clip_norm
@@ -75,3 +75,9 @@
     CHECK:
         - "'epoch_num' in v['metadata']"
     ATLEAST_ONE_CHECK: "(v['value'] <= 2.69) and v['value'] > 2.6"
+
+- KEY:
+    NAME: init_checkpoint_step
+    REQ:  EXACTLY_ONE
+    CHECK: " v['value'] > 0 "
+

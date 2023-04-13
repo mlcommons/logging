@@ -159,7 +159,7 @@ MODEL_EVAL_EMA_FACTOR = "model_eval_ema_factor"
 MODEL_WEIGHTS_INITIALIZATION_SCALE = "model_weights_initialization_scale"
 EVAL_MAX_PREDICTION_SYMBOLS = "eval_max_prediction_symbols"
 START_WARMUP_STEP = "start_warmup_step"
-INIT_CHECKPOINT_STEP = "init_ehcekpoint_step"
+INIT_CHECKPOINT_STEP = "init_checkpoint_step"
 
 # Log keys - misc.
 BBOX = "bbox"

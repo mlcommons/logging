@@ -8,8 +8,7 @@
     "Platform": "TPU-v4-1536 / PaxML, 64 A100-80GB / Megatron-LM",
     "BS": 1536,
     "Hyperparams": {
-      "opt_base_learning_rate": 2e-5,
-      "gradient_accumulation_steps": 1
+      "opt_base_learning_rate": 2e-5
     },
     "Epochs to converge": [
        1157627904, 1157627904, 1157627904, 1258291200, 1207959552, 1258291200
