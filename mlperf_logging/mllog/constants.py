@@ -37,7 +37,7 @@ CLOUD = "cloud"
 RESEARCH = "research"
 
 # Constant values - benchmark name
-DLRMv2 = "dlrmv2"
+DLRM_DCNv2 = "dlrm_dcnv2"
 GNMT = "gnmt"
 MASKRCNN = "maskrcnn"
 MINIGO = "minigo"
