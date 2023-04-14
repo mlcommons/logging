@@ -20,7 +20,7 @@ submission_runs = {
     "training": {
         'bert': 10,
         'dlrm': 5,
-        'dlrm_dcnv2': 5,
+        'dlrm_dcnv2': 10,
         'maskrcnn' : 5,
         'resnet' : 5,
         'ssd' : 5,
