@@ -37,7 +37,7 @@ CLOUD = "cloud"
 RESEARCH = "research"
 
 # Constant values - benchmark name
-DLRMv2 = "dlrmv2"
+DLRM_DCNv2 = "dlrm_dcnv2"
 GNMT = "gnmt"
 MASKRCNN = "maskrcnn"
 MINIGO = "minigo"
@@ -47,7 +47,8 @@ SSD = "ssd"
 TRANSFORMER = "transformer"
 RNNT = "rnnt"
 UNET3D = "unet3d"
-BERT ="bert"
+BERT = "bert"
+GPT3 = "gpt3"
 
 # Constant values - model info
 ADAGRAD = "adagrad"

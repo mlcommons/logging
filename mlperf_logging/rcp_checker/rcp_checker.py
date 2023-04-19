@@ -19,8 +19,8 @@ import sys
 submission_runs = {
     "training": {
         'bert': 10,
-        'dlrm': 5,
-        'dlrmv2': 5,
+        'dlrm_dcnv2': 10,
+        'gpt3': 3,
         'maskrcnn' : 5,
         'resnet' : 5,
         'ssd' : 5,
