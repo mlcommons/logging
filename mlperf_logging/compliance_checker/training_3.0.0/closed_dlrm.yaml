@@ -1,29 +1,3 @@
-- BEGIN:
-    CODE: >
-        s.update({
-            'initialized_tensors': []
-        })
-- KEY:
-    NAME: weights_initialization
-    REQ: AT_LEAST_ONE
-    CHECK:
-        - "'tensor' in v['metadata']"
-    POST: >
-        s['initialized_tensors'] += [v['metadata']['tensor']]
-- END:
-    CHECK: >
-        sorted(s['initialized_tensors']) == sorted([
-            "embeddings",
-            "bottom_mlp_dense1",
-            "bottom_mlp_dense2",
-            "bottom_mlp_dense3",
-            "top_mlp_dense1",
-            "top_mlp_dense2",
-            "top_mlp_dense3",
-            "top_mlp_dense4",
-            "top_mlp_dense5",
-        ])
-
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
