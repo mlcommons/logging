@@ -1,7 +1,7 @@
 {
 
-  "dlrmv2_ref_32768": {
-    "Benchmark": "dlrmv2",
+  "dlrm_dcnv2_ref_32768": {
+    "Benchmark": "dlrm_dcnv2",
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
@@ -24,8 +24,8 @@
     ]
   },
 
-  "dlrmv2_ref_65536": {
-    "Benchmark": "dlrmv2",
+  "dlrm_dcnv2_ref_65536": {
+    "Benchmark": "dlrm_dcnv2",
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
@@ -48,8 +48,8 @@
     ]
   },
 
-  "dlrmv2_ref_102400": {
-    "Benchmark": "dlrmv2",
+  "dlrm_dcnv2_ref_102400": {
+    "Benchmark": "dlrm_dcnv2",
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
