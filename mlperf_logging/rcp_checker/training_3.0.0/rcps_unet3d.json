@@ -64,7 +64,7 @@
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
-    "Platform": "DGXA100",
+    "Platform": "TBD",
     "BS": 56,
     "Hyperparams": {
       "opt_base_learning_rate": 2.0,
