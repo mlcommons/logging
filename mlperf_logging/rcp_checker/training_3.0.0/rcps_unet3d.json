@@ -32,7 +32,7 @@
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
-    "When": "Prior to 1.0 submission",
+    "When": "Prior to 3.0 submission",
     "Platform": "TBD",
     "BS": 32,
     "Hyperparams": {
@@ -63,8 +63,8 @@
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
-    "When": "At 1.0 submission",
-    "Platform": "TBD",
+    "When": "Prior to 3.0 submission",
+    "Platform": "DGXA100",
     "BS": 56,
     "Hyperparams": {
       "opt_base_learning_rate": 2.0,
@@ -92,7 +92,7 @@
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
-    "When": "At 1.0 submission",
+    "When": "Prior to 3.0 submission",
     "Platform": "TBD",
     "BS": 64,
     "Hyperparams": {
@@ -124,7 +124,7 @@
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
-    "When": "At 1.0 submission",
+    "When": "Prior to 3.0 submission",
     "Platform": "TBD",
     "BS": 80,
     "Hyperparams": {
@@ -152,7 +152,7 @@
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
-    "When": "At 1.1 submission",
+    "When": "Prior to 3.0 submission",
     "Platform": "TBD",
     "BS": 84,
     "Hyperparams": {
