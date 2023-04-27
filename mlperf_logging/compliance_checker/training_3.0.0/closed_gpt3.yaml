@@ -17,7 +17,7 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 2e-5 or v['value] == 3e-5 " 
+    CHECK: " v['value'] == 2e-5 or v['value'] == 3e-5 " 
 
 - KEY:
     NAME:  opt_end_learning_rate
