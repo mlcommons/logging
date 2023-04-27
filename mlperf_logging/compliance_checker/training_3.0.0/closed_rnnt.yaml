@@ -1,24 +1,3 @@
-- BEGIN:
-    CODE: >
-        s.update({
-            'initialized_tensors': []
-        })
-
-- KEY:
-    NAME: weights_initialization
-    REQ: AT_LEAST_ONE
-    CHECK:
-        - "'tensor' in v['metadata']"
-    POST: >
-        s['initialized_tensors'] += [v['metadata']['tensor']]
-
-- END:
-    CHECK: sorted(s['initialized_tensors']) == sorted(['pre_rnn', 'post_rnn', 'pred_embed', 'dec_rnn', 'joint_pred', 'joint_enc', 'joint_net'])
-
-- KEY:
-    NAME: model_weights_initialization_scale
-    REQ: EXACTLY_ONE
-
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE

@@ -19,8 +19,8 @@ import sys
 submission_runs = {
     "training": {
         'bert': 10,
-        'dlrm': 5,
-        'dlrmv2': 5,
+        'dlrm_dcnv2': 10,
+        'gpt3': 3,
         'maskrcnn' : 5,
         'resnet' : 5,
         'ssd' : 5,
@@ -439,13 +439,14 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=N
     pattern = '{folder}/result_*.txt'.format(folder=dir)
     result_files = glob.glob(pattern, recursive=True)
     bs, subm_epochs, benchmark = get_submission_epochs(result_files, bert_train_samples)
+    rcp_score_norm = 1.0
 
     checker = RCP_Checker(usage, version, benchmark, verbose, rcp_file)
 
     if bs == -1:
-        return False, 'Could not detect global_batch_size', 1.0
+        return False, 'Could not detect global_batch_size', rcp_score_norm
     if subm_epochs is None:
-        return False, 'Insufficient convergence', 1.0
+        return False, 'Insufficient convergence', rcp_score_norm
 
     rcp_record = checker._find_rcp(bs, rcp_pass)
     rcp_msg = ''

@@ -27,20 +27,20 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     3.0.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
     3.0.0/closed_resnet.yaml   - Per-benchmark rules, closed submissions.
     3.0.0/closed_ssd.yaml
-    3.0.0/closed_minigo.yaml
     3.0.0/closed_maskrcnn.yaml
     3.0.0/closed_rnnt.yaml
     3.0.0/closed_unet3d.yaml
     3.0.0/closed_bert.yaml
-    3.0.0/closed_dlrm.yaml
+    3.0.0/closed_dlrm_dcnv2.yaml
+    3.0.0/closed_gpt3.yaml
     3.0.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
     3.0.0/open_ssd.yaml
-    3.0.0/open__minigo.yaml
     3.0.0/open_maskrcnn.yaml
     3.0.0/open_rnnt.yaml
     3.0.0/open_unet3d.yaml
     3.0.0/open_bert.yaml
-    3.0.0/open_dlrm.yaml
+    3.0.0/open_dlrm_dcnv2.yaml
+    3.0.0/open_gpt3.yaml
 
 ### Existing config files for HPC submissions
 

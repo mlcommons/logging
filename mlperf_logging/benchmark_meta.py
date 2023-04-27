@@ -3,7 +3,9 @@ _ALL_RESULT_FILE_COUNTS = {
     'training': {
         'bert': 10,
         'dlrm': 5,
+        'dlrm_dcnv2': 10,
         'gnmt': 10,
+        'gpt3': 3,
         'maskrcnn': 5,
         'minigo': 10,
         'resnet': 5,
@@ -86,9 +88,9 @@ _ALL_ALLOWED_BENCHMARKS = {
     ],
     '3.0': [
         'bert',
-        'dlrm',
+        'dlrm_dcnv2',
+        'gpt3',
         'maskrcnn',
-        'minigo',
         'resnet',
         'ssd',
         'rnnt',
