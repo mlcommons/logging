@@ -593,9 +593,6 @@ def get_parser():
 def main():
     parser = get_parser()
     args = parser.parse_args()
-    config_path = os.path.join(os.path.dirname(__file__), "xlsx_config.yaml")
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
 
     strong_scaling_summaries = []
     weak_scaling_summaries = []
@@ -632,15 +629,18 @@ def main():
         # Parse results for single organization.
         _update_summaries(args.folder)
 
-    def _map_availability(availability):
+    def _map_availability(availability, config):
         map_ = config["availability"]
         return map_.get(availability, availability)
 
-    def _map_columns_index(column):
+    def _map_columns_index(column, config):
         map_ = config["columns"][args.usage][args.ruleset]
         return tuple(map_.get(column, map_.get("default") + [column]))
 
     def _summaries_to_xlsx(summaries: pd.DataFrame, path, version):
+        config_path = os.path.join(os.path.dirname(__file__), "xlsx_config.yaml")
+        with open(config_path, "r") as f:
+            config = yaml.safe_load(f)
         writer = pd.ExcelWriter(path, engine="xlsxwriter")
         index = 0
         workbook = writer.book
@@ -658,12 +658,12 @@ def main():
         for division in ["closed", "open"]:
             sheet_data = summaries[summaries["division"] == division]
             sheet_data["availability"] = sheet_data["availability"].apply(
-                _map_availability
+                lambda x: _map_availability(x, config)
             )
             aux_df = pd.DataFrame(
                 [],
                 columns=pd.MultiIndex.from_tuples(
-                    [_map_columns_index(c) for c in sheet_data.columns]
+                    [_map_columns_index(c, config) for c in sheet_data.columns]
                 ),
             )
             aux_df.to_excel(writer, sheet_name=division)
