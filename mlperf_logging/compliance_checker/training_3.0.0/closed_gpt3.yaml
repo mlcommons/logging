@@ -62,10 +62,6 @@
     CHECK: " v['value'] > 0 "
 
 - KEY:
-    NAME: trained_samples
-    REQ:  EXACTLY_ONE
-
-- KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
 
