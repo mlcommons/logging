@@ -172,6 +172,7 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     When dropped_scores > 0, then some scores have already been dropped
     so we should not double count them
     Precondition: Dropped scores have higher score value than the rest
+    Returns None if after dropping scores, no scores remain
     """
 
     # Sort scores first
@@ -181,6 +182,8 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     countable_scores = scores[max_dropped_scores:(
         len(scores) - (max_dropped_scores - dropped_scores))]
     sum_of_scores = sum(countable_scores)
+    if len(countable_scores == 0):
+        return None # would be div by zero otherwise
     return sum_of_scores * 1.0 / len(countable_scores)
 
 
@@ -326,11 +329,12 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                   ))
 
         if dropped_scores <= max_dropped_scores:
-            benchmark_scores[benchmark] = _compute_olympic_average(
+            olympic_avg = _compute_olympic_average(
                 scores, dropped_scores, max_dropped_scores)
-
-            scaling_factor = _get_scaling_factor(benchmark_folder)
-            benchmark_scores[benchmark] *= scaling_factor
+            if olympic_avg is not None:
+                benchmark_scores[benchmark] = olympic_avg
+                scaling_factor = _get_scaling_factor(benchmark_folder)
+                benchmark_scores[benchmark] *= scaling_factor
 
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
     return benchmark_scores
