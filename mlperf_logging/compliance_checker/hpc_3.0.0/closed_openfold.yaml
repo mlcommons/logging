@@ -191,11 +191,6 @@
     CHECK: " v['value'] >= 0"
 
 - KEY:
-    NAME:  opt_base_learning_rate
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 0.0"
-
-- KEY:
     NAME:  initial_training_dataloader_type
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in {'InitialTrainingDataloaderPT', 'InitialTrainingDataloaderPQ'}"
