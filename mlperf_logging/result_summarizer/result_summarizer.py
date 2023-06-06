@@ -182,7 +182,7 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     countable_scores = scores[max_dropped_scores:(
         len(scores) - (max_dropped_scores - dropped_scores))]
     sum_of_scores = sum(countable_scores)
-    if len(countable_scores == 0):
+    if len(countable_scores) == 0:
         return None # would be div by zero otherwise
     return sum_of_scores * 1.0 / len(countable_scores)
 
