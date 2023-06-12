@@ -56,9 +56,9 @@
     CHECK: " v['value'] == 93229082"
 
 - KEY:
-    NAME:  init_checkpoint_md5_hash
+    NAME:  init_checkpoint_sha256sum
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == '98691e238e652b56041b615a135712ea'"
+    CHECK: " v['value'] == 'b518be4677048f2c0f94889c91e2da73655a73b825a8aa7f8b6f5e580d8ffbed'"
 
 - KEY:
     NAME:  train_sequence_crop_size
