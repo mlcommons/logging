@@ -25,7 +25,7 @@
     NAME:  opt_name
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['Adam', 'AdamW', 'LAMB']"
-    POST:  " if (v['value'] == 'LAMB'): enqueue_config('hpc_2.0.0/closed_deepcam_lamb.yaml') "
+    POST:  " if (v['value'] == 'LAMB'): enqueue_config('hpc_3.0.0/closed_deepcam_lamb.yaml') "
 
 - KEY:
     NAME:  opt_lr
@@ -48,7 +48,7 @@
     NAME:  scheduler_type
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['multistep', 'cosine_annealing']"
-    POST:  " enqueue_config('hpc_2.0.0/closed_deepcam_{}.yaml'.format(v['value'].lower())) "
+    POST:  " enqueue_config('hpc_3.0.0/closed_deepcam_{}.yaml'.format(v['value'].lower())) "
 
 - KEY:
     NAME:  scheduler_lr_warmup_steps

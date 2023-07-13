@@ -3,7 +3,7 @@
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['deepcam', 'cosmoflow', 'oc20'] "
-    POST:  " enqueue_config('hpc_2.0.0/closed_{}.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('hpc_3.0.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:
     NAME:  gradient_accumulation_steps
