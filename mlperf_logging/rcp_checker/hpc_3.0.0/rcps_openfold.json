@@ -1,0 +1,52 @@
+{
+    "openfold_ref_128": {
+        "Benchmark": "openfold",
+        "BS": 128,
+        "Epochs to converge": [97280, 87040, 81920, 92160, 92160, 87040, 92160, 81920, 81920, 81920, 71680, 92160, 107520, 81920, 92160, 81920, 87040, 81920, 97280, 107520],
+        "Hyperparams": {
+            "global_batch_size": 128,
+            "gradient_accumulation_steps": 1,
+            "val_every_iters": 40,
+            "precision": "fp32",
+            "opt_name": "Adam",
+            "opt_base_learning_rate": 0.001,
+            "opt_adam_beta_1": 0.9,
+            "opt_adam_beta_2": 0.999,
+            "opt_adam_epsilon": 1e-06,
+            "opt_weight_decay": 0.0,
+            "opt_amsgrad": false,
+            "opt_gradient_clipping": true,
+            "opt_gradient_clip_norm": 0.1,
+            "opt_learning_rate_warmup_init": 1e-05,
+            "opt_learning_rate_warmup_steps": 0,
+            "swa_enabled": true,
+            "swa_decay_rate": 0.9,
+            "initial_training_dataloader_type": "InitialTrainingDataloaderPT"
+        }
+    },
+    "openfold_ref_256": {
+        "Benchmark": "openfold",
+        "BS": 256,
+        "Epochs to converge": [153600, 153600, 122880, 143360, 133120, 143360, 122880, 122880, 112640, 112640, 133120, 153600, 122880, 133120, 122880, 153600, 143360, 133120, 133120, 112640],
+        "Hyperparams": {
+            "global_batch_size": 256,
+            "gradient_accumulation_steps": 1,
+            "val_every_iters": 40,
+            "precision": "fp32",
+            "opt_name": "Adam",
+            "opt_base_learning_rate": 0.001,
+            "opt_adam_beta_1": 0.9,
+            "opt_adam_beta_2": 0.999,
+            "opt_adam_epsilon": 1e-06,
+            "opt_weight_decay": 0.0,
+            "opt_amsgrad": false,
+            "opt_gradient_clipping": true,
+            "opt_gradient_clip_norm": 0.1,
+            "opt_learning_rate_warmup_init": 1e-05,
+            "opt_learning_rate_warmup_steps": 0,
+            "swa_enabled": true,
+            "swa_decay_rate": 0.9,
+            "initial_training_dataloader_type": "InitialTrainingDataloaderPT"
+        }
+    }
+}
