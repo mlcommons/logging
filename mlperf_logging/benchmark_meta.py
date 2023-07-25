@@ -19,7 +19,8 @@ _ALL_RESULT_FILE_COUNTS = {
     'hpc' : {
         'deepcam': 5,
         'cosmoflow': 10,
-        'oc20': 5
+        'oc20': 5,
+        'openfold: 10'
     }
 }
 
@@ -113,6 +114,12 @@ _ALL_ALLOWED_BENCHMARKS = {
             'cosmoflow',
             'deepcam',
             'oc20',
+        ],
+        '3.0': [
+            'cosmoflow',
+            'deepcam',
+            'oc20',
+            'openfold',
         ],
     }
 }
