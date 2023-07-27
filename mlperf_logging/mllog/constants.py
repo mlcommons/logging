@@ -178,3 +178,10 @@ EPOCH_NUM = "epoch_num"
 FIRST_EPOCH_NUM = "first_epoch_num"
 STATUS = "status"
 STEP_NUM = "step_num"
+
+# Power constants
+POWER_MEASUREMENT_START = "power_measurement_start"
+POWER_MEASUREMENT_STOP = "power_measurement_stop"
+POWER_READING = "power_reading"
+CONVERTION_EFF = "conversion_eff"
+INTERCONNECT_POWER_EST = "interconnect_power_est"
