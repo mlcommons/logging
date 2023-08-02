@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 import argparse
+import time
 import numpy as np
 from jax import numpy as jnp
 import jax
@@ -45,6 +46,7 @@ def get_args():
 
     # Other arguments
     parser.add_argument("--seed", type=int, required=False, default=None)
+    parser.add_argument("--min-time", type=int, required=False, default=None)
     args = parser.parse_args()
     return args
 
@@ -283,6 +285,7 @@ def train(
 def run():
     args = get_args()
     mllog.config(filename=f"{args.output_folder}/{args.perf_log}")
+    start_time = time.time()
 
     # Initialization
     MLLOGGER.start(key=mllog_constants.INIT_START)
@@ -293,6 +296,15 @@ def run():
     metric = MSEMetric()
     MLLOGGER.end(key=mllog_constants.INIT_STOP)
     train(model, train_dataset, eval_dataset, metric, args)
+
+    if args.min_time is not None:
+        # Remove handler to avoid logging the result in file
+        mllog.mllogger.logger.removeHandler(mllog.mllogger.logger.handlers[1])
+        while (time.time() - start_time) < args.min_time:
+            MLLOGGER.event(key="Time passed", value=(time.time() - start_time))
+            # Uncomment line to reset model and start over training
+            # model = Model(args.in_features, args.out_features)
+            train(model, train_dataset, eval_dataset, metric, args)
 
 
 if __name__ == "__main__":
