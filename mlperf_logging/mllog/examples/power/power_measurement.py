@@ -180,7 +180,14 @@ def run():
         s = power_reader.read_power()
         log_parser.convert2mlperf(s)
 
-    MLLOGGER.end(key=mllog_constants.POWER_MEASUREMENT_STOP)
+    if not start_with_readings:
+        MLLOGGER.end(key=mllog_constants.POWER_MEASUREMENT_STOP)
+    else:
+        assert debug == False
+        s = log_parser.lines[-1]
+        date = log_parser.extract_date(s)
+        time_ms = log_parser.date_to_ms(date, log_parser.date_format)
+        MLLOGGER.end(key=mllog_constants.POWER_MEASUREMENT_STOP, time_ms=time_ms)
 
 
 if __name__ == "__main__":
