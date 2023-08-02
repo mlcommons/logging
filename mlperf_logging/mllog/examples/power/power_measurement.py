@@ -30,6 +30,7 @@ def get_args():
     parser.add_argument("--power-log", type=str, default=None)
     parser.add_argument("--output-log", type=str, default="power_0.txt")
     parser.add_argument("--output-folder", type=str, default="output/power")
+    parser.add_argument("--node", type=str, default="node_0")
     parser.add_argument("--skip-lines", type=int, default=1)
     parser.add_argument("--start-with-readings", action="store_true")
 
@@ -54,9 +55,10 @@ def read_power_log(path):
 
 
 class LogParser(ABC):
-    def __init__(self) -> None:
+    def __init__(self, args) -> None:
         super().__init__()
         self.date_format = ""
+        self.node = args.get("node", "node_0")
 
     def date_to_ms(self, date, format):
         return int(datetime.strptime(date, format).timestamp() * 1e3)
@@ -87,15 +89,15 @@ class LogParser(ABC):
             key=mllog_constants.POWER_READING,
             value=power,
             time_ms=time_ms,
-            metadata=dict(host="node_0"),
+            metadata=dict(host=self.node),
         )
         # If this is a switch measurement the next line applies
         # MLLOGGER.event(key=mllog_constants.INTERCONNECT_POWER_EST, value=power, time_ms=time_ms, metadata=dict(host = "sw_0"))
 
 
 class IMPIParser(LogParser):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, args) -> None:
+        super().__init__(args)
         self.date_format = "%a %b %d %H:%M:%S %Y"
 
     def extract_date(self, s: str):
@@ -117,8 +119,8 @@ class IMPIParser(LogParser):
 
 
 class BiosParser(LogParser):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, args) -> None:
+        super().__init__(args)
         self.date_format = "Y-%m-%d %H:%M:%S.%f+%z"
 
     def extract_date(self, s: str):
@@ -149,9 +151,9 @@ def run():
 
     # Initilize log parser
     if log_type == "IMPI":
-        log_parser = IMPIParser()
+        log_parser = IMPIParser(args)
     elif log_type == "Bios":
-        log_parser = BiosParser()
+        log_parser = BiosParser(args)
     else:
         raise Exception("Log type currently not supported")
 
