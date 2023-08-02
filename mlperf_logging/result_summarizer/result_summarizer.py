@@ -450,7 +450,7 @@ def _has_power(benchmark_folder):
     return "power" in [f.split("/")[-1] for f in _get_sub_folders(benchmark_folder)]
 
 
-def _compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset):
+def _compute_total_power(benchmark_folder, result_file, time_to_train, ruleset):
     result_name = result_file.split("/")[-1].split(".")[0]
     power_node_pattern = '{folder}/power/{result}/node_*.txt'.format(folder=benchmark_folder, result = result_name)
     power_sw_pattern = '{folder}/power/{result}/sw_*.txt'.format(folder=benchmark_folder, result = result_name)
@@ -460,11 +460,11 @@ def _compute_total_power(benchmark_folder, result_file, time_to_train_ms, rulese
     total_power = 0
     for power_node_file in power_node_files:
         loglines, _ = parse_file(power_node_file, ruleset)
-        total_power += _compute_power_node(loglines, time_to_train_ms)
+        total_power += _compute_power_node(loglines, time_to_train)
 
     for power_sw_file in power_sw_files:
         loglines, _ = parse_file(power_sw_file, ruleset)
-        total_power += _compute_power_sw(loglines, time_to_train_ms)
+        total_power += _compute_power_sw(loglines, time_to_train)
     return total_power
 
 def _compute_power_node(loglines, time_to_train):
@@ -472,6 +472,7 @@ def _compute_power_node(loglines, time_to_train):
     power_start = 0
     power_stop = 0
     agg_power = 0
+    conversion_eff = 1.0
     for logline in loglines:
         if logline.key == "power_measurement_start":
             power_start = logline.timestamp
@@ -482,21 +483,25 @@ def _compute_power_node(loglines, time_to_train):
         if logline.key == "power_measurement_stop":
             power_stop = logline.timestamp
             break
+        if logline.key == "conversion_eff":
+            conversion_eff = logline.value['value']
     
     # Compute the result, convert ms to s
-    result = agg_power * time_to_train / (power_stop - power_start) / 1000
+    result = conversion_eff * agg_power * time_to_train / (power_stop - power_start) / 1000
     return result
 
 
 def _compute_power_sw(loglines, time_to_train):
     agg_power = 0
     for logline in loglines:
-        if logline.key == "power_reading":
+        if logline.key == "conversion_eff":
+            conversion_eff = logline.value['value']
+        if logline.key == "interconnect_power_est":
             agg_power = logline.value['value']
             break
 
     # Compute the result, convert ms to s
-    result = agg_power * time_to_train / 1000
+    result = conversion_eff * agg_power * time_to_train / 1000
     return result
 
 def _load_system_desc(folder, system):
