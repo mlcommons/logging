@@ -31,6 +31,7 @@ submission_runs = {
         'cosmoflow': 10,
         'deepcam': 5,
         'oc20': 5,
+        'openfold': 10,
     }
 }
 
