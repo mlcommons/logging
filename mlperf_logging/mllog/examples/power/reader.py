@@ -19,8 +19,8 @@ class PowerReader(ABC):
 class DebugPowerReader(PowerReader):
     def __init__(self, args: dict) -> None:
         super().__init__()
-        self.format = args.get("log_type", "IMPI")
-        if self.format == "IMPI":
+        self.format = args.get("log_type", "IPMI")
+        if self.format == "IPMI":
             self.s = """Instantaneous power reading:                   {} Watts	    IPMI timestamp:                           {}"""
             self.date_format = "%a %b %d %H:%M:%S %Y"
         if self.format == "bios":
@@ -34,7 +34,7 @@ class DebugPowerReader(PowerReader):
 
     def read_power(self):
         self.readings += 1
-        if self.format == "IMPI":
+        if self.format == "IPMI":
             date = datetime.strftime(datetime.utcnow(), self.date_format)
             time.sleep(self.freq)
             return self.s.format(random.uniform(self.l, self.r), date)
