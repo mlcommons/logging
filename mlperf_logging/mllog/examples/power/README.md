@@ -1,7 +1,13 @@
 # Power measurement
 
+## Table of Contents <!-- omit in toc -->
+1. [power_measurement.py](#power_measurementpy)
+2. [Result Summarizer](#result-summarizer---computing-power-metric)
+3. [Step by step example](#step-by-step-example)
+
+
 ## [power_measurement.py](power_measurement.py)
-This script outputs the power logs in the mlperf format. It has two modes. First, you can provide a file containing the power logs in their native format (currently, only 'IMPI' and 'Bios' (csv) format are supported), and it will translate them into the mlperf format. Alternatively, you can run it in the debug mode and it will simulate the power reading in the specified format, and the translate the simulated power readings.
+This script outputs the power logs in the mlperf format. It has two modes. First, you can provide a file containing the power logs in their native format (currently, only 'IPMI' and 'Bios' (csv) format are supported), and it will translate them into the mlperf format. Alternatively, you can run it in the debug mode and it will simulate the power reading in the specified format, and the translate the simulated power readings.
 
 ### Usage
 ```
@@ -15,7 +21,7 @@ python power_measurement.py [--power-log <path_to_input_power_log>]
                             [--convertion-coef <convertion-coef>]
                             [--measurement-type <AC_or_DC>]
                             [--debug]
-                            [--log-type <IMPI_or_Bios>]
+                            [--log-type <IPMI_or_Bios>]
 ```
 
 #### Arguments
@@ -29,7 +35,7 @@ python power_measurement.py [--power-log <path_to_input_power_log>]
 - **convertion-coef:** Convertion coeffiecient, only applicable for AC.
 - **measurement-type:** Power measurement type. Either AC or DC.
 - **debug:** Flag to use debug mode. In debug mode, power readings will be simulated. The `power-log` argument is not needed in this mode.
-- **log-type:** Format type of the original power logs. Either IMPI or Bios.
+- **log-type:** Format type of the original power logs. Either IPMI or Bios.
 
 
 ## Result Summarizer - Computing power metric
@@ -46,8 +52,8 @@ Several functions have been added to the [result_summarizer.py](../../../result_
 │   │           ├── ...
 │   │           ├── result_n.txt
 │   │           └── power
-│   │               ├── result_0.txt
-│   │               ├── result_1.txt
+│   │               ├── result_0
+│   │               ├── result_1
 │   │                   ├── node_0.txt
 │   │                   ├── ...
 │   │                   ├── node_k.txt
@@ -55,7 +61,7 @@ Several functions have been added to the [result_summarizer.py](../../../result_
 │   │                   ├── ...
 │   │                   └── sw_m.txt
 │   │               ├── ...
-│   │               └── result_n.txt
+│   │               └── result_n
 │   └── systems                   
 └── ...
 ```
@@ -82,3 +88,39 @@ Computes the total energy used by the system in a single run using the previous 
 
 ### Computing the power result
 Similar to the performance results, we perform and olympic average to compute the power result of the benchmark. This means the best and worst scores are dropped and the result is the average of the other ones.
+
+## Step by step examples
+
+### Producing a MLPerf power log
+1. Clone the `logging` repository, install it as a pip package:
+```
+git clone https://github.com/mlcommons/logging.git mlperf-logging --branch power_support
+pip install -e mlperf-logging
+```
+Then go into the `power` folder:
+```
+cd mlperf-logging/mlperf_logging/mllog/examples/power
+```
+2. Download the sample IPMI power readings from the MLCommons shared drive and place it inside the current folder. [Link](https://drive.google.com/file/d/1292hHqZqwjfPBFBaFIsC5hJRqcbB7Mas/view?usp=drive_link). Alternatively, you can download the 'Bios' power readings and change the IMPI for 'Bios'. [Alternative Link](https://drive.google.com/file/d/17_F-pJJkbsUMmMvZ_parFynn-Wf5yjHQ/view?usp=drive_link)
+
+3. Run the `power_measurement.py` python script using the following command:
+```
+python power_measurement.py --power-log IPMIPower.txt --output-log node_0.txt --log-type IPMI --start-with-readings
+```
+4. Check the output file `./output/power/node_0.txt`
+
+### Computing the metric for a single power log file
+It is assumed that you completed the previous example and you were able to produce a MLPerf power log.
+
+1. Run the `compute_metric_example.py` python script using the following command:
+```
+python compute_metric_example.py --input-log ./output/power/node_0.txt
+```
+2. The output of this should be 
+```
+Power consumed: 6514419.0
+```
+
+### Constructing a sample power submission
+It is assumed that you completed the first example and you were able to produce a MLPerf power log.
+**TODO:** Complete this example

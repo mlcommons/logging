@@ -43,7 +43,7 @@ def get_args():
     )
 
     parser.add_argument("--debug", action="store_true")
-    parser.add_argument("--log-type", choices=["IMPI", "Bios"], default="IMPI")
+    parser.add_argument("--log-type", choices=["IPMI", "Bios"], default="IPMI")
 
     args = parser.parse_args()
     return args
@@ -95,7 +95,7 @@ class LogParser(ABC):
         # MLLOGGER.event(key=mllog_constants.INTERCONNECT_POWER_EST, value=power, time_ms=time_ms, metadata=dict(host = "sw_0"))
 
 
-class IMPIParser(LogParser):
+class IPMIParser(LogParser):
     def __init__(self, args) -> None:
         super().__init__(args)
         self.date_format = "%a %b %d %H:%M:%S %Y"
@@ -150,8 +150,8 @@ def run():
         power_reader = FilePowerReader(args)
 
     # Initilize log parser
-    if log_type == "IMPI":
-        log_parser = IMPIParser(args)
+    if log_type == "IPMI":
+        log_parser = IPMIParser(args)
     elif log_type == "Bios":
         log_parser = BiosParser(args)
     else:
@@ -184,7 +184,7 @@ def run():
         MLLOGGER.end(key=mllog_constants.POWER_MEASUREMENT_STOP)
     else:
         assert debug == False
-        s = log_parser.lines[-1]
+        s = power_reader.lines[-1]
         date = log_parser.extract_date(s)
         time_ms = log_parser.date_to_ms(date, log_parser.date_format)
         MLLOGGER.end(key=mllog_constants.POWER_MEASUREMENT_STOP, time_ms=time_ms)
