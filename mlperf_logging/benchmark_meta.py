@@ -20,7 +20,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'deepcam': 5,
         'cosmoflow': 10,
         'oc20': 5,
-        'openfold: 10'
+        'openfold': 10,
     }
 }
 
