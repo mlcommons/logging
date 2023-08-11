@@ -187,6 +187,30 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     return sum_of_scores * 1.0 / len(countable_scores)
 
 
+def _index_olympic_average(scores, index, dropped_scores, max_dropped_scores):
+    """Olympic average sorting the orginal array by a given index then
+    dropping the top and bottom max_dropped_scores:
+    If max_dropped_scores == 1, then we compute a normal olympic score.
+    If max_dropped_scores > 1, then we drop more than one scores from the
+    top and bottom and average the rest.
+    When dropped_scores > 0, then some scores have already been dropped
+    so we should not double count them.
+    E.g: Compute the olympic average for the power scores sorting by the 
+    performance scores.
+    Precondition: Dropped scores have higher score value than the rest
+    Returns None if after dropping scores, no scores remain
+    """
+
+    # Sort scores according to index
+    sorted_scores = [scores[i] for i in index]
+    countable_scores = sorted_scores[max_dropped_scores:(
+        len(scores) - (max_dropped_scores - dropped_scores))]
+    sum_of_scores = sum(countable_scores)
+    if len(countable_scores) == 0:
+        return None # would be div by zero otherwise
+    return sum_of_scores * 1.0 / len(countable_scores) 
+
+
 def _is_organization_folder(folder):
     if not os.path.isdir(folder):
         return False
@@ -347,9 +371,10 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                 scaling_factor = _get_scaling_factor(benchmark_folder)
                 benchmark_scores[benchmark] *= scaling_factor
 
-        if has_power:
-            olympic_avg = _compute_olympic_average(
-                power_scores, 1, max_dropped_scores)
+        if has_power and dropped_scores <= max_dropped_scores:
+            index = [i[0] for i in sorted(enumerate(scores), key=lambda x:x[1])]
+            olympic_avg = _index_olympic_average(
+                power_scores, index, dropped_scores, max_dropped_scores)
             if olympic_avg is not None:
                 benchmark_power_scores[benchmark] = olympic_avg
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
