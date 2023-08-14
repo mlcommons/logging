@@ -123,4 +123,49 @@ Power consumed: 6514419.0
 
 ### Constructing a sample power submission
 It is assumed that you completed the first example and you were able to produce a MLPerf power log.
-**TODO:** Complete this example
+
+For this example we will add power logs to a previous training submission. This will simulate how a power submission should look like. Note that the power logs we will generate do not correspond to this performance results, so this wouldn't be a valid submission.
+
+0. Setup. Go to a clean working directory and create a folder called example_power and set a variable with the path of the logging repo.
+```
+cd <CLEAN_WORKING_DIRECTORY>
+mkdir example_power
+export MLPERF_LOGGING_PATH=<PATH_TO_LOGGING_REPO>
+```
+
+1. Clone the training v3.0 repository
+```
+git clone https://github.com/mlcommons/training_results_v3.0.git
+```
+
+2. We will use the previous results from `Quanta_Cloud_Technology` and add power logs to it. Move the results to the `example_power`.
+```
+cp -r training_results_v3.0/Quanta_Cloud_Technology example_power
+```
+
+3. Create the necessary power folders
+```
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_0
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_1
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_2
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_3
+mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_4
+```
+
+4. Follow the steps from the [first example](#producing-a-mlperf-power-log) to create power logs. We recommend to create logs for several nodes, e.g node_0.txt, node_1.txt. Place them into `$MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/`
+
+5. Move the power logs files to each of the results folder we created.
+
+```
+cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_0/
+cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_1/
+cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_2/
+cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_3/
+cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_4/
+```
+
+6. Run the `result_sumarizer.py` script on this folder.
+```
+python3 -m mlperf_logging.result_summarizer example_power/Quanta_Cloud_Technology/ training 3.0.0
+```

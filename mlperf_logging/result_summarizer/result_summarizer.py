@@ -326,9 +326,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
         # Check if this benchmark has power results
-        result_has_power = _has_power(benchmark_folder)
-        assert has_power is None or result_has_power == has_power
-        has_power = result_has_power
+        has_power = _has_power(benchmark_folder)
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
         # Read scores from result files.
@@ -412,9 +410,7 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3]
         # Check if this benchmark has power results
-        result_has_power = _has_power(benchmark_folder)
-        assert has_power is None or result_has_power == has_power
-        has_power = result_has_power
+        has_power = _has_power(benchmark_folder)
         power_scores = []
         # Read scores from result files.
         pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
@@ -665,14 +661,14 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
         if len(power_scores) > 0:
             for column_name, value in itertools.chain(
                     system_specs.items(),
-                    strong_scaling_scores.items(),
+                    power_scores.items(),
                     urls.items(),
             ):
                 power_summary.push(column_name, value)
         if usage == 'hpc' and len(power_scores_weak_scaling) > 0:
             for column_name, value in itertools.chain(
                     system_specs.items(),
-                    strong_scaling_scores.items(),
+                    power_scores_weak_scaling.items(),
                     urls.items(),
             ):
                 power_weak_scaling_summary.push(column_name, value)
@@ -687,7 +683,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
         power_summary = power_summary.to_dataframe().sort_values(
             _get_sort_by_column_names()).reset_index(drop=True)
     if len(power_weak_scaling_summary) > 0:
-        power_summary = power_summary.to_dataframe().sort_values(
+        power_weak_scaling_summary = power_weak_scaling_summary.to_dataframe().sort_values(
             _get_sort_by_column_names()).reset_index(drop=True)
     return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
