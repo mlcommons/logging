@@ -118,13 +118,11 @@ python compute_metric_example.py --input-log ./output/power/node_0.txt
 ```
 2. The output of this should be 
 ```
-Power consumed: 6514419.0
+Power consumed: 6514419.0 J
 ```
 
 ### Constructing a sample power submission
-It is assumed that you completed the first example and you were able to produce a MLPerf power log.
-
-For this example we will add power logs to a previous training submission. This will simulate how a power submission should look like. Note that the power logs we will generate do not correspond to this performance results, so this wouldn't be a valid submission.
+For this example we will add power logs to a previous training submission. This will simulate how a power submission should look like. **Note that the power logs we will generate do not correspond to this performance results, so this wouldn't be a valid submission.**
 
 0. Setup. Go to a clean working directory and create a folder called example_power and set a variable with the path of the logging repo.
 ```
@@ -153,7 +151,7 @@ mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_
 mkdir example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_4
 ```
 
-4. Follow the steps from the [first example](#producing-a-mlperf-power-log) to create power logs. We recommend to create logs for several nodes, e.g node_0.txt, node_1.txt. Place them into `$MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/`
+4. Follow the steps from the [first example](#producing-a-mlperf-power-log) to create power logs. You can use any of the source logs provided. We recommend to create logs for several nodes, e.g node_0.txt, node_1.txt. Place them into `$MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/`
 
 5. Move the power logs files to each of the results folder we created.
 
@@ -163,6 +161,39 @@ cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* ex
 cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_2/
 cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_3/
 cp -r $MLPERF_LOGGING_PATH/mlperf_logging/mllog/examples/power/output/power/* example_power/Quanta_Cloud_Technology/results/D54Q-2U/resnet/power/result_4/
+```
+The folder structure should look like this:
+```
+├── Quanta_Cloud_Technology
+│   ├── benchmarks
+│   ├── results
+│   │   └── D54Q-2U
+│   │       └── resnet
+│   │           ├── result_0.txt
+│   │           ├── result_1.txt
+│   │           ├── ...
+│   │           ├── result_n.txt
+│   │           └── power
+│   │               ├── result_0
+│   │                   ├── node_0.txt
+│   │                   ├── node_1.txt
+│   │                   ├── ...
+│   │               ├── result_1
+│   │                   ├── node_0.txt
+│   │                   ├── node_1.txt
+│   │                   ├── ...
+│   │               ├── result_2
+│   │                   ├── node_0.txt
+│   │                   ├── node_1.txt
+│   │                   ├── ...
+│   │               ├── result_3
+│   │                   ├── node_0.txt
+│   │                   ├── node_1.txt
+│   │                   ├── ...
+│   │               ├── result_4
+│   │                   ├── node_0.txt
+│   │                   ├── node_1.txt
+│   │                   ├── ...
 ```
 
 6. Run the `result_sumarizer.py` script on this folder.
