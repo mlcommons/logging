@@ -322,7 +322,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     benchmark_folder_parent = os.path.join(
         system_folder, 'strong') if usage == 'hpc' else system_folder
     if not os.path.isdir(benchmark_folder_parent):
-        return benchmark_scores
+        return benchmark_scores, benchmark_power_scores
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
         # Check if this benchmark has power results
@@ -404,7 +404,7 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
     benchmark_power_scores = {}
     has_power = None
     if not os.path.isdir(benchmark_folder_parent):
-        return benchmark_scores
+        return benchmark_scores, benchmark_power_scores
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
         benchmark = _benchmark_alias(folder_parts[-1])
@@ -457,13 +457,24 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
             olympic_avg = _compute_olympic_average(
                 power_scores, 1, 1)
             if olympic_avg is not None:
-                benchmark_power_scores[benchmark] = olympic_avg
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'time_to_train_all',
+                )] = olympic_avg
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'number_of_models',
+                )] = olympic_avg
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'instance_scale',
+                )] = olympic_avg
 
     _fill_empty_benchmark_scores(benchmark_scores,
                                  usage,
                                  ruleset,
                                  weak_scaling=True)
-    _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
+    _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset, weak_scaling=True)
     return benchmark_scores, benchmark_power_scores
 
 
@@ -565,7 +576,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
                                               ruleset,
                                               weak_scaling=True)
     power_summary = _get_empty_summary(usage, ruleset)
-    power_weak_scaling_summary = _get_empty_summary(usage, ruleset)
+    power_weak_scaling_summary = _get_empty_summary(usage, ruleset, weak_scaling=True)
 
     for system_folder in _get_sub_folders(results_folder):
         folder_parts = system_folder.split('/')
