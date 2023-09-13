@@ -84,7 +84,7 @@ Computes the total energy used by the system in a single run using the previous 
 - **benchmark_folder:** Path to folder containing the benchmark
 - **result_file:** Path to perf results. This is used to identify the correspoding power logs
 - **time_to_train:** Time to train in milliseconds obtained from the performance logs
-- **ruleset:** Version of the benchmark. E.g: "3.0.0", "2.1.0"
+- **ruleset:** Version of the benchmark. E.g: "3.1.0", "3.0.0", "2.1.0"
 
 ### Computing the power result
 Similar to the performance results, we perform and olympic average to compute the power result of the benchmark. This means the best and worst scores are dropped and the result is the average of the other ones.
@@ -198,5 +198,5 @@ The folder structure should look like this:
 
 6. Run the `result_sumarizer.py` script on this folder.
 ```
-python3 -m mlperf_logging.result_summarizer example_power/Quanta_Cloud_Technology/ training 3.0.0
+python3 -m mlperf_logging.result_summarizer example_power/Quanta_Cloud_Technology/ training 3.1.0
 ```

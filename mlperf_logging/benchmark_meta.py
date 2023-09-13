@@ -97,6 +97,17 @@ _ALL_ALLOWED_BENCHMARKS = {
         'rnnt',
         'unet3d',
     ],
+    '3.1': [
+        'bert',
+        'dlrm_dcnv2',
+        'gpt3',
+        'maskrcnn',
+        'resnet',
+        'ssd',
+        'rnnt',
+        'unet3d',
+        'stable_diffusion'
+    ]
     },
     
     'hpc': {
