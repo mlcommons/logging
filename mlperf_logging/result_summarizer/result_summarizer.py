@@ -376,7 +376,8 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
             if olympic_avg is not None:
                 benchmark_power_scores[benchmark] = olympic_avg
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
-    _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
+    if len(benchmark_power_scores) > 0:
+        _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
     return benchmark_scores, benchmark_power_scores
 
 
@@ -870,7 +871,7 @@ def main():
 
         writer.save()
     # Print and write back results.
-    def _print_and_write(summaries, weak_scaling=False, mode='w'):
+    def _print_and_write(summaries, weak_scaling=False, mode='w', power = False):
         if len(summaries) > 0:
             summaries = pd.concat(summaries).astype(
                 _get_column_schema(
@@ -891,7 +892,11 @@ def main():
             summaries = summaries.sort_values(by=cols)
             print(summaries)
             if args.csv is not None:
-                summaries.to_csv(args.csv, index=False, mode=mode)
+                csv = args.csv
+                assert csv.endswith(".csv")
+                if power:
+                    csv = csv.replace(".csv", "_power.csv")
+                summaries.to_csv(csv, index=False, mode=mode)
             
             if args.xlsx is not None:
                 _summaries_to_xlsx(summaries, args.xlsx, args.ruleset[:3])
@@ -901,8 +906,8 @@ def main():
                            None, 'display.max_colwidth', None):
         _print_and_write(strong_scaling_summaries)
         _print_and_write(weak_scaling_summaries, weak_scaling=True, mode='a')
-        _print_and_write(power_summaries, mode='a')
-        _print_and_write(power_weak_scaling_summaries, weak_scaling=True, mode='a')
+        _print_and_write(power_summaries, mode='a', power=True)
+        _print_and_write(power_weak_scaling_summaries, weak_scaling=True, mode='a', power=True)
 
 
 if __name__ == '__main__':
