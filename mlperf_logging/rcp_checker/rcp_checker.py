@@ -3,6 +3,7 @@ RCP checker: Verifies convergence points of submissions by comparing them agains
 '''
 
 import argparse
+from collections import defaultdict
 import glob
 import json
 import logging
@@ -26,6 +27,7 @@ submission_runs = {
         'ssd' : 5,
         'unet3d' : 40,
         'rnnt': 10,
+        'stable_diffusion': 10,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -48,6 +50,10 @@ def read_submission_file(result_file, use_train_samples):
     bs = -1
     benchmark = None
 
+    # FID and CLIP metrics for stable diffusion are logged asynchronously
+    # and indepently from each others. We track the eval results
+    # so we can get the first eval step that passes the convergence criteria
+    stable_diffusion_eval_results = defaultdict(dict)
     with open(result_file, 'r', encoding='latin-1') as f:
         # TODO: use mlperf_logging.compliance_checker.mlp_parser instead
         file_contents = f.readlines()
@@ -63,23 +69,39 @@ def read_submission_file(result_file, use_train_samples):
                     benchmark = json.loads(str)["value"]
                     if benchmark != "bert" and use_train_samples:
                         use_train_samples = False
-                if not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
+
+                if benchmark == "stable_diffusion" and ("eval_error" in str or "eval_accuracy" in str):
+                    eval_accuracy_str = str
+                    eval_step = json.loads(eval_accuracy_str)["metadata"]["step_num"]
+                    eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
+                    eval_score = json.loads(eval_accuracy_str)["value"]
+                    stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
+                elif not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
                     conv_epoch = round(conv_epoch, 3)
-                if use_train_samples and "train_samples" in str:
+                elif use_train_samples and "train_samples" in str:
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["value"]
+        
                 if "run_stop" in str:
-                    # Epochs to converge is the the last epochs value on
-                    # eval_accuracy line before run_stop
                     conv_result = json.loads(str)["metadata"]["status"]
                     if conv_result == "success":
-                        subm_epochs = conv_epoch
                         not_converged = 0
+                        # Epochs to converge is the the last epochs value on
+                        # eval_accuracy line before run_stop. Except for Stable Diffusion
+                        # where we use the first eval step that passes the convergence criteria
+                        if benchmark == "stable_diffusion":
+                            passing_epochs = []
+                            for eval_step, eval_result in stable_diffusion_eval_results.items():
+                                # TODO: we shouldn't hardcode the convergence criteria here !
+                                if eval_result["FID"] <= 90.0 and eval_result["CLIP"] >= 0.15:
+                                    passing_epochs.append(eval_step)
+                            conv_epoch = min(passing_epochs)
+                        subm_epochs = conv_epoch
                     else:
-                        subm_epochs = 1e9
                         not_converged = 1
+                        subm_epochs = 1e9
 
     if not_converged:
         logging.warning(' Run incomplete or did not converge. Marking as infinite.')
