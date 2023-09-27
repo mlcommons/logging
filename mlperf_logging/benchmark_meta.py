@@ -10,6 +10,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'minigo': 10,
         'resnet': 5,
         'ssd': 5,
+        'stable_diffusion': 10,
         'transformer': 10,
         'ncf': 10,
         'rnnt': 10,
