@@ -147,6 +147,11 @@ class ComplianceChecker:
         alternatives = in_pharentises.split(',')
         return [s.strip() for s in alternatives]
 
+    def parse_at_least_n_times(self, string):
+        n_string = string[len('AT_LEAST_N_TIMES(') : -1]
+        n = int(n_string)
+        return n
+
     def configured_checks(self, loglines, config_file):
         with open(config_file) as f:
             checks = yaml.load(f, Loader=yaml.BaseLoader)
@@ -164,7 +169,7 @@ class ComplianceChecker:
         begin_blocks = [x for x in checks if list(x)[0]=='BEGIN']
         assert(len(begin_blocks)<=1) # up to one begin block
         if len(begin_blocks)==1:
-            exec(begin_blocks[0]['BEGIN']['CODE'].strip(), state)
+            exec(begin_blocks[0]['BEGIN']['CODE'].strip(), state, locals())
 
         key_records = {}
         for k in checks:
@@ -229,6 +234,12 @@ class ComplianceChecker:
             if v['REQ']=='AT_LEAST_ONE':
                 if len(reported_values[k])<1:
                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
+                                     key=k)
+
+            if v['REQ'].startswith('AT_LEAST_N_TIMES'):
+                n = self.parse_at_least_n_times(v['REQ'])
+                if len(reported_values[k])<n:
+                    self.put_message(f"Required AT_LEAST_N_TIMES({n}) occurrence of '{k}' but found {len(reported_values[k])}",
                                      key=k)
 
             if v['REQ'].startswith('AT_LEAST_ONE_OR'):

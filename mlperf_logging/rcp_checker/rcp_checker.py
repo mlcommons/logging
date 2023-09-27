@@ -26,6 +26,7 @@ submission_runs = {
         'ssd' : 5,
         'unet3d' : 40,
         'rnnt': 10,
+        'stable_diffusion_v2': 10,
     },
     "hpc": {
         'cosmoflow': 10,
