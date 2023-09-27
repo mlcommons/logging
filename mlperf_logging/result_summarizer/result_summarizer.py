@@ -172,6 +172,7 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     When dropped_scores > 0, then some scores have already been dropped
     so we should not double count them
     Precondition: Dropped scores have higher score value than the rest
+    Returns None if after dropping scores, no scores remain
     """
 
     # Sort scores first
@@ -181,7 +182,33 @@ def _compute_olympic_average(scores, dropped_scores, max_dropped_scores):
     countable_scores = scores[max_dropped_scores:(
         len(scores) - (max_dropped_scores - dropped_scores))]
     sum_of_scores = sum(countable_scores)
+    if len(countable_scores) == 0:
+        return None # would be div by zero otherwise
     return sum_of_scores * 1.0 / len(countable_scores)
+
+
+def _index_olympic_average(scores, index, dropped_scores, max_dropped_scores):
+    """Olympic average sorting the orginal array by a given index then
+    dropping the top and bottom max_dropped_scores:
+    If max_dropped_scores == 1, then we compute a normal olympic score.
+    If max_dropped_scores > 1, then we drop more than one scores from the
+    top and bottom and average the rest.
+    When dropped_scores > 0, then some scores have already been dropped
+    so we should not double count them.
+    E.g: Compute the olympic average for the power scores sorting by the 
+    performance scores.
+    Precondition: Dropped scores have higher score value than the rest
+    Returns None if after dropping scores, no scores remain
+    """
+
+    # Sort scores according to index
+    sorted_scores = [scores[i] for i in index]
+    countable_scores = sorted_scores[max_dropped_scores:(
+        len(scores) - (max_dropped_scores - dropped_scores))]
+    sum_of_scores = sum(countable_scores)
+    if len(countable_scores) == 0:
+        return None # would be div by zero otherwise
+    return sum_of_scores * 1.0 / len(countable_scores) 
 
 
 def _is_organization_folder(folder):
@@ -290,27 +317,36 @@ def _get_scaling_factor(folder):
 def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     # Collect scores for benchmarks.
     benchmark_scores = {}
+    benchmark_power_scores = {}
+    has_power = None
     benchmark_folder_parent = os.path.join(
         system_folder, 'strong') if usage == 'hpc' else system_folder
     if not os.path.isdir(benchmark_folder_parent):
-        return benchmark_scores
+        return benchmark_scores, benchmark_power_scores
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
+        # Check if this benchmark has power results
+        has_power = _has_power(benchmark_folder)
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
         # Read scores from result files.
         pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
         result_files = glob.glob(pattern, recursive=True)
         scores = []
+        power_scores = []
         dropped_scores = 0
         for result_file in result_files:
             try:
                 loglines = _read_result_file(result_file, usage, ruleset)
-                scores.append(_query_mlperf_strong_scaling_score(loglines))
+                start, stop = _query_run_start_stop(loglines)
+                time_to_train_ms = stop - start
+                scores.append(time_to_train_ms / 60 / 1000)
             except ValueError as e:
                 print('{} in {}'.format(e, result_file))
                 dropped_scores += 1
                 continue
+            if has_power:
+                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
         max_dropped_scores = 4 if benchmark == 'unet3d' else 1
         if dropped_scores > max_dropped_scores:
             print('CRITICAL ERROR: Too many non-converging runs '
@@ -326,14 +362,23 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                   ))
 
         if dropped_scores <= max_dropped_scores:
-            benchmark_scores[benchmark] = _compute_olympic_average(
+            olympic_avg = _compute_olympic_average(
                 scores, dropped_scores, max_dropped_scores)
+            if olympic_avg is not None:
+                benchmark_scores[benchmark] = olympic_avg
+                scaling_factor = _get_scaling_factor(benchmark_folder)
+                benchmark_scores[benchmark] *= scaling_factor
 
-            scaling_factor = _get_scaling_factor(benchmark_folder)
-            benchmark_scores[benchmark] *= scaling_factor
-
+        if has_power and dropped_scores <= max_dropped_scores:
+            index = [i[0] for i in sorted(enumerate(scores), key=lambda x:x[1])]
+            olympic_avg = _index_olympic_average(
+                power_scores, index, dropped_scores, max_dropped_scores)
+            if olympic_avg is not None:
+                benchmark_power_scores[benchmark] = olympic_avg
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
-    return benchmark_scores
+    if len(benchmark_power_scores) > 0:
+        _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
+    return benchmark_scores, benchmark_power_scores
 
 
 def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
@@ -357,12 +402,17 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
     # Collect scores for benchmarks.
     benchmark_scores = {}
     benchmark_folder_parent = os.path.join(system_folder, 'weak')
+    benchmark_power_scores = {}
+    has_power = None
     if not os.path.isdir(benchmark_folder_parent):
-        return benchmark_scores
+        return benchmark_scores, benchmark_power_scores
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3]
+        # Check if this benchmark has power results
+        has_power = _has_power(benchmark_folder)
+        power_scores = []
         # Read scores from result files.
         pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
         result_files = glob.glob(pattern, recursive=True)
@@ -383,6 +433,9 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
             except ValueError as e:
                 print('{} in {}'.format(e, result_file))
                 continue
+            if has_power:
+                time_to_train_ms = stop - start
+                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
 
         if number_of_models >= get_result_file_counts(usage)[benchmark]:
             benchmark_scores['{}:{}'.format(
@@ -400,13 +453,89 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
         else:
             print('CRITICAL ERROR: Not enough converging weak scaling runs '
                   'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+            
+        if has_power:
+            olympic_avg = _compute_olympic_average(
+                power_scores, 1, 1)
+            if olympic_avg is not None:
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'time_to_train_all',
+                )] = olympic_avg
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'number_of_models',
+                )] = olympic_avg
+                benchmark_power_scores['{}:{}'.format(
+                    benchmark,
+                    'instance_scale',
+                )] = olympic_avg
 
     _fill_empty_benchmark_scores(benchmark_scores,
                                  usage,
                                  ruleset,
                                  weak_scaling=True)
-    return benchmark_scores
+    _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset, weak_scaling=True)
+    return benchmark_scores, benchmark_power_scores
 
+
+def _has_power(benchmark_folder):
+    return "power" in [f.split("/")[-1] for f in _get_sub_folders(benchmark_folder)]
+
+
+def _compute_total_power(benchmark_folder, result_file, time_to_train, ruleset):
+    result_name = result_file.split("/")[-1].split(".")[0]
+    power_node_pattern = '{folder}/power/{result}/node_*.txt'.format(folder=benchmark_folder, result = result_name)
+    power_sw_pattern = '{folder}/power/{result}/sw_*.txt'.format(folder=benchmark_folder, result = result_name)
+    power_node_files = glob.glob(power_node_pattern, recursive=True)
+    power_sw_files = glob.glob(power_sw_pattern, recursive=True)
+    assert len(power_node_files) > 0
+    total_power = 0
+    for power_node_file in power_node_files:
+        loglines, _ = parse_file(power_node_file, ruleset)
+        total_power += _compute_power_node(loglines, time_to_train)
+
+    for power_sw_file in power_sw_files:
+        loglines, _ = parse_file(power_sw_file, ruleset)
+        total_power += _compute_power_sw(loglines, time_to_train)
+    return total_power
+
+def _compute_power_node(loglines, time_to_train):
+    prev_timestamp = 0
+    power_start = 0
+    power_stop = 0
+    agg_power = 0
+    conversion_eff = 1.0
+    for logline in loglines:
+        if logline.key == "power_measurement_start":
+            power_start = logline.timestamp
+            prev_timestamp = logline.timestamp
+        if logline.key == "power_reading":
+            agg_power += (logline.value['value'] * (logline.timestamp - prev_timestamp))
+            prev_timestamp = logline.timestamp
+        if logline.key == "power_measurement_stop":
+            power_stop = logline.timestamp
+            break
+        if logline.key == "conversion_eff":
+            conversion_eff = logline.value['value']
+    
+    # Compute the result, convert ms to s
+    result = conversion_eff * agg_power * time_to_train / (power_stop - power_start) / 1000
+    return result
+
+
+def _compute_power_sw(loglines, time_to_train):
+    agg_power = 0
+    for logline in loglines:
+        if logline.key == "conversion_eff":
+            conversion_eff = logline.value['value']
+        if logline.key == "interconnect_power_est":
+            agg_power = logline.value['value']
+            break
+
+    # Compute the result, convert ms to s
+    result = conversion_eff * agg_power * time_to_train / 1000
+    return result
 
 def _load_system_desc(folder, system):
     systems_folder = os.path.join(folder, 'systems')
@@ -447,6 +576,8 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
     weak_scaling_summary = _get_empty_summary(usage,
                                               ruleset,
                                               weak_scaling=True)
+    power_summary = _get_empty_summary(usage, ruleset)
+    power_weak_scaling_summary = _get_empty_summary(usage, ruleset, weak_scaling=True)
 
     for system_folder in _get_sub_folders(results_folder):
         folder_parts = system_folder.split('/')
@@ -513,10 +644,10 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
             continue
 
         # Compute the scores.
-        strong_scaling_scores = _compute_strong_scaling_scores(
+        strong_scaling_scores, power_scores = _compute_strong_scaling_scores(
             desc, system_folder, usage, ruleset)
         if usage == 'hpc':
-            weak_scaling_scores = _compute_weak_scaling_scores(
+            weak_scaling_scores, power_scores_weak_scaling = _compute_weak_scaling_scores(
                 desc, system_folder, usage, ruleset)
 
         # Construct postfix portion of the row.
@@ -539,6 +670,20 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
                     urls.items(),
             ):
                 weak_scaling_summary.push(column_name, value)
+        if len(power_scores) > 0:
+            for column_name, value in itertools.chain(
+                    system_specs.items(),
+                    power_scores.items(),
+                    urls.items(),
+            ):
+                power_summary.push(column_name, value)
+        if usage == 'hpc' and len(power_scores_weak_scaling) > 0:
+            for column_name, value in itertools.chain(
+                    system_specs.items(),
+                    power_scores_weak_scaling.items(),
+                    urls.items(),
+            ):
+                power_weak_scaling_summary.push(column_name, value)
 
     # Print rows in order of the sorted keys.
     strong_scaling_summary = strong_scaling_summary.to_dataframe().sort_values(
@@ -546,7 +691,13 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
     if len(weak_scaling_summary) > 0:
         weak_scaling_summary = weak_scaling_summary.to_dataframe().sort_values(
             _get_sort_by_column_names()).reset_index(drop=True)
-    return strong_scaling_summary, weak_scaling_summary
+    if len(power_summary) > 0:
+        power_summary = power_summary.to_dataframe().sort_values(
+            _get_sort_by_column_names()).reset_index(drop=True)
+    if len(power_weak_scaling_summary) > 0:
+        power_weak_scaling_summary = power_weak_scaling_summary.to_dataframe().sort_values(
+            _get_sort_by_column_names()).reset_index(drop=True)
+    return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
 
 def get_parser():
@@ -596,9 +747,11 @@ def main():
 
     strong_scaling_summaries = []
     weak_scaling_summaries = []
+    power_summaries = []
+    power_weak_scaling_summaries = []
 
     def _update_summaries(folder):
-        strong_scaling_summary, weak_scaling_summary = summarize_results(
+        strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
             folder,
             args.usage,
             args.ruleset,
@@ -606,6 +759,10 @@ def main():
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
             weak_scaling_summaries.append(weak_scaling_summary)
+        if len(power_summary) > 0:
+            power_summaries.append(power_summary)
+        if len(power_weak_scaling_summary) > 0:
+            power_weak_scaling_summaries.append(power_weak_scaling_summary)
 
     multiple_folders_regex = r'(.*)\{(.*)\}'
     multiple_folders = re.search(multiple_folders_regex, args.folder)
@@ -714,7 +871,7 @@ def main():
 
         writer.save()
     # Print and write back results.
-    def _print_and_write(summaries, weak_scaling=False, mode='w'):
+    def _print_and_write(summaries, weak_scaling=False, mode='w', power = False):
         if len(summaries) > 0:
             summaries = pd.concat(summaries).astype(
                 _get_column_schema(
@@ -735,7 +892,11 @@ def main():
             summaries = summaries.sort_values(by=cols)
             print(summaries)
             if args.csv is not None:
-                summaries.to_csv(args.csv, index=False, mode=mode)
+                csv = args.csv
+                assert csv.endswith(".csv")
+                if power:
+                    csv = csv.replace(".csv", "_power.csv")
+                summaries.to_csv(csv, index=False, mode=mode)
             
             if args.xlsx is not None:
                 _summaries_to_xlsx(summaries, args.xlsx, args.ruleset[:3])
@@ -745,6 +906,8 @@ def main():
                            None, 'display.max_colwidth', None):
         _print_and_write(strong_scaling_summaries)
         _print_and_write(weak_scaling_summaries, weak_scaling=True, mode='a')
+        _print_and_write(power_summaries, mode='a', power=True)
+        _print_and_write(power_weak_scaling_summaries, weak_scaling=True, mode='a', power=True)
 
 
 if __name__ == '__main__':

@@ -35,13 +35,25 @@ columns:
     "3.0.0":
       bert: ["Benchmark results (minutes)", "NLP", "Wikipedia", "BERT"]
       gpt3: ["Benchmark results (minutes)", "LLM", "C4", "GPT3"]
-      dlrm_v2: ["Benchmark results (minutes)", "Recommendation", "1TB Clickthrough", "DLRM"]
+      dlrm_dcnv2: ["Benchmark results (minutes)", "Recommendation", "1TB Multihot Clickthrough", "DLRM DCNv2"]
       maskrcnn: ["Benchmark results (minutes)", "Object detection, heavy-weight", "COCO", "Mask R-CNN"]
       minigo: ["Benchmark results (minutes)", "Reinforcement Learning", "Go", "Minigo"]
       resnet: ["Benchmark results (minutes)", "Image classification", "ImageNet", "ResNet"]
       ssd: ["Benchmark results (minutes)", "Object detection, light-weight", "OpenImages", "RetinaNet"]
       rnnt: ["Benchmark results (minutes)", "Speech recognition", "LibriSpeech", "RNN-T"]
       unet3d: ["Benchmark results (minutes)", "Image segmentation (medical)", "KiTS19", "3D U-Net"]
+      default: [" ", " ", " "]
+    "3.1.0":
+      bert: ["Benchmark results (minutes)", "NLP", "Wikipedia", "BERT"]
+      gpt3: ["Benchmark results (minutes)", "LLM", "C4", "GPT3"]
+      dlrm_dcnv2: ["Benchmark results (minutes)", "Recommendation", "1TB Multihot Clickthrough", "DLRM DCNv2"]
+      maskrcnn: ["Benchmark results (minutes)", "Object detection, heavy-weight", "COCO", "Mask R-CNN"]
+      minigo: ["Benchmark results (minutes)", "Reinforcement Learning", "Go", "Minigo"]
+      resnet: ["Benchmark results (minutes)", "Image classification", "ImageNet", "ResNet"]
+      ssd: ["Benchmark results (minutes)", "Object detection, light-weight", "OpenImages", "RetinaNet"]
+      rnnt: ["Benchmark results (minutes)", "Speech recognition", "LibriSpeech", "RNN-T"]
+      unet3d: ["Benchmark results (minutes)", "Image segmentation (medical)", "KiTS19", "3D U-Net"]
+      stable_diffusion: ["Benchmark results (minutes)", "Text to image", "Laion 400m and Coco-2017", "StableDiffusion"]
       default: [" ", " ", " "]
 
   hpc:
