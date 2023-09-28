@@ -33,7 +33,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     3.1.0/closed_bert.yaml
     3.1.0/closed_dlrm_dcnv2.yaml
     3.1.0/closed_gpt3.yaml
-    3.1.0/closed_stable_diffusion_v2.yaml
+    3.1.0/closed_stable_diffusion.yaml
     3.1.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
     3.1.0/open_ssd.yaml
     3.1.0/open_maskrcnn.yaml
@@ -42,7 +42,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     3.1.0/open_bert.yaml
     3.1.0/open_dlrm_dcnv2.yaml
     3.1.0/open_gpt3.yaml
-    3.1.0/open_stable_diffusion_v2.yaml
+    3.1.0/open_stable_diffusion.yaml
 
 ### Existing config files for HPC submissions
 
