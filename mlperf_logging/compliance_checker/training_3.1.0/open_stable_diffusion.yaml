@@ -18,14 +18,14 @@
                     new_line.lineno = -1      # Not needed
                     new_line.value = {'value': {'step_num': step_num}, 'metadata':{}}
                     agg_eval_lines[step_num] = new_line
-                
+
                 agg_eval_lines[step_num].timestamp = max(line.timestamp, agg_eval_lines[step_num].timestamp)
                 agg_eval_lines[step_num].value['value'][line.value['metadata']['metric']] = line.value['value']
         loglines.extend(agg_eval_lines.values())
 
 - KEY:
     NAME: aggregated_eval_accuracy
-    REQ: AT_LEAST_N_TIMES(2)
+    REQ: AT_LEAST(2)
     CHECK:
         - "'FID' in v['value']"
         - "'CLIP' in v['value']"

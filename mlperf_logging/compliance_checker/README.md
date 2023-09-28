@@ -89,7 +89,7 @@ The following fields are optional:
 - `REQ` - specifies the requirement regarding occurrence. Possible values :
     - `EXACTLY_ONE` - current key has to appear exactly once
     - `AT_LEAST_ONE` - current key has to appear at least once
-    - `AT_LEAST_N_TIMES(n)` - current key has to appear at least n times
+    - `AT_LEAST(n)` - current key has to appear at least n times
     - `AT_LEAST_ONE_OR(alternatives)` - current key or one of the alternative has to appear at least once;
             alternatives is a comma separated list of keys
 - `PRE` - code to be executed before performing checks
