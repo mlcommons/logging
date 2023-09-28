@@ -147,8 +147,8 @@ class ComplianceChecker:
         alternatives = in_pharentises.split(',')
         return [s.strip() for s in alternatives]
 
-    def parse_at_least_n_times(self, string):
-        n_string = string[len('AT_LEAST_N_TIMES(') : -1]
+    def parse_at_least(self, string):
+        n_string = string[len('AT_LEAST(') : -1]
         n = int(n_string)
         return n
 
@@ -236,10 +236,10 @@ class ComplianceChecker:
                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
                                      key=k)
 
-            if v['REQ'].startswith('AT_LEAST_N_TIMES'):
-                n = self.parse_at_least_n_times(v['REQ'])
+            if v['REQ'].startswith('AT_LEAST'):
+                n = self.parse_at_least(v['REQ'])
                 if len(reported_values[k])<n:
-                    self.put_message(f"Required AT_LEAST_N_TIMES({n}) occurrence of '{k}' but found {len(reported_values[k])}",
+                    self.put_message(f"Required AT_LEAST({n}) occurrence of '{k}' but found {len(reported_values[k])}",
                                      key=k)
 
             if v['REQ'].startswith('AT_LEAST_ONE_OR'):
