@@ -8,17 +8,18 @@ import collections
 import json
 import re
 import sys
+from dataclasses import dataclass
 
 from io import open
 
-LogLine = collections.namedtuple('LogLine', [
-    'full_string', # the complete line as a string
-    'timestamp',   # seconds as a float, e.g. 1234.567
-    'key',         # the string key
-    'value',       # the parsed value associated with the tag, or None if no value
-    'lineno',      # the line number in the file
-    ])
-
+@dataclass
+class LogLine:
+    """Class for keeping track of an item in inventory."""
+    full_string: str
+    timestamp: float
+    key: str
+    value: str
+    lineno: int
 
 TOKEN = ':::MLLOG '
 

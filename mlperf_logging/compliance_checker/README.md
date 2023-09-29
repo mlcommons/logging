@@ -23,7 +23,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
 ### Existing config files for training submissions
 
     3.1.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
-    3.1.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks 
+    3.1.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks
     3.1.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
     3.1.0/closed_resnet.yaml   - Per-benchmark rules, closed submissions.
     3.1.0/closed_ssd.yaml
@@ -33,6 +33,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     3.1.0/closed_bert.yaml
     3.1.0/closed_dlrm_dcnv2.yaml
     3.1.0/closed_gpt3.yaml
+    3.1.0/closed_stable_diffusion.yaml
     3.1.0/open_resnet.yaml   - Per-benchmark rules, closed submissions.
     3.1.0/open_ssd.yaml
     3.1.0/open_maskrcnn.yaml
@@ -41,6 +42,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     3.1.0/open_bert.yaml
     3.1.0/open_dlrm_dcnv2.yaml
     3.1.0/open_gpt3.yaml
+    3.1.0/open_stable_diffusion.yaml
 
 ### Existing config files for HPC submissions
 
@@ -64,7 +66,7 @@ Compliance checking is done following below algorithm.
    2. If present, evaluate `CHECK` section, and raise an exception if the result is false
 7. Print all warning messages
 
-Possible side effects of yaml sections execution can be [printing output](#other-operations), or [enqueueing 
+Possible side effects of yaml sections execution can be [printing output](#other-operations), or [enqueueing
 additional yaml files to be verified](#enqueuing-additional-config-files).
 
 ### Config file syntax
@@ -72,7 +74,7 @@ Rules to be checked are provided in yaml (config) file. A config file contains t
 
 #### `BEGIN` record
 Defines `CODE` to be executed before any other rules defined in the current file. This record is optional
-and there can be up to a single `BEGIN` record per config file. 
+and there can be up to a single `BEGIN` record per config file.
 
 Example:
 
@@ -87,6 +89,7 @@ The following fields are optional:
 - `REQ` - specifies the requirement regarding occurrence. Possible values :
     - `EXACTLY_ONE` - current key has to appear exactly once
     - `AT_LEAST_ONE` - current key has to appear at least once
+    - `AT_LEAST(n)` - current key has to appear at least n times
     - `AT_LEAST_ONE_OR(alternatives)` - current key or one of the alternative has to appear at least once;
             alternatives is a comma separated list of keys
 - `PRE` - code to be executed before performing checks
@@ -112,14 +115,14 @@ The following fields are optional:
 
 #### Global and local state access
 
-During processing of the records there is a global state `s` maintained, accessible from 
+During processing of the records there is a global state `s` maintained, accessible from
 code provided in yaml. In addition, rules can access the information fields (values) `v`
 of the record, as well as timestamp and the original line string as part of the record `ll`.
 
-Global state `s` can be used to enforce any cross keys rules, by updating the global state 
+Global state `s` can be used to enforce any cross keys rules, by updating the global state
 in `POST` (or `PRE`) of one `KEY` and using that information for `CHECK` of another `KEY`.
-For each config file, `s` starts as an empty dictionary, so in order to track global state 
-it would require adding an entry to `s`. 
+For each config file, `s` starts as an empty dictionary, so in order to track global state
+it would require adding an entry to `s`.
 
 Example:
 
@@ -152,7 +155,7 @@ Config files in the queue are processed independently, meaning that they do not 
 
 Each config file may define it's `BEGIN` and `END` records, as well as any other `KEY` rules.
 
-Example: 
+Example:
 
     - KEY:
         NAME:  submission_benchmark
@@ -164,7 +167,7 @@ Example:
 #### Other operations
 
 `CODE`, `REQ`, and `POST` fields are executed using python's `exec` function. `CHECK` is performed
-using `eval` call. As such, any legal python code would be suitable for use. 
+using `eval` call. As such, any legal python code would be suitable for use.
 
 For instance, can define rules that would print out information as shown in the [example above](#global-and-local-state-access).
 
