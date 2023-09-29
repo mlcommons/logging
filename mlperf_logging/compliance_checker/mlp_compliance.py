@@ -236,7 +236,7 @@ class ComplianceChecker:
                     self.put_message(f"Required AT_LEAST_ONE occurrence of '{k}' but found {len(reported_values[k])}",
                                      key=k)
 
-            if v['REQ'].startswith('AT_LEAST'):
+            if v['REQ'].startswith('AT_LEAST('):
                 n = self.parse_at_least(v['REQ'])
                 if len(reported_values[k])<n:
                     self.put_message(f"Required AT_LEAST({n}) occurrence of '{k}' but found {len(reported_values[k])}",
