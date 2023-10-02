@@ -84,7 +84,7 @@ def read_submission_file(result_file, use_train_samples):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["value"]
         
-                if "run_stop" in str:
+                if "run_stop" in str and json.loads(str)["key"] == "run_stop":
                     conv_result = json.loads(str)["metadata"]["status"]
                     if conv_result == "success":
                         not_converged = 0
