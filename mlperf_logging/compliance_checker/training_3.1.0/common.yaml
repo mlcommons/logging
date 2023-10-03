@@ -97,15 +97,16 @@
     REQ:   AT_LEAST_ONE_OR(epoch_start)
     CHECK:
         - "s['run_started']"
-        - "'epoch_count' in v['metadata']"
-        - "'first_epoch_num' in v['metadata']"
-        - "v['metadata']['epoch_count'] > 0"
+        - "('epoch_count' in v['metadata']) ^ ('step_num' in v['metadata'])"
+        - "'first_epoch_num' in v['metadata'] if 'epoch_count' in v['metadata'] else True"
+        - "v['metadata']['epoch_count'] > 0 if 'epoch_count' in v['metadata'] else True"
+        - "v['metadata']['step_num'] >= 0 if 'step_num' in v['metadata'] else True"
 
 - KEY:
     NAME:  block_stop
     REQ:   AT_LEAST_ONE_OR(epoch_stop)
     CHECK:
-        - "'first_epoch_num' in v['metadata']"
+        - "('first_epoch_num' in v['metadata']) ^ ('step_num' in v['metadata'])"
 
 - KEY:
     NAME:  epoch_start
@@ -124,19 +125,19 @@
     NAME:  eval_start
     REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "('epoch_num' in v['metadata']) ^ ('step_num' in v['metadata'])"
 
 - KEY:
     NAME:  eval_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "('epoch_num' in v['metadata']) ^ ('step_num' in v['metadata'])"
 
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "('epoch_num' in v['metadata']) ^ ('step_num' in v['metadata'])"
 
 - KEY:
     NAME:  train_samples

@@ -9,7 +9,7 @@
         from dataclasses import replace
         agg_eval_lines = {}
         for line in loglines:
-            if line.key == "eval_accuracy":
+            if line.key == "eval_accuracy" and 'metric' in line.value['metadata']:
                 step_num = line.value['metadata']['step_num']
                 if step_num not in agg_eval_lines:
                     new_line = replace(line) # Make a copy
@@ -72,4 +72,3 @@
         - "'CLIP' in v['value']"
         - "'step_num' in v['value']"
     ATLEAST_ONE_CHECK: "(0.0 <= v['value']['FID'] <= 90.0) and (0.15 <= v['value']['CLIP'] <= 1.0)"
-
