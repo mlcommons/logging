@@ -18,6 +18,24 @@
       4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
   },
 
+  "ssd_ref_320":
+  {
+    "Benchmark": "ssd",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v3.1",
+    "Platform": "2xDGX-A100",
+    "BS": 320,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0001,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      4, 4, 4, 4, 4, 4, 4, 4, 4, 5,
+      4, 4, 4, 4, 4, 4, 4, 4, 5, 5]
+  },
+
   "ssd_ref_512":
   {
     "Benchmark": "ssd",
