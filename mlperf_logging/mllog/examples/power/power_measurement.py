@@ -165,7 +165,7 @@ def run():
             metadata=dict(measurement_type=args.get("measurement_type")),
         )
     else:
-        s = power_reader.read_power()
+        s = power_reader.lines[0]
         date = log_parser.extract_date(s)
         time_ms = log_parser.date_to_ms(date, log_parser.date_format)
         MLLOGGER.start(key=mllog_constants.POWER_MEASUREMENT_START, time_ms=time_ms)
