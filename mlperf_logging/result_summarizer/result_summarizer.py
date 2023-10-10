@@ -360,6 +360,9 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                       system,
                       benchmark,
                   ))
+            
+        if has_power:
+            unsorted_scores = scores.copy()
 
         if dropped_scores <= max_dropped_scores:
             olympic_avg = _compute_olympic_average(
@@ -370,7 +373,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                 benchmark_scores[benchmark] *= scaling_factor
 
         if has_power and dropped_scores <= max_dropped_scores:
-            index = [i[0] for i in sorted(enumerate(scores), key=lambda x:x[1])]
+            index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
             olympic_avg = _index_olympic_average(
                 power_scores, index, dropped_scores, max_dropped_scores)
             if olympic_avg is not None:
