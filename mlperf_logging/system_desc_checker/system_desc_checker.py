@@ -94,6 +94,31 @@ def check_system_desc(json_file, usage, ruleset):
         _get_or_default(contents, "framework", ""),
     ]) + ","
 
+    # Check availability
+    if usage == "training":
+        availability_options = [
+            "Available on-premise", 
+            "available on-premise",
+            "onprem",
+            "available",
+            "Available onprem",
+            "available onprem",
+            "Available cloud",
+            "available cloud",
+            "cloud",
+            "Research, Development, or Internal (RDI)",
+            "research, development, or internal (rdi)",
+            "rdi",
+            "research",
+            "development",
+            "internal",
+            "preview"
+        ]
+        if ("status" in contents) and (contents["status"] not in availability_options) and (contents["status"].lower() not in availability_options):
+            valid = False
+            invalid_reasons = ["Field status contains a non valid value: {}, must be one of {}".format(contents["status"], availability_options)]
+
+
     ruleset_prefix = "https://github.com/mlperf/{}_results_v{}".format(usage, ruleset)
     if "submitter" in contents and "system_name" in contents:
         details_link = "{ruleset_prefix}/blob/master/{submitter}/systems/{system_name}.json".format(

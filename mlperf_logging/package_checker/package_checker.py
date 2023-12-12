@@ -181,10 +181,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             _print_divider_bar()
 
     _print_divider_bar()
-    if too_many_errors:
-        logging.info('PACKAGE CHECKER FOUND ERRORS, LOOK INTO ERROR LOG LINES AND FIX THEM.')
-    else:
-        logging.info('PACKAGE CHECKER FOUND NO ERRORS, SUCCESS !')
+    return not too_many_errors
 
 
 def check_systems(folder, usage, ruleset):
@@ -215,12 +212,20 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
         usage: The usage such as training or hpc
         ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
+    too_many_errors = False
     if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0'}:
         logging.info(' Checking System Description Files')
-        if not check_systems(folder, usage, ruleset):
+        system_description_pass = check_systems(folder, usage, ruleset)
+        too_many_errors = too_many_errors or not system_description_pass
+        if not system_description_pass:
             logging.error('System description file checker failed')
 
-    check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    training_pass = check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    too_many_errors = too_many_errors or not training_pass
+    if too_many_errors:
+        logging.info('PACKAGE CHECKER FOUND ERRORS, LOOK INTO ERROR LOG LINES AND FIX THEM.')
+    else:
+        logging.info('PACKAGE CHECKER FOUND NO ERRORS, SUCCESS !')
     _print_divider_bar()
     print('\n** Detailed log output is also at', log_output)
 
