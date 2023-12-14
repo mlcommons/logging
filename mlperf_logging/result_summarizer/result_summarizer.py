@@ -273,6 +273,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'availability': str,
         'submitter': str,
         'system': str,
+        'number_of_nodes': str,
         'host_processor_model_name': str,
         'host_processors_count': int,
         'accelerator_model_name': str,
@@ -624,6 +625,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                                            query=_pretty_system_name)
             _check_and_update_system_specs('host_processor_model_name',
                                            'host_processor_model_name')
+            _check_and_update_system_specs('number_of_nodes', 'number_of_nodes')
             _check_and_update_system_specs(
                 [
                     'host_processor_core_count', 'host_processors_per_node',
