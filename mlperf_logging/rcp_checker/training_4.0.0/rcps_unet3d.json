@@ -1,6 +1,6 @@
 {
 
-  "unet3d_ref_28_fp32":
+  "unet3d_ref_28":
   {
     "Benchmark": "unet3d",
     "Creator": "NVIDIA",
