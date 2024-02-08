@@ -695,6 +695,10 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                     urls.items(),
             ):
                 power_summary.push(column_name, value)
+                if column_name in strong_scaling_scores:
+                    power_summary.push(column_name, strong_scaling_scores[column_name])
+                else:
+                    power_summary.push(column_name, value)
         if usage == 'hpc' and len(power_scores_weak_scaling) > 0:
             for column_name, value in itertools.chain(
                     system_specs.items(),
@@ -818,6 +822,13 @@ def main():
     def _map_columns_index(column, config):
         map_ = config["columns"][args.usage][args.ruleset]
         return tuple(map_.get(column, map_.get("default") + [column]))
+    
+    def agg_columns_fn(df, benchmarks):
+        agg_map = {}
+        for model in benchmarks:
+            agg_map[(model, "perf")] = df[model].iloc[0]
+            agg_map[(model, "power")] = df[model].iloc[-1]
+        return pd.Series(agg_map)
 
     def _summaries_to_xlsx(summaries: pd.DataFrame, path, version):
         config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
@@ -920,8 +931,12 @@ def main():
                 csv = args.csv
                 assert csv.endswith(".csv")
                 if power:
+                    benchmarks = get_allowed_benchmarks(args.usage, args.ruleset)
+                    specs_and_notes = [c for c in summaries.columns if c not in benchmarks]
                     csv = csv.replace(".csv", "_power.csv")
-                summaries.to_csv(csv, index=False, mode=mode)
+                    summaries.groupby(specs_and_notes).apply(lambda x: agg_columns_fn(x, benchmarks)).to_csv(csv, mode=mode)
+                else:
+                    summaries.to_csv(csv, index=False, mode=mode)
             
             if args.xlsx is not None:
                 _summaries_to_xlsx(summaries, args.xlsx, args.ruleset[:3])
