@@ -1,14 +1,20 @@
 availability:
   Available on-premise: Available on-premise
+  available on-premise: Available on-premise
   onprem: Available on-premise
   available: Available on-premise
+  Available onprem: Available on-premise
+  available onprem: Available on-premise
   Available cloud: Available cloud
+  available cloud: Available cloud
   cloud: Available cloud
   Research, Development, or Internal (RDI): Research, Development, or Internal (RDI)
-  preview: Research, Development, or Internal (RDI)
+  research, development, or internal (rdi): Research, Development, or Internal (RDI)
+  rdi: Research, Development, or Internal (RDI)
   research: Research, Development, or Internal (RDI)
   development: Research, Development, or Internal (RDI)
   internal: Research, Development, or Internal (RDI)
+  preview: Preview
 
 columns:
   training:

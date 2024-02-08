@@ -98,6 +98,15 @@ def _code_url(system_desc, usage, ruleset):
     )
 
 
+def _map_availability(availability, config):
+        map_ = config["availability"]
+        if availability in map_:
+            return map_[availability]
+        elif availability.lower() in map_:
+            return map_[availability.lower()]
+        raise ValueError(f"Specified availability {availability} is not valid, must be one of: {list(map_.keys())}")
+
+
 def _get_sort_by_column_names():
     return [
         'division', 'system', 'accelerator_model_name', 'framework',
@@ -264,6 +273,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'availability': str,
         'submitter': str,
         'system': str,
+        'number_of_nodes': str,
         'host_processor_model_name': str,
         'host_processors_count': int,
         'accelerator_model_name': str,
@@ -360,6 +370,9 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                       system,
                       benchmark,
                   ))
+            
+        if has_power:
+            unsorted_scores = scores.copy()
 
         scaling_factor = _get_scaling_factor(benchmark_folder)
         if dropped_scores <= max_dropped_scores:
@@ -370,7 +383,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                 benchmark_scores[benchmark] *= scaling_factor
 
         if has_power and dropped_scores <= max_dropped_scores:
-            index = [i[0] for i in sorted(enumerate(scores), key=lambda x:x[1])]
+            index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
             olympic_avg = _index_olympic_average(
                 power_scores, index, dropped_scores, max_dropped_scores)
             if olympic_avg is not None:
@@ -564,7 +577,7 @@ def _fill_empty_benchmark_scores(
                 benchmark_scores[benchmark] = None
 
 
-def summarize_results(folder, usage, ruleset, csv_file=None):
+def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     """Summarizes a set of results.
 
     Args:
@@ -602,13 +615,18 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
-            _check_and_update_system_specs('status', 'availability')
+            # Map availability if requested
+            if "availability" in kwargs:
+                _check_and_update_system_specs('status', 'availability', lambda desc: _map_availability(desc["status"], kwargs["availability"]))
+            else:
+                _check_and_update_system_specs('status', 'availability')
             _check_and_update_system_specs('submitter', 'submitter')
             _check_and_update_system_specs('system_name',
                                            'system',
                                            query=_pretty_system_name)
             _check_and_update_system_specs('host_processor_model_name',
                                            'host_processor_model_name')
+            _check_and_update_system_specs('number_of_nodes', 'number_of_nodes')
             _check_and_update_system_specs(
                 [
                     'host_processor_core_count', 'host_processors_per_node',
@@ -678,6 +696,10 @@ def summarize_results(folder, usage, ruleset, csv_file=None):
                     urls.items(),
             ):
                 power_summary.push(column_name, value)
+                if column_name in strong_scaling_scores:
+                    power_summary.push(column_name, strong_scaling_scores[column_name])
+                else:
+                    power_summary.push(column_name, value)
         if usage == 'hpc' and len(power_scores_weak_scaling) > 0:
             for column_name, value in itertools.chain(
                     system_specs.items(),
@@ -752,11 +774,22 @@ def main():
     power_weak_scaling_summaries = []
 
     def _update_summaries(folder):
-        strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
-            folder,
-            args.usage,
-            args.ruleset,
-        )
+        if args.usage == "Training":
+            config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+            with open(config_path, "r") as f:
+                config = yaml.safe_load(f)
+            strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
+                folder,
+                args.usage,
+                args.ruleset,
+                availability = config["availability"]
+            )
+        else:
+            strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
+                folder,
+                args.usage,
+                args.ruleset,
+            )
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
             weak_scaling_summaries.append(weak_scaling_summary)
@@ -787,16 +820,19 @@ def main():
         # Parse results for single organization.
         _update_summaries(args.folder)
 
-    def _map_availability(availability, config):
-        map_ = config["availability"]
-        return map_.get(availability, availability)
-
     def _map_columns_index(column, config):
         map_ = config["columns"][args.usage][args.ruleset]
         return tuple(map_.get(column, map_.get("default") + [column]))
+    
+    def agg_columns_fn(df, benchmarks):
+        agg_map = {}
+        for model in benchmarks:
+            agg_map[(model, "perf")] = df[model].iloc[0]
+            agg_map[(model, "power")] = df[model].iloc[-1]
+        return pd.Series(agg_map)
 
     def _summaries_to_xlsx(summaries: pd.DataFrame, path, version):
-        config_path = os.path.join(os.path.dirname(__file__), "xlsx_config.yaml")
+        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
         with open(config_path, "r") as f:
             config = yaml.safe_load(f)
         writer = pd.ExcelWriter(path, engine="xlsxwriter")
@@ -896,8 +932,12 @@ def main():
                 csv = args.csv
                 assert csv.endswith(".csv")
                 if power:
+                    benchmarks = get_allowed_benchmarks(args.usage, args.ruleset)
+                    specs_and_notes = [c for c in summaries.columns if c not in benchmarks]
                     csv = csv.replace(".csv", "_power.csv")
-                summaries.to_csv(csv, index=False, mode=mode)
+                    summaries.groupby(specs_and_notes).apply(lambda x: agg_columns_fn(x, benchmarks)).to_csv(csv, mode=mode)
+                else:
+                    summaries.to_csv(csv, index=False, mode=mode)
             
             if args.xlsx is not None:
                 _summaries_to_xlsx(summaries, args.xlsx, args.ruleset[:3])

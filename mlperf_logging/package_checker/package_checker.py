@@ -43,7 +43,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
     """
     allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
     benchmark_file_counts = get_result_file_counts(usage)
-
+    global_rcp_bypass = rcp_bypass
 
     seed_checker = SeedChecker(ruleset)
     too_many_errors = False
@@ -55,6 +55,15 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 benchmark_folders.extend(_get_sub_folders(scaling_folder))
         else:
             benchmark_folders = _get_sub_folders(system_folder)
+        # Set system wide rcp-bypass
+        params_path = os.path.join(system_folder, "package_checker_params")
+        system_rcp_bypass = False
+        if os.path.exists(params_path):
+            with open(params_path) as f:
+                lines = f.readlines()
+                for line in lines:
+                    if line == "rcp-bypass":
+                        system_rcp_bypass = True
         for benchmark_folder in benchmark_folders:
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
@@ -85,6 +94,18 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             any_pattern = '{folder}/*'.format(folder=benchmark_folder)
             all_files = glob.glob(any_pattern, recursive=True)
 
+            # Set system wide rcp-bypass
+            params_files = []
+            params_path = os.path.join(benchmark_folder, "package_checker_params")
+            result_rcp_bypass = False
+            if os.path.exists(params_path):
+                params_files.append(params_path)
+                with open(params_path) as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        if line == "rcp-bypass":
+                            result_rcp_bypass = True
+
             # Find all source codes for this benchmark.
             source_files = find_source_files_under(
                 os.path.join(folder, 'benchmarks', benchmark))
@@ -110,7 +131,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                                   'found %d, expected %d',
                                   benchmark_folder, len(result_files), benchmark_file_counts[benchmark])
                     too_many_errors = True
-            if len(all_files) > len(result_files):
+            if len(all_files) > len(result_files) + len(params_files):
                 logging.warning('Detected %d total files in directory %s, but some do not conform '
                       'to naming convention, should you rename them to result_*.txt ?',len(all_files), benchmark_folder)
 
@@ -162,6 +183,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             # Run RCP checker for >= 1.0.0
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0'} and division == 'closed' and benchmark != 'minigo':
                 # Now go again through result files to do RCP checks
+                rcp_bypass = (global_rcp_bypass or system_rcp_bypass or result_rcp_bypass)
                 rcp_pass, rcp_msg, _ = rcp_checker.check_directory(
                         benchmark_folder,
                         usage,
@@ -181,10 +203,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             _print_divider_bar()
 
     _print_divider_bar()
-    if too_many_errors:
-        logging.info('PACKAGE CHECKER FOUND ERRORS, LOOK INTO ERROR LOG LINES AND FIX THEM.')
-    else:
-        logging.info('PACKAGE CHECKER FOUND NO ERRORS, SUCCESS !')
+    return not too_many_errors
 
 
 def check_systems(folder, usage, ruleset):
@@ -215,12 +234,20 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
         usage: The usage such as training or hpc
         ruleset: The ruleset such as 0.6.0, 0.7.0, 1.0.0, etc.
     """
+    too_many_errors = False
     if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0'}:
         logging.info(' Checking System Description Files')
-        if not check_systems(folder, usage, ruleset):
+        system_description_pass = check_systems(folder, usage, ruleset)
+        too_many_errors = too_many_errors or not system_description_pass
+        if not system_description_pass:
             logging.error('System description file checker failed')
 
-    check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    training_pass = check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    too_many_errors = too_many_errors or not training_pass
+    if too_many_errors:
+        logging.info('PACKAGE CHECKER FOUND ERRORS, LOOK INTO ERROR LOG LINES AND FIX THEM.')
+    else:
+        logging.info('PACKAGE CHECKER FOUND NO ERRORS, SUCCESS !')
     _print_divider_bar()
     print('\n** Detailed log output is also at', log_output)
 
