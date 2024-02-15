@@ -374,12 +374,12 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
         if has_power:
             unsorted_scores = scores.copy()
 
+        scaling_factor = _get_scaling_factor(benchmark_folder)
         if dropped_scores <= max_dropped_scores:
             olympic_avg = _compute_olympic_average(
                 scores, dropped_scores, max_dropped_scores)
             if olympic_avg is not None:
                 benchmark_scores[benchmark] = olympic_avg
-                scaling_factor = _get_scaling_factor(benchmark_folder)
                 benchmark_scores[benchmark] *= scaling_factor
 
         if has_power and dropped_scores <= max_dropped_scores:
@@ -388,6 +388,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
                 power_scores, index, dropped_scores, max_dropped_scores)
             if olympic_avg is not None:
                 benchmark_power_scores[benchmark] = olympic_avg
+                benchmark_power_scores[benchmark] *= scaling_factor
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
     if len(benchmark_power_scores) > 0:
         _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
