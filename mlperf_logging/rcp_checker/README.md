@@ -8,10 +8,10 @@ Run Reference Convergence Point checks for a submission directory.
 This consists of testing whether a submission does not converge
 statistically faster than the reference.
 
-For training, RCPs are loaded from directory mlperf_logging/rcp_checker/training_3.1.0/*.json
+For training, RCPs are loaded from directory mlperf_logging/rcp_checker/training_4.0.0/*.json
 
 The RCP checker supports only the 1.0.0 version onwards.
-The current training version is 3.1.0.
+The current training version is 4.0.0.
 
 ## Usage
 

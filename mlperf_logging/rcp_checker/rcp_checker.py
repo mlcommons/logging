@@ -518,7 +518,7 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='3.1.0',
+    parser.add_argument('--rcp_version', type=str, default='4.0.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',
