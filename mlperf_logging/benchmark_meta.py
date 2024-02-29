@@ -15,6 +15,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'ncf': 10,
         'rnnt': 10,
         'unet3d': 40,
+        'llama2_70b_lora': 10,
     },
     
     'hpc' : {
@@ -108,7 +109,17 @@ _ALL_ALLOWED_BENCHMARKS = {
         'rnnt',
         'unet3d',
         'stable_diffusion'
-    ]
+    ],
+    '4.0': [
+        'bert',
+        'dlrm_dcnv2',
+        'gpt3',
+        'resnet',
+        'ssd',
+        'unet3d',
+        'stable_diffusion',
+        'llama2_70b_lora'
+    ]    
     },
     
     'hpc': {
