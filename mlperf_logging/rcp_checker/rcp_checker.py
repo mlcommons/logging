@@ -28,6 +28,7 @@ submission_runs = {
         'unet3d' : 40,
         'rnnt': 10,
         'stable_diffusion': 10,
+        'llama2_70b_lora': 10,
     },
     "hpc": {
         'cosmoflow': 10,
