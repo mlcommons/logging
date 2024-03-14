@@ -6,7 +6,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-log", type=str, default=None)
     parser.add_argument("--hardware-type", type=str, choices=["node", "sw"], default="node")
-    parser.add_argument("--ruleset", type=str, choices=["0.6.0", "0.7.0", "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0"], default="3.1.0")
+    parser.add_argument("--ruleset", type=str, choices=["0.6.0", "0.7.0", "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0"], default="4.0.0")
     args = parser.parse_args()
     return args
 

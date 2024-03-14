@@ -72,7 +72,7 @@ def read_submission_file(result_file, use_train_samples):
 
                 if benchmark == "stable_diffusion" and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
-                    eval_step = json.loads(eval_accuracy_str)["metadata"]["step_num"]
+                    eval_step = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
@@ -83,7 +83,7 @@ def read_submission_file(result_file, use_train_samples):
                 elif use_train_samples and "train_samples" in str:
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["value"]
-        
+
                 if "run_stop" in str and json.loads(str)["key"] == "run_stop":
                     conv_result = json.loads(str)["metadata"]["status"]
                     if conv_result == "success":
@@ -150,8 +150,8 @@ def get_submission_epochs(result_files, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
-        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0 and 3.1.0')
+        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0"}:
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0 and 4.0.0')
         self.usage = usage
         self.ruleset = ruleset
         self.benchmark = benchmark
@@ -518,7 +518,7 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='3.1.0',
+    parser.add_argument('--rcp_version', type=str, default='4.0.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',
