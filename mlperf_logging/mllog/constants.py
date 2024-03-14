@@ -50,6 +50,7 @@ RNNT = "rnnt"
 UNET3D = "unet3d"
 BERT = "bert"
 GPT3 = "gpt3"
+LLAMA2_70B_LORA = "llama2_70b_lora"
 
 # Constant values - model info
 ADAGRAD = "adagrad"
