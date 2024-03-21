@@ -46,7 +46,7 @@ def _print_divider_bar():
     logging.info('------------------------------')
 
 
-def read_submission_file(result_file, use_train_samples):
+def read_submission_file(result_file, ruleset, use_train_samples):
     not_converged = 1
     subm_epochs = 1e9
     bs = -1
@@ -74,7 +74,8 @@ def read_submission_file(result_file, use_train_samples):
 
                 if benchmark == "stable_diffusion" and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
-                    eval_step = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
+                    step_unit = "step_num" if ruleset in ["3.1.0"] else "samples_count"
+                    eval_step = json.loads(eval_accuracy_str)["metadata"][step_unit]
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
@@ -110,7 +111,7 @@ def read_submission_file(result_file, use_train_samples):
     return not_converged, subm_epochs, bs, benchmark
 
 
-def get_submission_epochs(result_files, bert_train_samples):
+def get_submission_epochs(result_files, ruleset, bert_train_samples):
     '''
     Extract convergence epochs (or train_samples for BERT)
     from a list of submission files
@@ -123,7 +124,11 @@ def get_submission_epochs(result_files, bert_train_samples):
     bs = -1
     benchmark = None
     for result_file in result_files:
-        curr_not_converged, curr_subm_epochs, curr_bs, curr_benchmark = read_submission_file(result_file, bert_train_samples)
+        curr_not_converged, curr_subm_epochs, curr_bs, curr_benchmark = read_submission_file(
+            result_file,
+            ruleset,
+            bert_train_samples,
+        )
 
         subm_epochs.append(curr_subm_epochs)
         not_converged += curr_not_converged
@@ -465,7 +470,7 @@ def check_directory(dir, usage, version, verbose, bert_train_samples, rcp_file=N
     dir = dir.rstrip("/")
     pattern = '{folder}/result_*.txt'.format(folder=dir)
     result_files = glob.glob(pattern, recursive=True)
-    bs, subm_epochs, benchmark = get_submission_epochs(result_files, bert_train_samples)
+    bs, subm_epochs, benchmark = get_submission_epochs(result_files, version, bert_train_samples)
     rcp_score_norm = 1.0
 
     checker = RCP_Checker(usage, version, benchmark, verbose, rcp_file)
