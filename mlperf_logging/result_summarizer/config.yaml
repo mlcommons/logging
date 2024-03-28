@@ -72,6 +72,7 @@ columns:
       rnnt: ["Benchmark results (minutes)", "Speech recognition", "LibriSpeech", "RNN-T"]
       unet3d: ["Benchmark results (minutes)", "Image segmentation (medical)", "KiTS19", "3D U-Net"]
       stable_diffusion: ["Benchmark results (minutes)", "Text to image", "Laion 400m and Coco-2017", "StableDiffusion"]
+      gnn: ["Benchmark results (minutes)", "Graph node classification", "IGBH-Full", "R-GAT"]
       default: [" ", " ", " "]
 
   hpc:
