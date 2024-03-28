@@ -179,6 +179,7 @@ EPOCH_NUM = "epoch_num"
 FIRST_EPOCH_NUM = "first_epoch_num"
 STATUS = "status"
 STEP_NUM = "step_num"
+SAMPLES_COUNT = "samples_count"
 
 # Power constants
 POWER_MEASUREMENT_START = "power_measurement_start"
