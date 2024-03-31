@@ -41,5 +41,5 @@
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
-        - "'samples_num' in v['metadata']"
+        - "'samples_count' in v['metadata']"
     ATLEAST_ONE_CHECK: "(v['value'] <= 0.925) and v['value'] > 0.0"
