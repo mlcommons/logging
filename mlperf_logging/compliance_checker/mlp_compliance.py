@@ -263,13 +263,13 @@ class ComplianceChecker:
           self.put_message('No log lines detected')
 
         enqueue_config(config)
-
+        
         current_dir = os.path.dirname(os.path.abspath(__file__))
         while len(enqueued_configs)>0:
             current_config = enqueued_configs.pop(0)
             logging.info (' Compliance checks: %s', current_config)
             config_file = general_file = os.path.join(current_dir, current_config)
-
+            
             if not os.path.exists(config_file):
                 self.put_message('Could not find config file: {}'.format(config_file))
 

@@ -1,0 +1,70 @@
+{
+  "llama2_70b_lora_ref_8":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 8,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      3840, 4224, 4608, 3840, 3840, 3840, 3840, 3456, 3840, 3456, 3456, 3840,
+      4224, 3456, 3840, 4224, 4992, 3840, 4992, 4224, 3840, 4608, 3840, 3840
+    ]
+  },
+
+  "llama2_70b_lora_ref_16":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 16,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      5376, 5760, 5760, 6144, 5376, 7296, 5760, 5760, 5760, 6144, 5760, 7680,
+      5376, 5760, 6912, 7680, 6144, 6144, 5760, 5376, 6144, 6144, 6528, 6912
+    ]
+  },
+  "llama2_70b_lora_ref_32":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 32,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      9600, 10368, 7680, 9600, 9600, 8832, 8064, 10752, 8448, 8064, 8832, 9984,
+      8064, 13824, 8448, 8832, 8064, 9216, 8832, 8064, 9984, 9984, 9216, 8848
+
+    ]
+  }  
+}

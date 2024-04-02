@@ -50,6 +50,7 @@ RNNT = "rnnt"
 UNET3D = "unet3d"
 BERT = "bert"
 GPT3 = "gpt3"
+LLAMA2_70B_LORA = "llama2_70b_lora"
 GNN = "gnn"
 
 # Constant values - model info
@@ -168,7 +169,7 @@ MODEL_WEIGHTS_INITIALIZATION_SCALE = "model_weights_initialization_scale"
 EVAL_MAX_PREDICTION_SYMBOLS = "eval_max_prediction_symbols"
 START_WARMUP_STEP = "start_warmup_step"
 INIT_CHECKPOINT_STEP = "init_checkpoint_step"
-
+LORA_ALPHA = "lora_alpha"
 # Log keys - misc.
 BBOX = "bbox"
 SEGM = "segm"
