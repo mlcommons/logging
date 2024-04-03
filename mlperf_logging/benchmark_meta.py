@@ -119,7 +119,7 @@ _ALL_ALLOWED_BENCHMARKS = {
         'ssd',
         'unet3d',
         'stable_diffusion',
-        'llama2_70b_lora'
+        'llama2_70b_lora',
         'rnnt',
         'unet3d',
         'stable_diffusion',
