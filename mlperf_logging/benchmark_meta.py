@@ -16,7 +16,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'rnnt': 10,
         'unet3d': 40,
         'gnn' : 10,  
-        'llama2_70b_lora': 12,
+        'llama2_70b_lora': 10,
     },
     
     'hpc' : {

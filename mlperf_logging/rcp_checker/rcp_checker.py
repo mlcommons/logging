@@ -29,7 +29,7 @@ submission_runs = {
         'rnnt': 10,
         'stable_diffusion': 10,
         'gnn': 10,  
-        'llama2_70b_lora': 12,
+        'llama2_70b_lora': 10,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -153,7 +153,7 @@ def get_submission_epochs(result_files, ruleset, bert_train_samples):
 
     if (bert_train_samples and benchmark != "bert"):
         logging.info(' bert_train_samples set for submission that is not bert')
-    if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d') or (not_converged > 2 and benchmark == 'llama2_70b_lora'):
+    if (not_converged > 1 and benchmark != 'unet3d') or (not_converged > 4 and benchmark == 'unet3d'):
         subm_epochs = None
     return bs, subm_epochs, benchmark
 
@@ -267,7 +267,6 @@ class RCP_Checker:
             # Use olympic mean
             epoch_list.sort()
             samples_rejected = 4 if record_contents['Benchmark'] == 'unet3d' else 1
-            samples_rejected = 2 if record_contents['Benchmark'] == 'llama2_70b_lora' else samples_rejected
             record_contents['RCP Mean'] = np.mean(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
             record_contents['RCP Stdev'] = np.std(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
             min_epochs = self._find_min_acceptable_mean(
@@ -434,7 +433,6 @@ class RCP_Checker:
         '''Compare reference and submission convergence.'''
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
-        samples_rejected = 2 if rcp_record["Benchmark"] == 'llama2_70b_lora' else samples_rejected
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
         norm_factor = self._find_norm_factor(rcp_record, mean_subm_epochs)
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
