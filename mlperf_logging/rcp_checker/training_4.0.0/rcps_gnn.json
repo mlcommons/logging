@@ -67,6 +67,24 @@
 	  1.20,1.20,1.15,1.25,1.20,1.15,
 	  1.10,1.15
     ]	  
+  },
+
+  "gnn_ref_262144":
+  {
+    "Benchmark": "gnn",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "128xDGX-H100",
+    "BS": 262144,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.005
+    },
+    "Epochs to converge": [
+      2.40,2.55,2.35,2.45,2.50,2.35,
+      2.45,2.60,2.35,2.55,2.60,2.40,
+      2.40,2.30,2.30,2.45,2.60,2.50,
+      2.75,2.45
+    ]
   }
 }
 
