@@ -103,7 +103,7 @@ def check_system_desc(json_file, usage, ruleset):
             "Preview"
         ]
         ruleset_major_version=int(ruleset.split('.')[0])
-        if ("status" in contents) and (ruleset_major_version >= 4) and (contents["status"] not in availability_options) and (contents["status"].lower() not in availability_options):
+        if ("status" in contents) and (ruleset_major_version >= 4) and (contents["status"] not in availability_options):
             valid = False
             invalid_reasons = ["Field status contains a non valid value: {}, must be one of {}".format(contents["status"], availability_options)]
 
