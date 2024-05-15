@@ -120,8 +120,6 @@ _ALL_ALLOWED_BENCHMARKS = {
         'unet3d',
         'stable_diffusion',
         'llama2_70b_lora',
-        'rnnt',
-        'unet3d',
         'stable_diffusion',
         'gnn'
     ]
