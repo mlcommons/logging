@@ -516,6 +516,7 @@ def _compute_total_power(benchmark_folder, result_file, time_to_train, ruleset):
 
 def _compute_power_node(loglines, time_to_train):
     prev_timestamp = 0
+    max_timestamp = 0
     power_start = 0
     power_stop = 0
     agg_power = 0
@@ -527,6 +528,7 @@ def _compute_power_node(loglines, time_to_train):
         if logline.key == "power_reading":
             agg_power += (logline.value['value'] * (logline.timestamp - prev_timestamp))
             prev_timestamp = logline.timestamp
+            max_timestamp = max(max_timestamp, logline.timestamp)
         if logline.key == "power_measurement_stop":
             power_stop = logline.timestamp
             break
@@ -534,6 +536,7 @@ def _compute_power_node(loglines, time_to_train):
             conversion_eff = logline.value['value']
     
     # Compute the result, convert ms to s
+    power_stop = max(power_stop, max_timestamp)
     result = conversion_eff * agg_power * time_to_train / (power_stop - power_start) / 1000
     return result
 
