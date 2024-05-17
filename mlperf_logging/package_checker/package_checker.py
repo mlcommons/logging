@@ -184,13 +184,22 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0'} and division == 'closed' and benchmark != 'minigo':
                 # Now go again through result files to do RCP checks
                 rcp_bypass = (global_rcp_bypass or system_rcp_bypass or result_rcp_bypass)
+                # Check rcp checker params
+                rcp_params_file = os.path.join(benchmark_folder, "rcp_checker_params")
+                rcp_pass = 'pruned_rcps'
+                if os.path.exists(rcp_params_file):
+                    with open(rcp_params_file) as f:
+                        lines = f.readlines()
+                        for line in lines:
+                            if 'full_rcps' in line:
+                                rcp_pass = 'full_rcps'
                 rcp_pass, rcp_msg, _ = rcp_checker.check_directory(
                         benchmark_folder,
                         usage,
                         ruleset,
                         verbose=False,
                         bert_train_samples=rcp_bert_train_samples,
-                        rcp_pass='pruned_rcps',
+                        rcp_pass=rcp_pass,
                         rcp_bypass=rcp_bypass,
                         set_scaling=True)
 
