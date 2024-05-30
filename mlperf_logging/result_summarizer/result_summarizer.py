@@ -543,6 +543,7 @@ def _compute_power_node(loglines, time_to_train):
 
 def _compute_power_sw(loglines, time_to_train):
     agg_power = 0
+    conversion_eff = 1.0
     for logline in loglines:
         if logline.key == "conversion_eff":
             conversion_eff = logline.value['value']
