@@ -232,7 +232,7 @@ class RCP_Checker:
         # Step 1
         # Find point with fastest convergence and prune all point with smaller batch size
         # In that way the min batch size point will have the fastest convergenece
-        fastest_conv = min(min_epochs, key=lambda rc: rc['Min Epochs'])
+        fastest_conv = min(min_epochs, key=lambda rc: rc['RCP Mean'])
         min_epochs = list(filter(lambda rc: rc['BS'] >= fastest_conv['BS'], min_epochs))
 
         # Step 2
@@ -249,7 +249,7 @@ class RCP_Checker:
             rcp_max = min_epochs[i+1]
             bs = min_epochs[i]['BS']
             name, rcp = self._create_interp_rcp(bs, rcp_min, rcp_max)
-            if min_epochs[i]['Min Epochs'] > rcp['Min Epochs']:
+            if min_epochs[i]['RCP Mean'] > rcp['RCP Mean']:
                 del min_epochs[i]
                 i = i-1
                 list_len = list_len - 1
