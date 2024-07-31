@@ -268,7 +268,7 @@ class RCP_Checker:
             epoch_list.sort()
             samples_rejected = 4 if record_contents['Benchmark'] == 'unet3d' else 1
             record_contents['RCP Mean'] = np.mean(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
-            record_contents['RCP Stdev'] = np.std(epoch_list[samples_rejected:len(epoch_list)-samples_rejected])
+            record_contents['RCP Stdev'] = np.std(epoch_list)
             min_epochs = self._find_min_acceptable_mean(
                               record_contents['RCP Mean'],
                               record_contents['RCP Stdev'],
