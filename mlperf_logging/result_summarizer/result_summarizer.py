@@ -516,28 +516,45 @@ def _compute_total_power(benchmark_folder, result_file, time_to_train, ruleset):
 
 def _compute_power_node(loglines, time_to_train):
     prev_timestamp = 0
-    max_timestamp = 0
+    last_timestamp = 0
     power_start = 0
     power_stop = 0
     agg_power = 0
     conversion_eff = 1.0
+    power_stop_found = False
+    power_start_found = False
+    loglines.sort(key=lambda x: x.timestamp)
     for logline in loglines:
         if logline.key == "power_measurement_start":
             power_start = logline.timestamp
             prev_timestamp = logline.timestamp
-        if logline.key == "power_reading":
-            agg_power += (logline.value['value'] * (logline.timestamp - prev_timestamp))
+            power_start_found = True
+        if (
+            (logline.key == "power_reading")
+            and (not power_stop_found)
+            and (power_start_found)
+        ):
+            agg_power += logline.value["value"] * (logline.timestamp - prev_timestamp)
             prev_timestamp = logline.timestamp
-            max_timestamp = max(max_timestamp, logline.timestamp)
+            last_timestamp = max(last_timestamp, logline.timestamp)
         if logline.key == "power_measurement_stop":
             power_stop = logline.timestamp
-            break
+            power_stop_found = True
         if logline.key == "conversion_eff":
-            conversion_eff = logline.value['value']
-    
+            conversion_eff = logline.value["value"]
+
+    # If power start is not found, raise an error
+    if not power_start_found:
+        raise ValueError("Power start timestamp not found")
+    # If power stop is not found, set it to the first power reading
+    if not power_stop_found:
+        power_stop = last_timestamp
+        print("WARNING: Power stop not found, taking last_timestamp as the power measurement stop")
+
     # Compute the result, convert ms to s
-    power_stop = max(power_stop, max_timestamp)
-    result = conversion_eff * agg_power * time_to_train / (power_stop - power_start) / 1000
+    result = (
+        conversion_eff * agg_power * time_to_train / (power_stop - power_start) / 1000
+    )
     return result
 
 
