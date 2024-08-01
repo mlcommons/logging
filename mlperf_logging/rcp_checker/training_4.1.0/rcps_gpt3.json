@@ -1,0 +1,93 @@
+{
+
+  "gpt3_ref_1536":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-1536 / PaxML, 1024 A100-80GB / Megatron-LM",
+    "BS": 1536,
+    "Hyperparams": {
+      "opt_base_learning_rate": 2e-5
+    },
+    "Epochs to converge": [
+       1157627904, 1157627904, 1157627904, 1258291200, 1207959552, 1258291200
+    ]
+  },
+
+  "gpt3_ref_2048":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
+    "BS": 2048,
+    "Hyperparams": {
+      "opt_base_learning_rate": 2e-5
+    },
+    "Epochs to converge": [
+       1157627904, 1207959552, 1157627904, 1207959552, 1207959552, 1157627904, 1157627904
+    ]
+  },
+
+  "gpt3_ref_3072":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-1536 / PaxML, 1024 A100-80GB / Megatron-LM",
+    "BS": 3072,
+    "Hyperparams": {
+      "opt_base_learning_rate": 2e-5
+    },
+    "Epochs to converge": [
+       1258291200, 1207959552, 1207959552, 1207959552, 1207959552, 1207959552, 13790871552
+    ]
+  },
+
+  "gpt3_ref_4096":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_base_learning_rate": 3e-5
+    },
+    "Epochs to converge": [
+       1258291200, 1258291200, 1308622848, 1258291200, 1258291200, 1258291200
+    ]
+  },
+
+    "gpt3_ref_6144":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 H100-80GB / Megatron-LM",
+    "BS": 6144,
+    "Hyperparams": {
+      "opt_base_learning_rate": 3e-5
+    },
+    "Epochs to converge": [
+       1409286144, 1409286144, 1409286144, 1409286144, 1409286144, 1409286144
+    ]
+  },
+
+  "gpt3_ref_8192":
+  {
+    "Benchmark": "gpt3",
+    "Creator": "Google & NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "TPU-v4-2048 / PaxML, 1024 A100-80GB / Megatron-LM",
+    "BS": 8192,
+    "Hyperparams": {
+      "opt_base_learning_rate": 3e-5
+    },
+    "Epochs to converge": [
+       1610612736, 1660944384, 1660944384, 1610612736, 1610612736, 1610612736
+    ]
+  }
+
+}
