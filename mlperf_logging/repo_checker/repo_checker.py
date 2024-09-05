@@ -127,8 +127,8 @@ def get_parser():
     parser.add_argument(
         'ruleset',
         type=str,
-        choices=['2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0'],
-        help='the ruleset. 2.0.0, 2.1.0, 3.0.0, 3.1.0 and 4.0.0 are currently supported.'
+        choices=['2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0', '4.1.0'],
+        help='the ruleset. 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, and 4.1.0 are currently supported.'
     )
     parser.add_argument(
         '--log_output',
