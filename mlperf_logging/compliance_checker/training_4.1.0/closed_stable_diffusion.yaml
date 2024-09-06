@@ -1,0 +1,74 @@
+# Stable diffusion uses two metrics, FID and CLIP.
+# These metrics can be calculated offline, using different scripts
+# and logged seperatly. Therefore, we create a virtual key
+# called aggregated_eval_accuracy, which aggregates
+# both metrics into a single log line
+
+- BEGIN:
+    CODE: |
+        from dataclasses import replace
+        agg_eval_lines = {}
+        for line in loglines:
+            if line.key == "eval_accuracy" and 'metric' in line.value['metadata']:
+                samples_count = line.value['metadata']['samples_count']
+                if samples_count not in agg_eval_lines:
+                    new_line = replace(line) # Make a copy
+                    new_line.key = "aggregated_eval_accuracy"
+                    new_line.full_string = "" # Not needed
+                    new_line.lineno = -1      # Not needed
+                    new_line.value = {'value': {'samples_count': samples_count}, 'metadata':{}}
+                    agg_eval_lines[samples_count] = new_line
+
+                agg_eval_lines[samples_count].timestamp = max(line.timestamp, agg_eval_lines[samples_count].timestamp)
+                agg_eval_lines[samples_count].value['value'][line.value['metadata']['metric']] = line.value['value']
+        loglines.extend(agg_eval_lines.values())
+
+
+- KEY:
+    NAME:  global_batch_size
+    REQ:   AT_LEAST_ONE
+    CHECK: " v['value'] >= 0 "
+
+- KEY:
+    NAME:  opt_name
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 'adamw' "
+
+- KEY:
+    NAME:  opt_adamw_beta_1
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.9 "
+
+- KEY:
+    NAME:  opt_adamw_beta_2
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.999 "
+
+- KEY:
+    NAME:  opt_adamw_epsilon
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 1e-08 "
+
+- KEY:
+    NAME:  opt_adamw_weight_decay
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.01 "
+
+- KEY:
+    NAME:  opt_base_learning_rate
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] >= 0.0 "
+
+- KEY:
+    NAME:  opt_learning_rate_warmup_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] >= 0 "
+
+- KEY:
+    NAME: aggregated_eval_accuracy
+    REQ: AT_LEAST(2)
+    CHECK:
+        - "'FID' in v['value']"
+        - "'CLIP' in v['value']"
+        - "'samples_count' in v['value']"
+    ATLEAST_ONE_CHECK: "(0.0 <= v['value']['FID'] <= 90.0) and (0.15 <= v['value']['CLIP'] <= 1.0)"
