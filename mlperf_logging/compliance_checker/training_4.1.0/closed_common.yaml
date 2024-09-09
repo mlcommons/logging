@@ -3,7 +3,7 @@
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['resnet', 'ssd', 'stable_diffusion', 'maskrcnn', 'gpt3', 'dlrm_dcnv2', 'bert', 'rnnt', 'unet3d', 'gnn','llama2_70b_lora'] "
-    POST:  " enqueue_config('training_4.0.0/closed_{}.yaml'.format(v['value'])) "
+    POST:  " enqueue_config('training_4.1.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:
     NAME: gradient_accumulation_steps
