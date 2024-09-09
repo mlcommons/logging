@@ -122,7 +122,16 @@ _ALL_ALLOWED_BENCHMARKS = {
         'llama2_70b_lora',
         'stable_diffusion',
         'gnn'
-    ]
+    ],
+    '4.1': [
+        'bert',
+        'dlrm_dcnv2',
+        'gpt3',        
+        'ssd',        
+        'stable_diffusion',
+        'llama2_70b_lora',
+        'gnn'
+    ]    
     },
     
     'hpc': {
