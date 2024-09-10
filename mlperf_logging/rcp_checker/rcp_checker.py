@@ -162,7 +162,7 @@ class RCP_Checker:
 
     def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
         if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, and "4.1.0"')
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, and 4.1.0')
         self.usage = usage
         self.ruleset = ruleset
         self.benchmark = benchmark
