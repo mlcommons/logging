@@ -176,7 +176,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
 
             # Check if each run use unique seeds.
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0', '4.1.0'} and division == 'closed':
-                if not seed_checker.check_seeds(result_files, source_files):
+                if not seed_checker.check_seeds(result_files):
                     too_many_errors = True
                     logging.error('Seed checker failed')
 
