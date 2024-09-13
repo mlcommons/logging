@@ -13,6 +13,6 @@ if test -f "$PACKAGE_CHECKER_PARAMS_FILE"; then
   done < "$PACKAGE_CHECKER_PARAMS_FILE"
 fi
 
-python3 -m mlperf_logging.package_checker $1 hpc 3.0.0 $PACKAGE_CHECKER_PARAMS
-python3 -m mlperf_logging.result_summarizer $1 hpc 3.0.0
-python3 -m mlperf_logging.repo_checker $1 hpc 3.0.0
+python3 -m mlperf_logging.package_checker $1 training 4.1.0 $PACKAGE_CHECKER_PARAMS
+python3 -m mlperf_logging.result_summarizer $1 training 4.1.0
+python3 -m mlperf_logging.repo_checker $1 training 4.1.0

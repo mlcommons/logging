@@ -2,7 +2,7 @@
 
 set -e
 
-# rcp_bypass and rcp_bert_train_samples packahe checker params
+# rcp_bypass and rcp_bert_train_samples package checker params
 # need to be retrieved at package_checker_params file at top-level submission dir.
 PACKAGE_CHECKER_PARAMS=""
 PACKAGE_CHECKER_PARAMS_FILE="$1/package_checker_params"
