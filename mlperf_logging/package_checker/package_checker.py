@@ -34,7 +34,7 @@ def _print_divider_bar():
 
 
 def check_training_result_files(folder, usage, ruleset, quiet, werror,
-                                rcp_bypass, rcp_bert_train_samples):
+                                rcp_bypass, rcp_bert_train_samples, seed_checker_bypass):
     """Checks all result files for compliance.
 
     Args:
@@ -44,6 +44,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
     allowed_benchmarks = get_allowed_benchmarks(usage, ruleset)
     benchmark_file_counts = get_result_file_counts(usage)
     global_rcp_bypass = rcp_bypass
+    global_seed_checker_bypass = seed_checker_bypass
 
     seed_checker = SeedChecker(ruleset)
     too_many_errors = False
@@ -58,12 +59,15 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
         # Set system wide rcp-bypass
         params_path = os.path.join(system_folder, "package_checker_params")
         system_rcp_bypass = False
+        system_seed_checker_bypass = False
         if os.path.exists(params_path):
             with open(params_path) as f:
                 lines = f.readlines()
                 for line in lines:
                     if line == "rcp-bypass":
                         system_rcp_bypass = True
+                    if line == "seed-checker-bypass":
+                        system_seed_checker_bypass = True
         for benchmark_folder in benchmark_folders:
             folder_parts = benchmark_folder.split('/')
             benchmark = folder_parts[-1]
@@ -98,6 +102,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
             params_files = []
             params_path = os.path.join(benchmark_folder, "package_checker_params")
             result_rcp_bypass = False
+            result_seed_checker_bypass = False
             if os.path.exists(params_path):
                 params_files.append(params_path)
                 with open(params_path) as f:
@@ -105,6 +110,8 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                     for line in lines:
                         if line == "rcp-bypass":
                             result_rcp_bypass = True
+                        if line == "seed-checker-bypass":
+                            result_seed_checker_bypass = True
 
             # Find all source codes for this benchmark.
             source_files = find_source_files_under(
@@ -176,7 +183,8 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
 
             # Check if each run use unique seeds.
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0', '4.1.0'} and division == 'closed':
-                if not seed_checker.check_seeds(result_files):
+                seed_checker_bypass = (global_seed_checker_bypass or system_seed_checker_bypass or result_seed_checker_bypass)
+                if not seed_checker.check_seeds(result_files, seed_checker_bypass):
                     too_many_errors = True
                     logging.error('Seed checker failed')
 
@@ -226,7 +234,7 @@ def check_systems(folder, usage, ruleset):
 
     return not too_many_errors
 
-def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, log_output):
+def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, seed_checker_bypass, log_output):
     """Checks a training package for compliance.
 
     Args:
@@ -242,7 +250,7 @@ def check_training_package(folder, usage, ruleset, quiet, werror, rcp_bypass, rc
         if not system_description_pass:
             logging.error('System description file checker failed')
 
-    training_pass = check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples)
+    training_pass = check_training_result_files(folder, usage, ruleset, quiet, werror, rcp_bypass, rcp_bert_train_samples, seed_checker_bypass)
     too_many_errors = too_many_errors or not training_pass
     if too_many_errors:
         logging.info('PACKAGE CHECKER FOUND ERRORS, LOOK INTO ERROR LOG LINES AND FIX THEM.')
@@ -286,16 +294,21 @@ def get_parser():
         help='Suppress warnings. Does nothing if --werror is set',
     )
     parser.add_argument(
-        '--rcp_bypass',
+        '--rcp-bypass',
         action='store_true',
         help='Bypass failed RCP checks so that submission uploads'
     )
     parser.add_argument(
-        '--rcp_bert_train_samples',
+        '--rcp-bert-train-samples',
         action='store_true',
         help='If set, num samples used for training '
              'bert benchmark is taken from train_samples, '
              'istead of epoch_num',
+    )
+    parser.add_argument(
+        '--seed-checker-bypass',
+        action='store_true',
+        help='If set, Seed checker is bypassed '
     )
     parser.add_argument(
         '--log_output',
@@ -317,7 +330,7 @@ def main():
     logging.getLogger().handlers[1].setFormatter(formatter)
 
     check_training_package(args.folder, args.usage, args.ruleset, args.quiet, args.werror,
-                           args.rcp_bypass, args.rcp_bert_train_samples, args.log_output)
+                           args.rcp_bypass, args.rcp_bert_train_samples, args.seed_checker_bypass, args.log_output)
 
 
 if __name__ == '__main__':

@@ -123,7 +123,7 @@ class SeedChecker:
                     return True
         return False
 
-    def check_seeds(self, result_files):
+    def check_seeds(self, result_files, seed_checker_bypass = False):
         """ Check the seeds for a specific benchmark submission.
 
         Args:
@@ -133,13 +133,16 @@ class SeedChecker:
         """
         _print_divider_bar()
         logging.info(" Running Seed Checker")
-        error_messages = self._assert_unique_seed_per_run(
-            result_files
-        )
+        if seed_checker_bypass:
+            logging.info("Bypassing Seed Checker")
+        else:
+            error_messages = self._assert_unique_seed_per_run(
+                result_files
+            )
 
-        if len(error_messages) > 0:
-            logging.error(" Seed checker failed and found the following errors: %s", '\n'.join(error_messages))
-            #print("Seed checker failed and found the following "
-            #      "errors:\n{}".format('\n'.join(error_messages)))
-            return False
+            if len(error_messages) > 0:
+                logging.error(" Seed checker failed and found the following errors: %s", '\n'.join(error_messages))
+                #print("Seed checker failed and found the following "
+                #      "errors:\n{}".format('\n'.join(error_messages)))
+                return False
         return True
