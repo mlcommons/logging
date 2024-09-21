@@ -47,7 +47,7 @@
 - KEY:
     NAME:  submission_status
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['cloud', 'onprem', 'preview', 'research'] "
+    CHECK: " v['value'] in ['Available cloud', 'Available on-premise', 'Preview', 'Research, Development, or Internal (RDI)'] "
 
 # at least one record should be found, but any found records must pass the test
 - KEY:
