@@ -45,12 +45,10 @@ class SeedChecker:
     """ Check if the seeds fit MLPerf submission requirements.
     Current requirements are:
 
-    1. All seeds must be logged through mllog (if choose to log seeds). Any seed
-       logged via any other method will be discarded.
-    2. All seeds, if choose to be logged, must be valid integers (convertible
-       via int()).
-    3. If any run logs at least one seed, we expect all runs to log at least
-       one seed.
+    1. All seeds must be logged through mllog. Any seed logged via any other 
+       method will be discarded.
+    2. All seeds, must be valid integers (convertible via int()).
+    3. We expect all runs to log at least one seed.
     4. If one run logs one seed on a certain line in a certain source file, no
        other run can log the same seed on the same line in the same file.
 
@@ -59,10 +57,6 @@ class SeedChecker:
     A warning is raised for the following situations:
 
     1. Any run logs more than one seed.
-    2. No seed is logged, however, the source files (after being converted to
-       lowercase characters) contain the keyword "seed". What files are
-       considered as source files are defined in SOURCE_FILE_EXT and
-       is_source_file().
     """
     def __init__(self, ruleset):
         self._ruleset = ruleset
@@ -96,14 +90,11 @@ class SeedChecker:
                                       "{}: {}".format(result_file, e))
                 continue
 
-            if not no_logged_seed and len(seed_records) == 0:
+            no_logged_seed = (len(seed_records) <= 0)
+            if no_logged_seed:
                 error_messages.append(
-                    "Result file {} logs no seed. However, other "
-                    "result files, including {}, already logs some "
-                    "seeds.".format(result_file,
-                                    list(seed_to_result_file.keys())))
-            if no_logged_seed and len(seed_records) > 0:
-                no_logged_seed = False
+                    "Result file {} logs no seed.".format(result_file)
+                )
             if len(seed_records) > 1:
                 warnings.warn(
                     "Result file {} logs more than one seeds {}!".format(
@@ -123,7 +114,7 @@ class SeedChecker:
                 else:
                     seed_to_result_file[(f, ln, s)] = result_file
 
-        return no_logged_seed, error_messages
+        return error_messages
 
     def _has_seed_keyword(self, source_file):
         with open(source_file, 'r') as file_handle:
@@ -132,31 +123,26 @@ class SeedChecker:
                     return True
         return False
 
-    def check_seeds(self, result_files, source_files):
+    def check_seeds(self, result_files, seed_checker_bypass = False):
         """ Check the seeds for a specific benchmark submission.
 
         Args:
             result_files: An iterable contains paths to all the result files for
                 this benchmark.
-            source_files: An iterable contains paths to all the source files for
-                this benchmark.
 
         """
         _print_divider_bar()
         logging.info(" Running Seed Checker")
-        no_logged_seed, error_messages = self._assert_unique_seed_per_run(
-            result_files)
+        if seed_checker_bypass:
+            logging.info("Bypassing Seed Checker")
+        else:
+            error_messages = self._assert_unique_seed_per_run(
+                result_files
+            )
 
-        if len(error_messages) > 0:
-            logging.error(" Seed checker failed and found the following errors: %s", '\n'.join(error_messages))
-            #print("Seed checker failed and found the following "
-            #      "errors:\n{}".format('\n'.join(error_messages)))
-            return False
-
-        if no_logged_seed:
-            for source_file in source_files:
-                if self._has_seed_keyword(source_file):
-                    warnings.warn(
-                        "Source file {} contains the keyword 'seed' but no "
-                        "seed value is logged!".format(source_file))
+            if len(error_messages) > 0:
+                logging.error(" Seed checker failed and found the following errors: %s", '\n'.join(error_messages))
+                #print("Seed checker failed and found the following "
+                #      "errors:\n{}".format('\n'.join(error_messages)))
+                return False
         return True
