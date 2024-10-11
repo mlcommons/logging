@@ -888,6 +888,7 @@ def main():
             for availability in [
                 "Available on-premise",
                 "Available cloud",
+                "Preview",
                 "Research, Development, or Internal (RDI)",
             ]:
                 section = sheet_data[
