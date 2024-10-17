@@ -9,6 +9,7 @@ on:
     paths:
       - VERSION
       - setup.py
+      - mlperf_logging/**
 
 jobs:
   build_wheels:
@@ -24,6 +25,58 @@ jobs:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v3
+
+      # Check if VERSION file has changed in this push
+      - name: Check if VERSION file has changed
+        id: version_changed
+        run: |
+          # Get the list of modified files in the current push
+          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
+          
+          # Check if VERSION is in the list of modified files
+          if grep -q "VERSION" changed_files.txt; then
+            echo "VERSION file has been modified"
+            version_changed=true
+            new_version=$(cat VERSION)
+          else
+            echo "VERSION file has NOT been modified"
+            version_changed=false
+          fi
+          
+          echo "::set-output name=version_changed::$version_changed"
+          echo "::set-output name=new_version::$new_version"
+
+      # Increment the version number if VERSION file is not changed
+      - name: Increment version if VERSION not changed
+        if: steps.version_changed.outputs.version_changed == 'false'
+        id: version
+        run: |
+          # Extract current version from setup.py
+          version=$(cat VERSION)
+          
+          # Split version into major.minor.patch
+          IFS='.' read -r major minor patch <<< "$version"
+          
+          # Increment the patch number
+          patch=$((patch + 1))
+          
+          # Create the new version number
+          new_version="$major.$minor.$patch"
+          
+          # Update VERSION file
+          echo $new_version > VERSION
+          
+          echo "New version: $new_version"
+          echo "::set-output name=new_version::$new_version"
+
+      # Commit the updated version to the repository
+      - name: Commit updated version
+        run: |
+          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git config --global user.name "${GITHUB_ACTOR}"
+          git add VERSION
+          git commit -m "Increment version to ${{ steps.version.outputs.new_version }}"
+          git push
 
       - name: Install requirements
         run: python3 -m pip install setuptools wheel twine
