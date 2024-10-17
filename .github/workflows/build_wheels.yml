@@ -17,74 +17,66 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     strategy:
       fail-fast: false
     steps:
+      # Step 1: Checkout the code
       - uses: actions/checkout@v3
 
+      # Step 2: Set up Python
       - uses: actions/setup-python@v3
 
-      # Check if VERSION file has changed in this push
+      # Step 3: Check if VERSION file has changed in this push
       - name: Check if VERSION file has changed
         id: version_changed
         run: |
-          # Get the list of modified files in the current push
-          git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
-          
-          # Check if VERSION is in the list of modified files
-          if grep -q "VERSION" changed_files.txt; then
+          if git diff --name-only HEAD~1 | grep -q "VERSION"; then
             echo "VERSION file has been modified"
-            version_changed=true
+            echo "::set-output name=version_changed::true"
             new_version=$(cat VERSION)
           else
             echo "VERSION file has NOT been modified"
-            version_changed=false
+            echo "::set-output name=version_changed::false"
           fi
-          
-          echo "::set-output name=version_changed::$version_changed"
           echo "::set-output name=new_version::$new_version"
 
-      # Increment the version number if VERSION file is not changed
-      - name: Increment version if VERSION not changed
+      # Step 4: Increment version if VERSION was not changed
+      - name: Increment version if necessary
         if: steps.version_changed.outputs.version_changed == 'false'
-        id: version
         run: |
-          # Extract current version from setup.py
+          # Check if VERSION file exists, else initialize it
+          if [ ! -f VERSION ]; then
+            echo "0.0.0" > VERSION
+          fi
+          
           version=$(cat VERSION)
-          
-          # Split version into major.minor.patch
           IFS='.' read -r major minor patch <<< "$version"
-          
-          # Increment the patch number
           patch=$((patch + 1))
-          
-          # Create the new version number
           new_version="$major.$minor.$patch"
-          
-          # Update VERSION file
           echo $new_version > VERSION
-          
           echo "New version: $new_version"
           echo "::set-output name=new_version::$new_version"
 
-      # Commit the updated version to the repository
+      # Step 5: Commit the updated version to the repository
       - name: Commit updated version
         run: |
-          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
-          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
           git add VERSION
-          git commit -m "Increment version to ${{ steps.version.outputs.new_version }}"
+          git commit -m "Increment version to ${{ steps.version_changed.outputs.new_version }}"
           git push
 
+      # Step 6: Install required dependencies
       - name: Install requirements
         run: python3 -m pip install setuptools wheel twine
 
+      # Step 7: Build the Python wheel
       - name: Build wheels
         run: python3 setup.py bdist_wheel
 
-      - name: Publish
+      # Step 8: Publish to PyPI
+      - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verify-metadata: true
