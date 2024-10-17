@@ -12,17 +12,14 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Build wheel
+    runs-on: ubuntu-latest
     environment: release
     permissions:
       # IMPORTANT: this permission is mandatory for trusted publishing
       id-token: write
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
     steps:
       - uses: actions/checkout@v3
 
