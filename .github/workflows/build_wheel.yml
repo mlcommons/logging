@@ -13,6 +13,7 @@ on:
 
 jobs:
   build_wheels:
+    if: github.repository_owner == 'mlcommons'
     name: Build wheel
     runs-on: ubuntu-latest
     environment: release
