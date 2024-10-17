@@ -1,5 +1,29 @@
 {
 
+  "sd_ref_256":
+  {
+    "Benchmark": "stable_diffusion",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.1",
+    "Platform": "4xDGX-H100",
+    "BS": 256,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.999,
+      "opt_adamw_epsilon": 1e-08,
+      "opt_adamw_weight_decay": 0.01,
+      "opt_base_learning_rate": 1.8e-7,
+      "opt_learning_rate_warmup_steps": 1000
+    },
+    "Epochs to converge": [
+      2048000, 2048000, 2048000, 2048000,
+      2048000, 2048000, 2048000, 1536000,
+      2048000, 2048000, 2048000, 2048000,
+      2048000, 2048000, 2048000, 1536000,
+      2048000, 2048000, 2560000, 2560000]
+  },
+
+
   "sd_ref_384":
   {
     "Benchmark": "stable_diffusion",
