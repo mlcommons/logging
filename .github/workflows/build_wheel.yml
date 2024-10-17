@@ -16,8 +16,11 @@ jobs:
     name: Build wheel
     runs-on: ubuntu-latest
     environment: release
+
     permissions:
       id-token: write
+      contents: write
+  
     strategy:
       fail-fast: false
     steps:
