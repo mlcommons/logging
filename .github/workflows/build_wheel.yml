@@ -28,6 +28,7 @@ jobs:
       # Step 1: Checkout the code
       - uses: actions/checkout@v3
         with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 2
 
       # Step 2: Set up Python
