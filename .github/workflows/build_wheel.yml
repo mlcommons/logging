@@ -1,0 +1,92 @@
+name: Build wheels and release them into PYPI
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - master
+    paths:
+      - VERSION
+      - setup.py
+      - mlperf_logging/**
+
+jobs:
+  build_wheels:
+    if: github.repository_owner == 'mlcommons'
+    name: Build wheel
+    runs-on: ubuntu-latest
+    environment: release
+
+    permissions:
+      id-token: write
+      contents: write
+  
+    strategy:
+      fail-fast: false
+    steps:
+      # Step 1: Checkout the code
+      - uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          fetch-depth: 2
+
+      # Step 2: Set up Python
+      - uses: actions/setup-python@v3
+
+      # Step 3: Check if VERSION file has changed in this push
+      - name: Check if VERSION file has changed
+        id: version_changed
+        run: |
+          if git diff --name-only HEAD~1 | grep -q "VERSION"; then
+            echo "version_changed=true" >> $GITHUB_ENV
+            new_version=$(cat loadgen/VERSION.txt)
+            echo "new_version=$new_version" >> $GITHUB_ENV
+          else
+            echo "VERSION file has NOT been modified"
+            echo "version_changed=false" >> $GITHUB_ENV
+          fi
+
+      # Step 4: Increment version if VERSION was not changed
+      - name: Increment version if necessary
+        if: env.version_changed == 'false'
+        run: |
+          # Check if VERSION file exists, else initialize it
+          if [ ! -f VERSION ]; then
+            echo "0.0.0" > VERSION
+          fi
+          
+          version=$(cat VERSION)
+          IFS='.' read -r major minor patch <<< "$version"
+          patch=$((patch + 1))
+          new_version="$major.$minor.$patch"
+          echo $new_version > VERSION
+          echo "New version: $new_version"
+          echo "new_version=$new_version" >> $GITHUB_ENV
+
+      # Step 5: Commit the updated version to the repository
+      - name: Commit updated version
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git add VERSION
+          git commit -m "Increment version to $new_version"
+          git push
+
+      # Step 6: Install required dependencies
+      - name: Install requirements
+        run: python3 -m pip install setuptools wheel
+
+      # Step 7: Build the Python wheel
+      - name: Build wheels
+        run: python3 setup.py bdist_wheel
+
+      # Step 8: Publish to PyPI
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verify-metadata: true
+          skip-existing: true
+          packages-dir: dist
+          repository-url: https://upload.pypi.org/legacy/
+          verbose: true
