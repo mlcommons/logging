@@ -10,7 +10,7 @@ To check a log file for compliance:
 
     python -m mlperf_logging.compliance_checker [--config YAML] [--usage training/hpc] [--ruleset MLPERF_EDITION] FILENAME
 
-By default, 4.1.0 training edition rules are used and the default config is set to `4.1.0/common.yaml`.
+By default, 5.0.0 training edition rules are used and the default config is set to `5.0.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
 Old training editions, still supported are 4.0.0, 3.1.0, 3.0.0, 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
 
@@ -22,23 +22,23 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
 
 ### Existing config files for training submissions
 
-    4.1.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
-    4.1.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks
-    4.1.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
-    4.1.0/closed_ssd.yaml      - Per-benchmark rules, closed submissions.    
-    4.1.0/closed_bert.yaml
-    4.1.0/closed_dlrm_dcnv2.yaml
-    4.1.0/closed_gpt3.yaml
-    4.1.0/closed_gnn.yaml
-    4.1.0/closed_llama2_70b_lora.yaml
-    4.1.0/closed_stable_diffusion.yaml
-    4.1.0/open_ssd.yaml        - Per-benchmark rules, open submissions.    
-    4.1.0/open_bert.yaml
-    4.1.0/open_dlrm_dcnv2.yaml
-    4.1.0/open_gpt3.yaml
-    4.1.0/open_gnn.yaml
-    4.1.0/open_llama2_70b_lora.yaml
-    4.1.0/open_stable_diffusion.yaml
+    5.0.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
+    5.0.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks
+    5.0.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
+    5.0.0/closed_ssd.yaml      - Per-benchmark rules, closed submissions.    
+    5.0.0/closed_bert.yaml
+    5.0.0/closed_dlrm_dcnv2.yaml
+    5.0.0/closed_gpt3.yaml
+    5.0.0/closed_gnn.yaml
+    5.0.0/closed_llama2_70b_lora.yaml
+    5.0.0/closed_stable_diffusion.yaml
+    5.0.0/open_ssd.yaml        - Per-benchmark rules, open submissions.    
+    5.0.0/open_bert.yaml
+    5.0.0/open_dlrm_dcnv2.yaml
+    5.0.0/open_gpt3.yaml
+    5.0.0/open_gnn.yaml
+    5.0.0/open_llama2_70b_lora.yaml
+    5.0.0/open_stable_diffusion.yaml
 
 ### Existing config files for HPC submissions
 
@@ -173,7 +173,7 @@ Tested and confirmed working using the following software versions:
 - Python 2.7.12 + PyYAML 3.11
 - Python 3.6.8  + PyYAML 5.1
 - Python 2.9.2 + PyYAML 5.3.1
-- Python 3.9.10 + PyYAML 5.4.1
+- Python 3.9.10 + PyYAML 5.5.0
 
 ### How to install PyYaML
 

@@ -131,6 +131,15 @@ _ALL_ALLOWED_BENCHMARKS = {
         'stable_diffusion',
         'llama2_70b_lora',
         'gnn'
+    ],
+    '5.0': [
+        'bert',
+        'dlrm_dcnv2',
+        'gpt3',        
+        'retinanet',        
+        'stable_diffusion',
+        'llama2_70b_lora',
+        'gnn'
     ]    
     },
     
