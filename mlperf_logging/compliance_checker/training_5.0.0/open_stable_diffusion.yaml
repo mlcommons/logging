@@ -1,0 +1,33 @@
+# Stable diffusion uses two metrics, FID and CLIP.
+# These metrics can be calculated offline, using different scripts
+# and logged seperatly. Therefore, we create a virtual key
+# called aggregated_eval_accuracy, which aggregates
+# both metrics into a single log line
+
+- BEGIN:
+    CODE: |
+        from dataclasses import replace
+        agg_eval_lines = {}
+        for line in loglines:
+            if line.key == "eval_accuracy" and 'metric' in line.value['metadata']:
+                samples_count = line.value['metadata']['samples_count']
+                if samples_count not in agg_eval_lines:
+                    new_line = replace(line) # Make a copy
+                    new_line.key = "aggregated_eval_accuracy"
+                    new_line.full_string = "" # Not needed
+                    new_line.lineno = -1      # Not needed
+                    new_line.value = {'value': {'samples_count': samples_count}, 'metadata':{}}
+                    agg_eval_lines[samples_count] = new_line
+
+                agg_eval_lines[samples_count].timestamp = max(line.timestamp, agg_eval_lines[samples_count].timestamp)
+                agg_eval_lines[samples_count].value['value'][line.value['metadata']['metric']] = line.value['value']
+        loglines.extend(agg_eval_lines.values())
+
+- KEY:
+    NAME: aggregated_eval_accuracy
+    REQ: AT_LEAST(2)
+    CHECK:
+        - "'FID' in v['value']"
+        - "'CLIP' in v['value']"
+        - "'samples_count' in v['value']"
+    ATLEAST_ONE_CHECK: "v['value']['FID'] >= 0.0 and v['value']['CLIP'] <= 1.0"
