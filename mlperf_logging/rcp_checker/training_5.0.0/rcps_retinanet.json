@@ -1,8 +1,8 @@
 {
 
-  "ssd_ref_256":
+  "retinanet_ref_256":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "1xDGX-A100",
@@ -18,9 +18,9 @@
       4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
   },
 
-  "ssd_ref_320":
+  "retinanet_ref_320":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.1",
     "Platform": "2xDGX-A100",
@@ -36,9 +36,9 @@
       4, 4, 4, 4, 4, 4, 4, 4, 5, 5]
   },
 
-  "ssd_ref_512":
+  "retinanet_ref_512":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "8xDGX-A100",
@@ -54,9 +54,9 @@
       5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
   },
 
-  "ssd_ref_768":
+  "retinanet_ref_768":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.0",
     "Platform": "8xDGX-A100",
@@ -71,9 +71,9 @@
       5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
   },
 
-  "ssd_ref_1024":
+  "retinanet_ref_1024":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.0",
     "Platform": "8xDGX-A100",
@@ -88,9 +88,9 @@
       6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
   },
 
-  "ssd_ref_1280":
+  "retinanet_ref_1280":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.1",
     "Platform": "16xDGX-A100",
@@ -106,9 +106,9 @@
       7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
   },
 
-  "ssd_ref_2048":
+  "retinanet_ref_2048":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.1",
     "Platform": "16xDGX-A100",
@@ -124,9 +124,9 @@
       8, 8, 8, 8, 8, 8, 8, 8, 8, 9]
   },
 
-  "ssd_ref_2560":
+  "retinanet_ref_2560":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "20xDGX-H100",
@@ -142,9 +142,9 @@
       9, 9, 9]
   },
 
-  "ssd_ref_4096":
+  "retinanet_ref_4096":
   {
-    "Benchmark": "ssd",
+    "Benchmark": "retinanet",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "16xDGX-A100",

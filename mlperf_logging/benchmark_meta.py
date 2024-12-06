@@ -134,8 +134,7 @@ _ALL_ALLOWED_BENCHMARKS = {
     ],
     '5.0': [
         'bert',
-        'dlrm_dcnv2',
-        'gpt3',        
+        'dlrm_dcnv2',   
         'retinanet',        
         'stable_diffusion',
         'llama2_70b_lora',
