@@ -86,7 +86,6 @@ columns:
       default: [" ", " ", " "]
     "5.0.0":
       bert: ["Benchmark results (minutes)", "NLP", "Wikipedia", "BERT"]
-      gpt3: ["Benchmark results (minutes)", "LLM", "C4", "GPT3"]
       dlrm_dcnv2: ["Benchmark results (minutes)", "Recommendation", "1TB Multihot Clickthrough", "DLRM DCNv2"]      
       retinanet: ["Benchmark results (minutes)", "Object detection, light-weight", "OpenImages", "RetinaNet"]
       stable_diffusion: ["Benchmark results (minutes)", "Text to image", "Laion 400m and Coco-2017", "StableDiffusion"]
