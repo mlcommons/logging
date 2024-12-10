@@ -28,13 +28,13 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     5.0.0/closed_retinanet.yaml      - Per-benchmark rules, closed submissions.    
     5.0.0/closed_bert.yaml
     5.0.0/closed_dlrm_dcnv2.yaml
-    5.0.0/closed_gnn.yaml
+    5.0.0/closed_rgat.yaml
     5.0.0/closed_llama2_70b_lora.yaml
     5.0.0/closed_stable_diffusion.yaml
     5.0.0/open_retinanet.yaml        - Per-benchmark rules, open submissions.    
     5.0.0/open_bert.yaml
     5.0.0/open_dlrm_dcnv2.yaml
-    5.0.0/open_gnn.yaml
+    5.0.0/open_rgat.yaml
     5.0.0/open_llama2_70b_lora.yaml
     5.0.0/open_stable_diffusion.yaml
 

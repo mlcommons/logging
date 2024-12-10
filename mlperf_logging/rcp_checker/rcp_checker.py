@@ -25,10 +25,12 @@ submission_runs = {
         'maskrcnn' : 5,
         'resnet' : 5,
         'ssd' : 5,
+        'retinanet': 5,
         'unet3d' : 40,
         'rnnt': 10,
         'stable_diffusion': 10,
-        'gnn': 10,  
+        'gnn': 10,
+        'rgat': 10,  
         'llama2_70b_lora': 10,
     },
     "hpc": {
