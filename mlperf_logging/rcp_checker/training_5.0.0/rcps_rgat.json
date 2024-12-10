@@ -1,0 +1,90 @@
+{
+
+  "rgat_ref_4096":
+  {
+    "Benchmark": "rgat",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "1xDGX-A100 and 8xDGX-A100",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.001
+    },
+    "Epochs to converge": [
+	  0.85,0.75,0.75,0.80,0.80,0.75,
+	  0.75,0.85,0.75,0.75,0.80,0.80,
+	  0.80,0.75,0.80,0.80,0.80,0.80,
+	  0.80,0.85 ]
+  },
+
+  "rgat_ref_16384":
+  {
+    "Benchmark": "rgat",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "8xDGX-A100",
+    "BS": 16384,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.002
+    },
+    "Epochs to converge": [
+	  0.85,0.95,0.85,0.80,0.90,0.75,
+	  0.80,0.90,0.90,0.85,0.90,0.85,
+	  0.85,0.85,0.85,0.90,0.85,0.85,
+	  0.85,0.90 ]
+  },
+
+  "rgat_ref_32768":
+  {
+    "Benchmark": "rgat",
+    "Creator": "Intel",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "16xSPR-2S",
+    "BS": 32768,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.002
+    },
+    "Epochs to converge": [
+	  1.00,0.95,0.90,0.95,0.95,1.00,
+	  0.90,0.95,0.95,0.95,1.00,0.90,
+	  0.95,0.95,0.95,0.90,0.95,0.90,
+	  0.90,0.90 ]
+  },
+
+  "rgat_ref_65536":
+  {
+    "Benchmark": "rgat",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "32xDGX-A100",
+    "BS": 65536,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.003
+    },
+    "Epochs to converge": [
+	  1.25,1.20,1.25,1.20,1.15,1.15,
+	  1.15,1.20,1.15,1.20,1.25,1.15,
+	  1.20,1.20,1.15,1.25,1.20,1.15,
+	  1.10,1.15
+    ]	  
+  },
+
+  "rgat_ref_262144":
+  {
+    "Benchmark": "rgat",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "128xDGX-H100",
+    "BS": 262144,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.005
+    },
+    "Epochs to converge": [
+      2.40,2.55,2.35,2.45,2.50,2.35,
+      2.45,2.60,2.35,2.55,2.60,2.40,
+      2.40,2.30,2.30,2.45,2.60,2.50,
+      2.75,2.45
+    ]
+  }
+}
+

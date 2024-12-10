@@ -1,0 +1,6 @@
+
+- KEY:
+    NAME:  submission_benchmark
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] in ['retinanet', 'stable_diffusion', 'dlrm_dcnv2', 'bert', 'rgat', 'llama2_70b_lora'] "
+    POST:  " enqueue_config('training_4.1.0/open_{}.yaml'.format(v['value'])) "

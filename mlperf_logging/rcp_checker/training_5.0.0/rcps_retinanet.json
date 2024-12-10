@@ -1,0 +1,163 @@
+{
+
+  "retinanet_ref_256":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v2.0",
+    "Platform": "1xDGX-A100",
+    "BS": 256,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0001,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+      4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+  },
+
+  "retinanet_ref_320":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v3.1",
+    "Platform": "2xDGX-A100",
+    "BS": 320,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0001,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      4, 4, 4, 4, 4, 4, 4, 4, 4, 5,
+      4, 4, 4, 4, 4, 4, 4, 4, 5, 5]
+  },
+
+  "retinanet_ref_512":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v2.0",
+    "Platform": "8xDGX-A100",
+    "BS": 512,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0001,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+  },
+
+  "retinanet_ref_768":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v3.0",
+    "Platform": "8xDGX-A100",
+    "BS": 768,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.00013,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      5, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+  },
+
+  "retinanet_ref_1024":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v3.0",
+    "Platform": "8xDGX-A100",
+    "BS": 1024,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.00011,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+  },
+
+  "retinanet_ref_1280":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v2.1",
+    "Platform": "16xDGX-A100",
+    "BS": 1280,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.00013,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      6, 6, 6, 6, 6, 6, 6, 7, 7, 7,
+      7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
+  },
+
+  "retinanet_ref_2048":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v2.1",
+    "Platform": "16xDGX-A100",
+    "BS": 2048,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.000135,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      7, 7, 7, 8, 8, 8, 8, 8, 8, 8,
+      8, 8, 8, 8, 8, 8, 8, 8, 8, 9]
+  },
+
+  "retinanet_ref_2560":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.0",
+    "Platform": "20xDGX-H100",
+    "BS": 2560,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.000145,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      8, 8, 8, 8, 8, 9, 9, 9, 9, 9,
+      9, 9, 9]
+  },
+
+  "retinanet_ref_4096":
+  {
+    "Benchmark": "retinanet",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v2.0",
+    "Platform": "16xDGX-A100",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0.0001,
+      "opt_learning_rate_warmup_factor": 1e-3,
+      "opt_learning_rate_warmup_epochs": 1,
+      "opt_weight_decay": 0
+    },
+    "Epochs to converge": [
+      14, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+      15, 15, 16, 16, 16]
+  }
+}
+
