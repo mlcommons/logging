@@ -1,0 +1,91 @@
+{
+  "llama2_70b_lora_ref_8":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 8,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      3072,2688,3456,3072,3072,3072,3456,3456,3072,2688,
+      3456,3072,3072,3072,3840,3456,2688,3072,3456,3456
+    ]
+  },
+
+  "llama2_70b_lora_ref_16":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 16,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      3840,3840,4224,3840,3840,3840,4608,3840,4608,3840,
+      4992,3840,3840,3840,4992,3840,3840,4224,3840,3456
+    ]
+  },
+  "llama2_70b_lora_ref_32":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 32,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      5760,6528,6144,6528,5376,6528,5760,6144,6144,6528,
+      6144,6144,6144,5760,5760,5760,5760,5760,6144,5760
+    ]
+  },
+  "llama2_70b_lora_ref_128":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 4.0 submission",
+    "Platform": "TBD",
+    "BS": 128,
+    "Hyperparams": {
+      "opt_base_learning_rate": 1e-3,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024
+    },
+    "samples to converge": [
+      11520,13056,10752,12672,12288,11136,10752,13056, 10752,9984,
+      11136,11136,11136,10752,11520,11136,11136,10752,11136,9984
+    ]
+  }
+}

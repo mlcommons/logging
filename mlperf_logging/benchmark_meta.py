@@ -10,12 +10,14 @@ _ALL_RESULT_FILE_COUNTS = {
         'minigo': 10,
         'resnet': 5,
         'ssd': 5,
+        'retinanet': 5,
         'stable_diffusion': 10,
         'transformer': 10,
         'ncf': 10,
         'rnnt': 10,
         'unet3d': 40,
-        'gnn' : 10,  
+        'gnn' : 10,
+        'rgat': 10,  
         'llama2_70b_lora': 10,
     },
     
@@ -131,6 +133,14 @@ _ALL_ALLOWED_BENCHMARKS = {
         'stable_diffusion',
         'llama2_70b_lora',
         'gnn'
+    ],
+    '5.0': [
+        'bert',
+        'dlrm_dcnv2',   
+        'retinanet',        
+        'stable_diffusion',
+        'llama2_70b_lora',
+        'rgat'
     ]    
     },
     
