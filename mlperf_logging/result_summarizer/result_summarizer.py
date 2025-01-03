@@ -960,9 +960,10 @@ def main():
                     summaries.groupby(specs_and_notes).apply(lambda x: agg_columns_fn(x, benchmarks)).to_csv(csv, mode=mode)
                 else:
                     summaries.to_csv(csv, index=False, mode=mode)
+            json_path = "summary.json" if args.csv is None else f"""{csv.replace(".csv", ".json")}"""
             json_df = summaries.to_json(orient="records")
             json_data = json.loads(json_df)
-            with open(f"""{csv.replace(".csv", ".json")}""", "w") as f:
+            with open(json_path, "w") as f:
                 f.write(json.dumps(json_data, indent=2))
 
             if args.xlsx is not None:
