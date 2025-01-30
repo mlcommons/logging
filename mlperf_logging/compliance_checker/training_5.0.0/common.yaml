@@ -32,7 +32,7 @@
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
-    POST:  " enqueue_config('training_4.1.0/{}_common.yaml'.format(v['value'])); s['compile_time_mins'] = 240 if v['value'] == 'open' else 30 "
+    POST:  " enqueue_config('training_5.0.0/{}_common.yaml'.format(v['value'])); s['compile_time_mins'] = 240 if v['value'] == 'open' else 30 "
 
 # at least one record should be found, but any found records must pass the test
 - KEY:
