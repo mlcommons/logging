@@ -29,16 +29,6 @@
         })
 
 - KEY:
-    NAME:  submission_org
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] != '' "
-
-- KEY:
-    NAME:  submission_platform
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] != '' "
-
-- KEY:
     NAME:  submission_division
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['closed', 'open'] "
