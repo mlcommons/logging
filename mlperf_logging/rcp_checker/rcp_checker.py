@@ -32,6 +32,7 @@ submission_runs = {
         'gnn': 10,
         'rgat': 10,  
         'llama2_70b_lora': 10,
+        'llama31_405b': 3,
     },
     "hpc": {
         'cosmoflow': 10,

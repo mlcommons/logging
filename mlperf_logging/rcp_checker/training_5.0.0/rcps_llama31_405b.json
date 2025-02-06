@@ -1,0 +1,68 @@
+{
+    "llama31_405b_ref_1152":
+    {
+      "Benchmark": "llama31_405b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.0 submission",
+      "Platform": "288xDGX-H100",
+      "BS": 1152,
+      "Hyperparams": {
+        "opt_base_learning_rate": 8e-05,
+        "opt_learning_rate_warmup_steps": 8000,
+        "gradient_accumulation_steps": 144
+      },
+      "Epochs to converge": [
+        2642411520,2642411520,2642411520,
+        2642411520,2642411520,2642411520
+      ]
+    },
+  
+    "llama31_405b_ref_2304":
+    {
+        "Benchmark": "llama31_405b",
+        "Creator": "NVIDIA",
+        "When": "Reference RCPs before 5.0 submission",
+        "Platform": "288xDGX-H100",
+        "BS": 2304,
+        "Hyperparams": {
+          "opt_base_learning_rate": 16e-05,
+          "opt_learning_rate_warmup_steps": 4000,
+          "gradient_accumulation_steps": 288
+        },
+        "Epochs to converge": [
+            3019898880,3019898880,3019898880,
+            3019898880,3397386240,3397386240
+        ]
+      },
+    "llama31_405b_ref_4608":
+    {
+        "Benchmark": "llama31_405b",
+        "Creator": "NVIDIA",
+        "When": "Reference RCPs before 5.0 submission",
+        "Platform": "288xDGX-H100",
+        "BS": 4608,
+        "Hyperparams": {
+          "opt_base_learning_rate": 32e-05,
+          "opt_learning_rate_warmup_steps": 2000,
+          "gradient_accumulation_steps": 576
+        },
+        "Epochs to converge": [
+        ]
+      },
+    "llama31_405b_ref_9216":
+    {
+        "Benchmark": "llama31_405b",
+        "Creator": "NVIDIA",
+        "When": "Reference RCPs before 5.0 submission",
+        "Platform": "288xDGX-H100",
+        "BS": 9216,
+        "Hyperparams": {
+          "opt_base_learning_rate": 64e-05,
+          "opt_learning_rate_warmup_steps": 1000,
+          "gradient_accumulation_steps": 1152
+        },
+        "Epochs to converge": [
+        ]
+      }
+  }
+  
