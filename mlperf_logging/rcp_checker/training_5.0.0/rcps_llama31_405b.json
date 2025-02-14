@@ -47,6 +47,7 @@
           "gradient_accumulation_steps": 576
         },
         "Epochs to converge": [
+            3774873600,4152360960   
         ]
       },
     "llama31_405b_ref_9216":
