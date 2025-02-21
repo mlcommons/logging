@@ -54,6 +54,7 @@ GPT3 = "gpt3"
 LLAMA2_70B_LORA = "llama2_70b_lora"
 GNN = "gnn"
 RGAT = "rgat"
+LLAMA31_405B = "llama31_405b"
 
 # Constant values - model info
 ADAGRAD = "adagrad"
