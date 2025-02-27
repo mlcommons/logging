@@ -17,7 +17,7 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] * s['global_batch_size'] == 1152 * 8e-5 " 
+    CHECK: " v['value'] * 1152 == s['global_batch_size'] * 8e-5 " 
 
 - KEY:
     NAME:  opt_end_learning_rate
