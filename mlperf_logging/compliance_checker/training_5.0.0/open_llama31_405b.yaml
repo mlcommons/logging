@@ -12,7 +12,7 @@
 - KEY:
     NAME:  opt_name
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 'adam' "
+    CHECK: " v['value'] == 'adamw' "
 
 - KEY:
     NAME:  opt_base_learning_rate
@@ -35,15 +35,19 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_adam_beta_1
+    NAME:  opt_adamw_beta_1
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_adam_beta_2
+    NAME:  opt_adamw_beta_2
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_adam_epsilon
+    NAME:  opt_adamw_epsilon
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  opt_adamw_weight_decay
     REQ:   EXACTLY_ONE
 
 - KEY:
