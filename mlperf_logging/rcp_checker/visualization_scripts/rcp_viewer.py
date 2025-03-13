@@ -2,7 +2,13 @@
 RCP viewer: show the RCP means and mins after pruning
 '''
 
+import sys
+import os
 import argparse
+
+#Add the project root directory (assumed to be 3 levels up) to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
+
 from  mlperf_logging.rcp_checker.rcp_checker import RCP_Checker
 
 def main():
