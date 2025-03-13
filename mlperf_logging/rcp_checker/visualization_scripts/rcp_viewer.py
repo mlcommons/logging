@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 '''
 RCP viewer: show the RCP means and mins after pruning
 '''
@@ -23,11 +25,17 @@ def main():
     parser.add_argument('--version', type=str, default='5.0.0',
                         help='what version of the ruleset')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--unpruned', action='store_true',
+                        help='print the unpruned rcps instead of the pruned')
 
     args = parser.parse_args()
     checker=RCP_Checker(args.usage, args.version, args.benchmark, args.verbose)
+    data=checker.pruned_rcp_data
+    if (args.unpruned):
+        data=checker.rcp_data
+
     print("BS,Mean,Min")
-    for key, record in checker.pruned_rcp_data.items():
+    for key, record in data.items():
         print(f"{record['BS']},{record['RCP Mean']},{record['Min Epochs']}")
 
 if __name__ == '__main__':
