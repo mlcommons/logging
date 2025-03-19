@@ -27,9 +27,11 @@ def main():
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--unpruned', action='store_true',
                         help='print the unpruned rcps instead of the pruned')
+    parser.add_argument('--custom_rcps', type=argparse.FileType('r'),
+                    help='specify an RCP json file to use')
 
     args = parser.parse_args()
-    checker=RCP_Checker(args.usage, args.version, args.benchmark, args.verbose)
+    checker=RCP_Checker(args.usage, args.version, args.benchmark, args.verbose, args.custom_rcps)
     data=checker.pruned_rcp_data
     if (args.unpruned):
         data=checker.rcp_data
