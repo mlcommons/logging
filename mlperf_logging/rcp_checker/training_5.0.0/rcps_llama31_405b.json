@@ -1,4 +1,21 @@
 {
+    "llama31_405b_ref_1008":
+    {
+      "Benchmark": "llama31_405b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.0 submission",
+      "Platform": "288xDGX-H100",
+      "BS": 1008,
+      "Hyperparams": {
+        "opt_base_learning_rate": 7e-05,
+        "opt_learning_rate_warmup_steps": 9143,
+        "gradient_accumulation_steps": 126
+      },
+      "Epochs to converge": [
+        324576,324576,324576,
+        324576,324576,324576
+      ]
+    },
     "llama31_405b_ref_1152":
     {
       "Benchmark": "llama31_405b",
