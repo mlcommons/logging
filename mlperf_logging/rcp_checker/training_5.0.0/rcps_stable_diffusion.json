@@ -1,10 +1,9 @@
 {
-
   "sd_ref_256":
   {
     "Benchmark": "stable_diffusion",
     "Creator": "NVIDIA",
-    "When": "Reference RCPs before v4.1",
+    "When": "Reference RCPs before v5.0",
     "Platform": "4xDGX-H100",
     "BS": 256,
     "Hyperparams": {
@@ -12,15 +11,14 @@
       "opt_adamw_beta_2": 0.999,
       "opt_adamw_epsilon": 1e-08,
       "opt_adamw_weight_decay": 0.01,
-      "opt_base_learning_rate": 1.8e-7,
+      "opt_base_learning_rate": 2.8e-7,
       "opt_learning_rate_warmup_steps": 1000
     },
     "Epochs to converge": [
-      2048000, 2048000, 2048000, 2048000,
-      2048000, 2048000, 2048000, 1536000,
-      2048000, 2048000, 2048000, 2048000,
-      2048000, 2048000, 2048000, 1536000,
-      2048000, 2048000, 2560000, 2560000]
+      1536000, 1536000, 1536000, 2048000, 2048000, 2048000, 1536000, 1536000,
+      1536000, 1536000, 2048000, 1536000, 1536000, 1536000, 2048000, 1536000,
+      1536000, 2048000, 1536000, 2048000
+    ]
   },
 
 
@@ -28,43 +26,43 @@
   {
     "Benchmark": "stable_diffusion",
     "Creator": "NVIDIA",
-    "When": "Reference RCPs before v4.0",
-    "Platform": "16xDGX-H100",
+    "When": "Reference RCPs before v5.0",
+    "Platform": "2xDGX-H100",
     "BS": 384,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
       "opt_adamw_beta_2": 0.999,
       "opt_adamw_epsilon": 1e-08,
       "opt_adamw_weight_decay": 0.01,
-      "opt_base_learning_rate": 1.25e-7,
+      "opt_base_learning_rate": 2.3e-7,
       "opt_learning_rate_warmup_steps": 1000
     },
     "Epochs to converge": [
-      2049024, 2049024, 2049024, 2561280,
-      2561280, 2561280, 2561280, 2561280,
-      2561280, 2561280, 2561280, 2561280,
-      3073536, 3073536, 3073536]
+      2049024, 2049024, 2049024, 1536768, 2561280, 2049024, 2049024, 2049024,
+      2049024, 2049024, 2049024, 1536768, 2049024, 2049024, 2049024, 2049024,
+      2561280, 2049024, 2049024, 2049024
+    ]
   },
 
-  "sd_ref_512":
-  {
+  "sd_ref_512": {
     "Benchmark": "stable_diffusion",
     "Creator": "NVIDIA",
-    "When": "Reference RCPs before v3.1",
-    "Platform": "32xDGX-A100",
+    "When": "Reference RCPs before v5.0",
+    "Platform": "4xDGX-H100",
     "BS": 512,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
       "opt_adamw_beta_2": 0.999,
-      "opt_adamw_epsilon": 1e-08,
+      "opt_adamw_epsilon": 1e-8,
       "opt_adamw_weight_decay": 0.01,
-      "opt_base_learning_rate": 1.25e-7,
+      "opt_base_learning_rate": 2.3e-7,
       "opt_learning_rate_warmup_steps": 1000
     },
     "Epochs to converge": [
-      2560000, 2560000, 2560000, 2560000, 2560000,
-      2560000, 2560000, 2560000, 2560000, 2560000,
-      2560000, 2560000, 2560000, 3072000]
+      2560000, 2560000, 2048000, 2048000, 1536000, 2048000, 2048000, 2048000,
+      2048000, 2560000, 2048000, 2048000, 2048000, 2048000, 2048000, 2048000,
+      2560000, 1536000, 2048000, 2048000
+    ]
   },
 
   "sd_ref_1024":
@@ -85,7 +83,8 @@
     "Epochs to converge": [
       2560000, 2560000, 2560000, 2560000, 2560000,
       3072000, 3072000, 3072000, 3072000, 3072000,
-      3072000, 3072000, 2560000]
+      3072000, 3072000, 2560000
+    ]
   },
 
   "sd_ref_2048":
@@ -106,7 +105,8 @@
     "Epochs to converge": [
       3584000, 3584000, 3584000, 3584000, 4096000,
       4096000, 4096000, 4096000, 4096000, 4096000,
-      4096000, 4608000, 4608000]
+      4096000, 4608000, 4608000
+    ]
   }
 
 }
