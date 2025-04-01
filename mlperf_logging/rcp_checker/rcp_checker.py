@@ -284,6 +284,11 @@ class RCP_Checker:
 
         self._prune_rcps()
 
+        if self.verbose:
+            print("Pruned RCPs:")
+            for record, record_contents in self.pruned_rcp_data.items():
+                print(record, record_contents, "\n")
+
     def _get_rcp_data(self, rcp_pass='pruned_rcps'):
         if rcp_pass == 'pruned_rcps':
             rcp_data = self.pruned_rcp_data
