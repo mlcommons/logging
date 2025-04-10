@@ -82,7 +82,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark == "llama2_70b_lora" and ("eval_error" in str or "eval_accuracy" in str):
+                elif (benchmark == "llama2_70b_lora" or benchmark == "llama31_405b") and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]                  
