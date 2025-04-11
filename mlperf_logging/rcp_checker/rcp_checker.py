@@ -401,10 +401,17 @@ class RCP_Checker:
                     [low_rcp['BS'], high_rcp['BS']],
                     [low_rcp['RCP Stdev'], high_rcp['RCP Stdev']])
 
-        min_epochs = self._find_min_acceptable_mean(
-                         mean,
-                         stdev,
-                         self.submission_runs*2)
+        # min_epochs = self._find_min_acceptable_mean(
+        #                  mean,
+        #                  stdev,
+        #                  self.submission_runs*2)
+        
+        min_epochs = np.interp(
+            target_bs, 
+            [low_rcp['BS'], high_rcp['BS']],
+            [low_rcp['Min Epochs'], high_rcp['Min Epochs']],
+        )
+
         interp_record_name = self.benchmark + '_interp_' + str(target_bs)
         interp_record = {'Benchmark': self.benchmark,
                          'BS': target_bs,
