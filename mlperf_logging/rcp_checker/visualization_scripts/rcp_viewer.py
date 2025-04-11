@@ -32,9 +32,11 @@ def main():
 
     args = parser.parse_args()
     checker=RCP_Checker(args.usage, args.version, args.benchmark, args.verbose, args.custom_rcps)
-    data=checker.pruned_rcp_data
+    rcp_pass_arg='pruned_rcps'
     if (args.unpruned):
-        data=checker.rcp_data
+        rcp_pass_arg='full_rcp'
+
+    data=checker._get_rcp_data(rcp_pass_arg)
 
     print("BS,Mean,Min")
     for key, record in data.items():
