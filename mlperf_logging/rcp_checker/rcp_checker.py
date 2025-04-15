@@ -400,17 +400,10 @@ class RCP_Checker:
                     target_bs,
                     [low_rcp['BS'], high_rcp['BS']],
                     [low_rcp['RCP Stdev'], high_rcp['RCP Stdev']])
-
-        # min_epochs = self._find_min_acceptable_mean(
-        #                  mean,
-        #                  stdev,
-        #                  self.submission_runs*2)
-        
-        min_epochs = np.interp(
-            target_bs, 
-            [low_rcp['BS'], high_rcp['BS']],
-            [low_rcp['Min Epochs'], high_rcp['Min Epochs']],
-        )
+        min_epochs = self._find_min_acceptable_mean(
+                         mean,
+                         stdev,
+                         self.submission_runs*2)
 
         interp_record_name = self.benchmark + '_interp_' + str(target_bs)
         interp_record = {'Benchmark': self.benchmark,
@@ -441,6 +434,10 @@ class RCP_Checker:
 
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
+
+        if self.ruleset == "5.0.0" and self.benchmark == "llama31_405b": 
+            rcp_record['Max Speedup'] = rcp_record['RCP Mean'] / (rcp_record['Min Epochs'] - 46080)
+        
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
