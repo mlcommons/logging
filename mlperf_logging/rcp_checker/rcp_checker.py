@@ -82,7 +82,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark == "llama2_70b_lora" and ("eval_error" in str or "eval_accuracy" in str):
+                elif (benchmark == "llama2_70b_lora" or benchmark == "llama31_405b") and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]                  
@@ -283,6 +283,11 @@ class RCP_Checker:
                 print(record, record_contents, "\n")
 
         self._prune_rcps()
+
+        if self.verbose:
+            print("Pruned RCPs:")
+            for record, record_contents in self.pruned_rcp_data.items():
+                print(record, record_contents, "\n")
 
     def _get_rcp_data(self, rcp_pass='pruned_rcps'):
         if rcp_pass == 'pruned_rcps':
