@@ -1,4 +1,27 @@
 {
+  "llama2_70b_lora_ref_4":
+  {
+    "Benchmark": "llama2_70b_lora",
+    "Creator": "NVIDIA",
+    "When": "Prior to 5.0 submission",
+    "Platform": "4x8x4xH200-SXM-141GB",
+    "BS": 4,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-4,
+      "opt_max_grad_norm": 0.3,
+      "opt_learning_rate_warmup_epochs": 0,
+      "opt_learning_rate_decay_boundary_epochs": [],
+      "gradient_accumulation_steps": 1,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "max_steps": 1024 
+    },
+    "samples to converge": [
+      1560,1600,1640,1680,1720,1760,1800,1840,1880,1920,
+      1960,2000,2040,2080,2120,2160,2200,2240,2280,2304
+    ]
+  },
+  
   "llama2_70b_lora_ref_8":
   {
     "Benchmark": "llama2_70b_lora",
