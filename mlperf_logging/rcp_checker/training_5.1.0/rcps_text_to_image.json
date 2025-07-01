@@ -1,0 +1,25 @@
+{
+
+  "flux_dummy_1024":
+  {
+    "Benchmark": "text_to_image",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v4.1",
+    "Platform": "4xDGX-H100",
+    "BS": 1024,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.999,
+      "opt_adamw_epsilon": 1e-08,
+      "opt_adamw_weight_decay": 0.01,
+      "opt_base_learning_rate": 1.0e-4,
+      "opt_learning_rate_warmup_steps": 3000
+    },
+    "samples to converge": [
+      1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000, 1000000
+      ]
+  }
+
+
+  
+}
