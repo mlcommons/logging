@@ -2,7 +2,7 @@
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['retinanet', 'stable_diffusion', 'dlrm_dcnv2', 'bert', 'rgat', 'llama2_70b_lora', 'text_to_image'] "
+    CHECK: " v['value'] in ['retinanet', 'stable_diffusion', 'dlrm_dcnv2', 'bert', 'rgat', 'llama2_70b_lora', 'flux'] "
     POST:  " enqueue_config('training_5.1.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:

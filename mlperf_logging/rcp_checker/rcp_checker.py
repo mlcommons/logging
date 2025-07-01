@@ -32,7 +32,7 @@ submission_runs = {
         'gnn': 10,
         'rgat': 10,  
         'llama2_70b_lora': 10,
-        'text_to_image': 10,
+        'flux': 10,
         'llama31_405b': 3,
     },
     "hpc": {
@@ -83,7 +83,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark in {"llama2_70b_lora", "text_to_image", "llama31_405b"} and ("eval_error" in str or "eval_accuracy" in str):
+                elif benchmark in {"llama2_70b_lora", "flux", "llama31_405b"} and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
@@ -210,7 +210,7 @@ class RCP_Checker:
         '''
         processed_rcps = {}
         for record, record_contents in raw_rcp_data.items():
-            conv_unit = "samples to converge" if record_contents['Benchmark'] in ['llama2_70b_lora', 'text_to_image'] else "Epochs to converge"
+            conv_unit = "samples to converge" if record_contents['Benchmark'] in ['llama2_70b_lora', 'flux'] else "Epochs to converge"
             processed_record = {'Benchmark': record_contents['Benchmark'],
                                 'BS': record_contents['BS'],
                                 'Hyperparams': record_contents['Hyperparams'],
