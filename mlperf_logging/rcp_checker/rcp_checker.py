@@ -33,6 +33,7 @@ submission_runs = {
         'rgat': 10,  
         'llama2_70b_lora': 10,
         'text_to_image': 10,
+        'llama31_405b': 3,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -82,7 +83,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark in ["llama2_70b_lora", "text_to_image"] and ("eval_error" in str or "eval_accuracy" in str):
+                elif benchmark in {"llama2_70b_lora", "text_to_image", "llama31_405b"} and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
@@ -284,6 +285,11 @@ class RCP_Checker:
 
         self._prune_rcps()
 
+        if self.verbose:
+            print("Pruned RCPs:")
+            for record, record_contents in self.pruned_rcp_data.items():
+                print(record, record_contents, "\n")
+
     def _get_rcp_data(self, rcp_pass='pruned_rcps'):
         if rcp_pass == 'pruned_rcps':
             rcp_data = self.pruned_rcp_data
@@ -400,11 +406,11 @@ class RCP_Checker:
                     target_bs,
                     [low_rcp['BS'], high_rcp['BS']],
                     [low_rcp['RCP Stdev'], high_rcp['RCP Stdev']])
-
         min_epochs = self._find_min_acceptable_mean(
                          mean,
                          stdev,
                          self.submission_runs*2)
+
         interp_record_name = self.benchmark + '_interp_' + str(target_bs)
         interp_record = {'Benchmark': self.benchmark,
                          'BS': target_bs,
@@ -434,6 +440,10 @@ class RCP_Checker:
 
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
+
+        if self.ruleset == "5.0.0" and self.benchmark == "llama31_405b": 
+            rcp_record['Max Speedup'] = rcp_record['RCP Mean'] / (rcp_record['Min Epochs'] - 46080)
+        
         subm_epochs.sort()
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])

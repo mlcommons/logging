@@ -19,6 +19,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'gnn' : 10,
         'rgat': 10,  
         'llama2_70b_lora': 10,
+        'llama31_405b': 3,
     },
     
     'hpc' : {
@@ -140,7 +141,8 @@ _ALL_ALLOWED_BENCHMARKS = {
         'retinanet',        
         'stable_diffusion',
         'llama2_70b_lora',
-        'rgat'
+        'rgat',
+        'llama31_405b'
     ]    
     },
     

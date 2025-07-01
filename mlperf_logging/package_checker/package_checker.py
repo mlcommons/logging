@@ -14,6 +14,7 @@ from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..rcp_checker import rcp_checker
 from .seed_checker import find_source_files_under, SeedChecker
+from .power_checker import PowerChecker
 from ..system_desc_checker import system_desc_checker
 
 from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
@@ -47,6 +48,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
     global_seed_checker_bypass = seed_checker_bypass
 
     seed_checker = SeedChecker(ruleset)
+    power_checker = PowerChecker(ruleset)
     too_many_errors = False
     result_folder = os.path.join(folder, 'results')
     for system_folder in _get_sub_folders(result_folder):
@@ -146,6 +148,7 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 logging.warning('Unknown files in result directory: %s', benchmark_folder)
 
             errors_found = 0
+            error_set = set({})
             result_files.sort()
             for result_file in result_files:
                 result_basename = os.path.basename(result_file)
@@ -173,13 +176,19 @@ def check_training_result_files(folder, usage, ruleset, quiet, werror,
                 )
                 if not valid:
                     errors_found += 1
-            if errors_found == 1 and benchmark != 'unet3d':
+                    error_set.add(result_name)
+            power_folder = os.path.join(benchmark_folder, "power")
+            if os.path.exists(power_folder):
+                power_valid, power_errors = power_checker.check_power(power_folder, result_files)
+                error_set = error_set | power_errors
+            error_list = list(error_set)
+            if len(error_list) == 1 and benchmark != 'unet3d':
                 logging.warning(" 1 file does not comply, accepting this under olympic scoring")
-            elif errors_found > 0 and errors_found <= 4 and benchmark == 'unet3d':
-                logging.warning(" %d files do not comply, accepting this under olympic scoring", errors_found)
-            elif errors_found > 0:
+            elif len(error_list) > 0 and len(error_list) <= 4 and benchmark == 'unet3d':
+                logging.warning(" %d files do not comply, accepting this under olympic scoring", len(error_list))
+            elif len(error_list) > 0:
                 too_many_errors = True
-                logging.error(" %d files do not comply, directory cannot be accepted", errors_found)
+                logging.error(" %d files do not comply, directory cannot be accepted", len(error_list))
 
             # Check if each run use unique seeds.
             if ruleset in {'1.0.0', '1.1.0', '2.0.0', '2.1.0', '3.0.0', '3.1.0', '4.0.0', '4.1.0', '5.0.0', '5.1.0'} and division == 'closed':
