@@ -32,6 +32,7 @@ submission_runs = {
         'gnn': 10,
         'rgat': 10,  
         'llama2_70b_lora': 10,
+        'text_to_image': 10,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -81,10 +82,10 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark == "llama2_70b_lora" and ("eval_error" in str or "eval_accuracy" in str):
+                elif benchmark in ["llama2_70b_lora", "text_to_image"] and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
-                    eval_score = json.loads(eval_accuracy_str)["value"]                  
+                    eval_score = json.loads(eval_accuracy_str)["value"]
                 elif not use_train_samples and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["epoch_num"]
@@ -163,8 +164,8 @@ def get_submission_epochs(result_files, ruleset, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
-        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0 and 5.0.0')
+        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0"}:
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0, 5.0.0 and 5.1.0')
         self.usage = usage
         self.ruleset = ruleset
         self.benchmark = benchmark
@@ -208,7 +209,7 @@ class RCP_Checker:
         '''
         processed_rcps = {}
         for record, record_contents in raw_rcp_data.items():
-            conv_unit = "samples to converge" if record_contents['Benchmark']=='llama2_70b_lora' else "Epochs to converge"
+            conv_unit = "samples to converge" if record_contents['Benchmark'] in ['llama2_70b_lora', 'text_to_image'] else "Epochs to converge"
             processed_record = {'Benchmark': record_contents['Benchmark'],
                                 'BS': record_contents['BS'],
                                 'Hyperparams': record_contents['Hyperparams'],
@@ -532,7 +533,7 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='5.0.0',
+    parser.add_argument('--rcp_version', type=str, default='5.1.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',
