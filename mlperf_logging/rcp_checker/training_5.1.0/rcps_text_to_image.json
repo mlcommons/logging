@@ -2,7 +2,7 @@
 
   "flux_dummy_1024":
   {
-    "Benchmark": "text_to_image",
+    "Benchmark": "flux",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.1",
     "Platform": "4xDGX-H100",
