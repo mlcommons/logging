@@ -441,7 +441,7 @@ class RCP_Checker:
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
 
-        if self.ruleset == "5.0.0" and self.benchmark == "llama31_405b": 
+        if self.ruleset in ["5.0.0", "5.1.0"] and self.benchmark == "llama31_405b": 
             rcp_record['Max Speedup'] = rcp_record['RCP Mean'] / (rcp_record['Min Epochs'] - 46080)
         
         subm_epochs.sort()

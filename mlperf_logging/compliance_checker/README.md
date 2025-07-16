@@ -12,7 +12,7 @@ To check a log file for compliance:
 
 By default, 5.1.0 training edition rules are used and the default config is set to `5.1.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
-Old training editions, still supported are 4.0.0, 3.1.0, 3.0.0, 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
+Old training editions, still supported are 5.0.0, 4.1.0 4.0.0, 3.1.0, 3.0.0, 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
 
 To check hpc compliance rules (only 1.0.0 ruleset is supported), set --usage hpc --ruleset 1.0.0.
 
@@ -26,17 +26,19 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     5.1.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks
     5.1.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
     5.1.0/closed_retinanet.yaml      - Per-benchmark rules, closed submissions.    
-    5.1.0/closed_bert.yaml
+    5.1.0/closed_llama31_8b.yaml
+    5.1.0/closed_llama31_405b.yaml
     5.1.0/closed_dlrm_dcnv2.yaml
     5.1.0/closed_rgat.yaml
     5.1.0/closed_llama2_70b_lora.yaml
-    5.1.0/closed_flux.yaml
+    5.1.0/closed_flux1.yaml
     5.1.0/open_retinanet.yaml        - Per-benchmark rules, open submissions.    
-    5.1.0/open_bert.yaml
+    5.1.0/open_llama31_8b.yaml
+    5.1.0/open_llama31_405b.yaml
     5.1.0/open_dlrm_dcnv2.yaml
     5.1.0/open_rgat.yaml
     5.1.0/open_llama2_70b_lora.yaml
-    5.1.0/open_flux.yaml
+    5.1.0/open_flux1.yaml
 
 ### Existing config files for HPC submissions
 

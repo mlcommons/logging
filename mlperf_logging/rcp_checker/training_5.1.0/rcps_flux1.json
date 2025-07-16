@@ -1,0 +1,65 @@
+{
+  "flux1_ref_1024":
+  {
+    "Benchmark": "flux1",
+    "Creator": "",
+    "When": "",
+    "Platform": "",
+    "BS": 1024,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0,
+      "opt_adamw_beta_2": 0,
+      "opt_adamw_epsilon": 0,
+      "opt_adamw_weight_decay": 0,
+      "opt_base_learning_rate": 0,
+      "opt_learning_rate_warmup_steps": 0
+    },
+    "Epochs to converge": [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0
+    ]
+  },
+  "flux1_ref_2048":
+  {
+    "Benchmark": "flux1",
+    "Creator": "",
+    "When": "",
+    "Platform": "",
+    "BS": 2048,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0,
+      "opt_adamw_beta_2": 0,
+      "opt_adamw_epsilon": 0,
+      "opt_adamw_weight_decay": 0,
+      "opt_base_learning_rate": 0,
+      "opt_learning_rate_warmup_steps": 0
+    },
+    "Epochs to converge": [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0
+    ]
+  },
+  "flux1_ref_4096":
+  {
+    "Benchmark": "flux1",
+    "Creator": "",
+    "When": "",
+    "Platform": "",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0,
+      "opt_adamw_beta_2": 0,
+      "opt_adamw_epsilon": 0,
+      "opt_adamw_weight_decay": 0,
+      "opt_base_learning_rate": 0,
+      "opt_learning_rate_warmup_steps": 0
+    },
+    "Epochs to converge": [
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0
+    ]
+  }
+}
