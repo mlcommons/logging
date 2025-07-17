@@ -1,0 +1,133 @@
+{
+
+  "dlrm_dcnv2_ref_32768": {
+    "Benchmark": "dlrm_dcnv2",
+    "Creator": "NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "DGX-A100",
+    "BS": 32768,
+    "Hyperparams": {
+      "opt_name": "adagrad",
+      "opt_base_learning_rate": 0.004,
+      "opt_adagrad_learning_rate_decay": 0.0,
+      "opt_adagrad_initial_accumulator_value": 0.0,
+      "opt_adagrad_epsilon": 1e-08,
+      "opt_weight_decay": 0.0,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_decay_start_step": 0,
+      "opt_learning_rate_decay_steps": 0
+    },
+    "Epochs to converge": [
+      0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7,
+      0.75, 0.7, 0.7, 0.7, 0.75, 0.75, 0.75, 0.7, 0.7, 0.7,
+      0.7, 0.7, 0.75, 0.7, 0.65, 0.7, 0.7, 0.7, 0.7, 0.7
+    ]
+  },
+
+  "dlrm_dcnv2_ref_55296": {
+    "Benchmark": "dlrm_dcnv2",
+    "Creator": "NVIDIA",
+    "When": "At 3.0 submission",
+    "Platform": "DGX-A100",
+    "BS": 55296,
+    "Hyperparams": {
+      "opt_name": "adagrad",
+      "opt_base_learning_rate": 0.004,
+      "opt_adagrad_learning_rate_decay": 0.0,
+      "opt_adagrad_initial_accumulator_value": 0.0,
+      "opt_adagrad_epsilon": 1e-08,
+      "opt_weight_decay": 0.0,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_decay_start_step": 0,
+      "opt_learning_rate_decay_steps": 0
+    },
+    "Epochs to converge": [
+      0.75, 0.75, 0.75, 0.7, 0.8, 0.75, 0.75, 0.75, 0.75, 0.75,
+      0.9, 0.7, 0.75, 0.8, 0.7, 0.8, 0.7, 0.7, 0.75, 0.7,
+      0.7, 0.9, 0.75, 0.7, 0.8, 0.75, 0.75, 0.8, 0.75, 0.8,
+      0.9, 0.75, 0.8, 0.75, 0.8, 0.75, 0.75, 0.75, 0.7, 0.75,
+      0.75, 0.8, 0.75, 0.8, 0.8, 0.9, 0.75, 0.75, 0.7, 0.75
+    ]
+  },
+
+  "dlrm_dcnv2_ref_65536": {
+    "Benchmark": "dlrm_dcnv2",
+    "Creator": "NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "DGX-A100",
+    "BS": 65536,
+    "Hyperparams": {
+      "opt_name": "adagrad",
+      "opt_base_learning_rate": 0.004,
+      "opt_adagrad_learning_rate_decay": 0.0,
+      "opt_adagrad_initial_accumulator_value": 0.0,
+      "opt_adagrad_epsilon": 1e-08,
+      "opt_weight_decay": 0.0,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_decay_start_step": 0,
+      "opt_learning_rate_decay_steps": 0
+    },
+    "Epochs to converge": [
+      0.75, 0.8, 0.75, 0.75, 0.8, 0.75, 0.8, 0.9, 0.95, 0.75,
+      0.75, 0.75, 0.85, 0.85, 0.7, 0.75, 0.75, 0.9, 0.85, 0.8,
+      0.7, 0.75, 0.75, 0.75, 0.8, 0.9, 0.75, 0.8, 0.85, 0.8
+    ]
+  },
+
+  "dlrm_dcnv2_ref_102400": {
+    "Benchmark": "dlrm_dcnv2",
+    "Creator": "NVIDIA",
+    "When": "Prior to 3.0 submission",
+    "Platform": "DGX-A100",
+    "BS": 102400,
+    "Hyperparams": {
+      "opt_name": "adagrad",
+      "opt_base_learning_rate": 0.004,
+      "opt_adagrad_learning_rate_decay": 0.0,
+      "opt_adagrad_initial_accumulator_value": 0.0,
+      "opt_adagrad_epsilon": 1e-08,
+      "opt_weight_decay": 0.0,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_decay_start_step": 0,
+      "opt_learning_rate_decay_steps": 0
+    },
+    "Epochs to converge": [
+      0.85, 0.95, 0.95, 0.85, 0.9, 0.8, 0.85, 0.9, 0.9, 0.9,
+      0.95, 0.9, 0.9, 0.9, 0.9, 0.9, 0.85, 0.85, 0.9, 0.9,
+      0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.85, 0.9, 0.9,
+      0.9, 0.95, 0.85, 0.9, 0.9, 0.9, 0.85, 0.9, 0.95, 0.9,
+      0.85, 0.95, 0.9, 0.9, 0.8, 0.9, 0.9, 0.9, 0.85, 0.9
+    ]
+  },
+
+  "dlrm_dcnv2_ref_135168": {
+    "Benchmark": "dlrm_dcnv2",
+    "Creator": "NVIDIA",
+    "When": "At 3.0 submission",
+    "Platform": "DGX-A100",
+    "BS": 135168,
+    "Hyperparams": {
+      "opt_name": "adagrad",
+      "opt_base_learning_rate": 0.0034,
+      "opt_adagrad_learning_rate_decay": 0.0,
+      "opt_adagrad_initial_accumulator_value": 0.0,
+      "opt_adagrad_epsilon": 1e-08,
+      "opt_weight_decay": 0.0,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_decay_start_step": 0,
+      "opt_learning_rate_decay_steps": 0
+    },
+    "Epochs to converge": [
+      0.95, 0.9, 0.9, 0.9, 0.9, 0.95, 0.9, 0.95, 0.95, 0.9,
+      0.95, 0.95, 0.95, 1.0, 0.85, 0.9, 0.9, 0.95, 0.95, 0.95,
+      0.95, 0.9, 0.9, 0.9, 0.95, 0.95, 1.0, 0.9, 0.95, 0.95,
+      0.85, 0.95, 0.95, 0.95, 0.9, 0.95, 0.9, 0.9, 1.0, 0.9,
+      0.95, 0.9, 0.95, 0.95, 0.95, 0.95, 0.95, 0.9, 0.9, 0.9,
+      0.9, 0.9, 0.9, 0.9, 0.95, 0.85, 0.95, 0.95, 0.9, 0.95,
+      0.95, 0.95, 0.95, 1.0, 0.9, 0.95, 0.9, 1.0, 0.85, 0.9,
+      0.9, 0.95, 0.95, 0.9, 0.95, 0.9, 0.95, 0.85, 0.95, 0.95,
+      0.95, 0.9, 0.9, 0.95, 0.9, 0.95, 0.9, 1.0
+    ]
+  }
+
+}
