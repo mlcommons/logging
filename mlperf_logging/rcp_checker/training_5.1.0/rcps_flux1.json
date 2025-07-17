@@ -1,6 +1,6 @@
 {
   "flux_ref_1024": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
@@ -21,7 +21,7 @@
     ]
   },
   "flux_ref_2048": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
@@ -42,7 +42,7 @@
     ]
   },
   "flux_ref_4096": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",

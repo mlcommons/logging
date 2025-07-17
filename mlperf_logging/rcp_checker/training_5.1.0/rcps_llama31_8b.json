@@ -1,0 +1,25 @@
+{
+
+  "llama31_8b_ref_X":
+  {
+    "Benchmark": "",
+    "Creator": "",
+    "When": "",
+    "Platform": "",
+    "BS": 0,
+    "Hyperparams": {
+      "opt_base_learning_rate": 0,
+      "opt_epsilon": 0,
+      "opt_learning_rate_training_steps": 0,
+      "num_warmup_steps": 0,
+      "start_warmup_step": 0,
+      "opt_lamb_beta_1": 0,
+      "opt_lamb_beta_2": 0,
+      "opt_lamb_weight_decay_rate": 0,
+      "gradient_accumulation_steps": 0
+    },
+    "Epochs to converge": [
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  }
+}

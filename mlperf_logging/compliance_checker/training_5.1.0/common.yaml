@@ -107,13 +107,13 @@
     NAME:  epoch_start
     REQ:   AT_LEAST_ONE_OR(block_start)
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "('epoch_num' in v['metadata']) | ('samples_count' in v['metadata'])"
 
 - KEY:
     NAME:  epoch_stop
     REQ:   AT_LEAST_ONE_OR(block_stop)
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "('epoch_num' in v['metadata']) | ('samples_count' in v['metadata'])"
 
 # making sure previous eval did print it's accuracy result
 - KEY:

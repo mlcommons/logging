@@ -20,6 +20,9 @@ _ALL_RESULT_FILE_COUNTS = {
         'rgat': 10,  
         'llama2_70b_lora': 10,
         'llama31_405b': 3,
+        # TODO: Update with official values
+        'llama31_8b': 10,
+        'flux1': 10,
     },
     
     'hpc' : {
@@ -143,7 +146,16 @@ _ALL_ALLOWED_BENCHMARKS = {
         'llama2_70b_lora',
         'rgat',
         'llama31_405b'
-    ]    
+    ],
+    '5.1': [
+        'llama31_8b',
+        'dlrm_dcnv2',   
+        'retinanet',        
+        'flux1',
+        'llama2_70b_lora',
+        'rgat',
+        'llama31_405b'
+    ]  
     },
     
     'hpc': {
