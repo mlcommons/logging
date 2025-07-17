@@ -12,7 +12,7 @@ To check a log file for compliance:
 
 By default, 5.1.0 training edition rules are used and the default config is set to `5.1.0/common.yaml`.
 This config will check all common keys and enqueue benchmark specific config to be checked as well.
-Old training editions, still supported are 5.0.0, 4.1.0 4.0.0, 3.1.0, 3.0.0, 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
+Old training editions, still supported are 5.0.0, 4.1.0, 4.0.0, 3.1.0, 3.0.0, 2.1.0, 2.0.0, 1.1.0, 1.0.0, 0.7.0 and 0.6.0
 
 To check hpc compliance rules (only 1.0.0 ruleset is supported), set --usage hpc --ruleset 1.0.0.
 
