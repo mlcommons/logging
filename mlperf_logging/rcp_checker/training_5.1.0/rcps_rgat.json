@@ -6,6 +6,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "1xDGX-A100 and 8xDGX-A100",
+    "Precision": "FP32",
     "BS": 4096,
     "Hyperparams": {
       "opt_base_learning_rate": 0.001
@@ -23,6 +24,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "8xDGX-A100",
+    "Precision": "FP32",
     "BS": 16384,
     "Hyperparams": {
       "opt_base_learning_rate": 0.002
@@ -40,6 +42,7 @@
     "Creator": "Intel",
     "When": "Reference RCPs before v4.0",
     "Platform": "16xSPR-2S",
+    "Precision": "FP32",
     "BS": 32768,
     "Hyperparams": {
       "opt_base_learning_rate": 0.002
@@ -57,6 +60,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "32xDGX-A100",
+    "Precision": "FP32",
     "BS": 65536,
     "Hyperparams": {
       "opt_base_learning_rate": 0.003
@@ -75,6 +79,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "128xDGX-H100",
+    "Precision": "FP32",
     "BS": 262144,
     "Hyperparams": {
       "opt_base_learning_rate": 0.005

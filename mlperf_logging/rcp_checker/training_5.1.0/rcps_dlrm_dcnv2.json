@@ -5,6 +5,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
+    "Precision": "FP32",
     "BS": 32768,
     "Hyperparams": {
       "opt_name": "adagrad",
@@ -29,6 +30,7 @@
     "Creator": "NVIDIA",
     "When": "At 3.0 submission",
     "Platform": "DGX-A100",
+    "Precision": "FP32",
     "BS": 55296,
     "Hyperparams": {
       "opt_name": "adagrad",
@@ -55,6 +57,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
+    "Precision": "FP32",
     "BS": 65536,
     "Hyperparams": {
       "opt_name": "adagrad",
@@ -79,6 +82,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 3.0 submission",
     "Platform": "DGX-A100",
+    "Precision": "FP32",
     "BS": 102400,
     "Hyperparams": {
       "opt_name": "adagrad",
@@ -105,6 +109,7 @@
     "Creator": "NVIDIA",
     "When": "At 3.0 submission",
     "Platform": "DGX-A100",
+    "Precision": "FP32",
     "BS": 135168,
     "Hyperparams": {
       "opt_name": "adagrad",
