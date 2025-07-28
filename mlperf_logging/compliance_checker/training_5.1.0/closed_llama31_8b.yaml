@@ -42,6 +42,11 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
+    NAME:  evaluation_frequency
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 262144"
+
+- KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:

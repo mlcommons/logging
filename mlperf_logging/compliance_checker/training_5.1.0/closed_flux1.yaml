@@ -49,10 +49,9 @@
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 1.0 "
 
-# TODO: Update with official metric name
 - KEY:
     NAME: eval_accuracy
     REQ: AT_LEAST_ONE
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "'samples_count' in v['metadata']"
     ATLEAST_ONE_CHECK: "v['value'] <= 0.586 and v['value'] > 0.0"
