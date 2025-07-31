@@ -6,6 +6,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "1xDGX-A100",
+    "Precision": "FP32",
     "BS": 256,
     "Hyperparams": {
       "opt_base_learning_rate": 0.0001,
@@ -24,6 +25,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.1",
     "Platform": "2xDGX-A100",
+    "Precision": "FP32",
     "BS": 320,
     "Hyperparams": {
       "opt_base_learning_rate": 0.0001,
@@ -42,6 +44,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "8xDGX-A100",
+    "Precision": "FP32",
     "BS": 512,
     "Hyperparams": {
       "opt_base_learning_rate": 0.0001,
@@ -60,6 +63,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.0",
     "Platform": "8xDGX-A100",
+    "Precision": "FP32",
     "BS": 768,
     "Hyperparams": {
       "opt_base_learning_rate": 0.00013,
@@ -77,6 +81,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v3.0",
     "Platform": "8xDGX-A100",
+    "Precision": "FP32",
     "BS": 1024,
     "Hyperparams": {
       "opt_base_learning_rate": 0.00011,
@@ -94,6 +99,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.1",
     "Platform": "16xDGX-A100",
+    "Precision": "FP32",
     "BS": 1280,
     "Hyperparams": {
       "opt_base_learning_rate": 0.00013,
@@ -112,6 +118,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.1",
     "Platform": "16xDGX-A100",
+    "Precision": "FP32",
     "BS": 2048,
     "Hyperparams": {
       "opt_base_learning_rate": 0.000135,
@@ -130,6 +137,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v4.0",
     "Platform": "20xDGX-H100",
+    "Precision": "FP32",
     "BS": 2560,
     "Hyperparams": {
       "opt_base_learning_rate": 0.000145,
@@ -148,6 +156,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v2.0",
     "Platform": "16xDGX-A100",
+    "Precision": "FP32",
     "BS": 4096,
     "Hyperparams": {
       "opt_base_learning_rate": 0.0001,

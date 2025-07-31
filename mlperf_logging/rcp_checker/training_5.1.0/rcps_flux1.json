@@ -4,6 +4,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 1024,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
@@ -25,6 +26,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 2048,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
@@ -46,6 +48,7 @@
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 4096,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
