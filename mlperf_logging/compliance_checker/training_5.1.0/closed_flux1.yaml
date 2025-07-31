@@ -10,6 +10,11 @@
     CHECK: " v['value'] >= 0 "
 
 - KEY:
+    NAME:  evaluation_frequency
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 262144"
+
+- KEY:
     NAME:  opt_name
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 'adamw' "
