@@ -9,5 +9,5 @@
     NAME: averaged_validation_loss
     REQ: AT_LEAST_ONE
     CHECK:
-        - "'epoch_num' in v['metadata']"
+        - "'samples_count' in v['metadata']"
     ATLEAST_ONE_CHECK: "v['value'] <= 0.586 and v['value'] > 0.0"
