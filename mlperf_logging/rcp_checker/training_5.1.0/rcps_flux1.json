@@ -1,9 +1,10 @@
 {
   "flux_ref_1024": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 1024,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
@@ -21,10 +22,11 @@
     ]
   },
   "flux_ref_2048": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 2048,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,
@@ -42,10 +44,11 @@
     ]
   },
   "flux_ref_4096": {
-    "Benchmark": "flux",
+    "Benchmark": "flux1",
     "Creator": "NVIDIA",
     "When": "Reference RCPs before v5.1",
     "Platform": "8xDGX-B200",
+    "Precision": "BF16",
     "BS": 4096,
     "Hyperparams": {
       "opt_adamw_beta_1": 0.9,

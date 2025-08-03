@@ -5,6 +5,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 4.0 submission",
     "Platform": "TBD",
+    "Precision": "BF16",
     "BS": 8,
     "Hyperparams": {
       "opt_base_learning_rate": 4e-4,
@@ -28,6 +29,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 4.0 submission",
     "Platform": "TBD",
+    "Precision": "BF16",
     "BS": 16,
     "Hyperparams": {
       "opt_base_learning_rate": 4e-4,
@@ -50,6 +52,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 4.0 submission",
     "Platform": "TBD",
+    "Precision": "BF16",
     "BS": 32,
     "Hyperparams": {
       "opt_base_learning_rate": 4e-4,
@@ -72,6 +75,7 @@
     "Creator": "NVIDIA",
     "When": "Prior to 4.0 submission",
     "Platform": "TBD",
+    "Precision": "BF16",
     "BS": 128,
     "Hyperparams": {
       "opt_base_learning_rate": 1e-3,
