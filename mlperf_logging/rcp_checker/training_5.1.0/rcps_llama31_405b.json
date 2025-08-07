@@ -5,6 +5,7 @@
       "Creator": "NVIDIA",
       "When": "Reference RCPs after 5.0 submission",
       "Platform": "288xDGX-H100",
+      "Precision": "BF16",
       "BS": 1152,
       "Hyperparams": {
         "opt_base_learning_rate": 8e-05,
@@ -23,6 +24,7 @@
         "Creator": "NVIDIA",
         "When": "Reference RCPs after 5.0 submission",
         "Platform": "288xDGX-H100",
+        "Precision": "BF16",
         "BS": 2304,
         "Hyperparams": {
           "opt_base_learning_rate": 16e-05,
@@ -41,6 +43,7 @@
         "Creator": "NVIDIA",
         "When": "Reference RCPs after 5.0 submission",
         "Platform": "288xDGX-H100",
+        "Precision": "BF16",
         "BS": 4608,
         "Hyperparams": {
           "opt_base_learning_rate": 32e-05,
