@@ -1,0 +1,68 @@
+{
+  "flux_ref_1024": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v5.1",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 1024,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.0e-4,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      8912896, 8650752, 9437184, 8126464, 8388608, 9175040, 8650752, 8126464,
+      8388608, 9961472, 7864320, 8126464, 9699328, 8650752, 9437184, 8912896,
+      8388608, 9175040, 8126464, 9175040
+    ]
+  },
+  "flux_ref_2048": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v5.1",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 2048,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.5e-4,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      11272192, 10223616, 11534336, 10747904, 9699328, 10485760, 11010048,
+      10223616, 11796480, 10485760, 10747904, 11272192, 9699328, 10485760,
+      11534336, 9961472, 10485760, 10485760, 11272192, 11272192
+    ]
+  },
+  "flux_ref_4096": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v5.1",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 4.0e-4,
+      "opt_learning_rate_warmup_steps": 100,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      15466496, 15728640, 15990784, 15466496, 15728640, 15466496, 14942208,
+      14680064, 15728640, 15990784, 15990784, 15728640, 15728640, 16252928,
+      14942208, 15728640, 16252928, 15204352, 16515072, 14942208
+    ]
+  }
+}

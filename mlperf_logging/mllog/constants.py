@@ -55,6 +55,8 @@ LLAMA2_70B_LORA = "llama2_70b_lora"
 GNN = "gnn"
 RGAT = "rgat"
 LLAMA31_405B = "llama31_405b"
+LLAMA31_8B = "llama31_8b"
+FLUX1 = "flux1"
 
 # Constant values - model info
 ADAGRAD = "adagrad"

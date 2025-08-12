@@ -1,0 +1,88 @@
+{
+
+  "llama31_8b_ref_32":
+    {
+      "Benchmark": "llama31_8b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.1 submission",
+      "Platform": "2xDGX-B200",
+      "Precision": "BF16",
+      "BS": 32,
+      "Hyperparams": {
+        "opt_base_learning_rate": 1e-03,
+        "opt_learning_rate_warmup_samples": 16348,
+        "gradient_accumulation_steps": 2
+      },
+      "Epochs to converge": [
+        196608, 221184, 208896, 221184, 221184, 
+        208896, 208896, 196608, 233472, 208896, 
+        233472, 208896, 208896, 221184, 233472, 
+        196608, 208896, 233472, 221184, 208896
+      ]
+    },
+  
+  "llama31_8b_ref_64":
+    {
+      "Benchmark": "llama31_8b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.1 submission",
+      "Platform": "2xDGX-B200",
+      "Precision": "BF16",
+      "BS": 64,
+      "Hyperparams": {
+        "opt_base_learning_rate": 1e-03,
+        "opt_learning_rate_warmup_samples": 16348,
+        "gradient_accumulation_steps": 4
+      },
+      "Epochs to converge": [
+        233472, 221184, 233472, 221184, 221184, 
+        245760, 233472, 233472, 208896, 245760, 
+        233472, 221184, 233472, 233472, 221184, 
+        245760, 221184, 233472, 233472, 233472
+      ]
+    },
+  
+  "llama31_8b_ref_96":
+    {
+      "Benchmark": "llama31_8b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.1 submission",
+      "Platform": "2xDGX-B200",
+      "Precision": "BF16",
+      "BS": 96,
+      "Hyperparams": {
+        "opt_base_learning_rate": 1e-03,
+        "opt_learning_rate_warmup_samples": 16348,
+        "gradient_accumulation_steps": 6
+      },
+      "Epochs to converge": [
+        297216, 284832, 272448, 272448, 272448, 
+        272448, 297216, 272448, 297216, 272448, 
+        297216, 260064, 272448, 272448, 272448, 
+        284832, 260064, 284832, 284832, 272448
+      ]
+    },
+  
+  "llama31_8b_ref_128":
+    {
+      "Benchmark": "llama31_8b",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 5.1 submission",
+      "Platform": "4xDGX-B200",
+      "Precision": "BF16",
+      "BS": 128,
+      "Hyperparams": {
+        "opt_base_learning_rate": 2e-03,
+        "opt_learning_rate_warmup_samples": 32768,
+        "gradient_accumulation_steps": 4
+      },
+      "Epochs to converge": [
+        368640, 344064, 356352, 344064, 368640, 
+        368640, 405504, 344064, 331776, 307200, 
+        331776, 380928, 307200, 344064, 319488, 
+        356352, 331776, 319488, 356352, 331776
+      ]
+    }
+}
+
+
