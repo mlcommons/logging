@@ -34,6 +34,7 @@ submission_runs = {
         'llama2_70b_lora': 10,
         'flux1': 10,
         'llama31_405b': 3,
+        'llama31_8b': 10,
     },
     "hpc": {
         'cosmoflow': 10,
