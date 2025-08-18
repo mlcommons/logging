@@ -69,7 +69,7 @@
 - KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 5760 "
+    CHECK: " v['value'] == 1024 "
 
 - KEY:
     NAME:  eval_accuracy
