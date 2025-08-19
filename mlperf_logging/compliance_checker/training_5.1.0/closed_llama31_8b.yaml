@@ -25,7 +25,7 @@
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] * s['global_batch_size'] == 1.2e6 " 
+    CHECK: " v['value'] == 1200000 " 
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
@@ -79,7 +79,7 @@
     ATLEAST_ONE_CHECK: "(v['value'] <= 3.3) and v['value'] > 0.0"
 
 - KEY:
-    NAME: MAX_STEPS
+    NAME: max_steps
     REQ:  EXACTLY_ONE
     CHECK: " v['value'] == 1200000 "
 
