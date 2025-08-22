@@ -439,6 +439,11 @@ class RCP_Checker:
         with open(filepath, "w") as scaling_file:
             scaling_file.write(json_content)
 
+    def _reset_results_scaling(self, results_dir):
+        filepath = results_dir+'/scaling.json'
+        if os.path.exists(filepath):
+            os.remove(filepath)
+
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
 
@@ -449,6 +454,7 @@ class RCP_Checker:
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
         norm_factor = self._find_norm_factor(rcp_record, mean_subm_epochs)
+        self._reset_results_scaling(results_dir)
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
