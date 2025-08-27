@@ -324,6 +324,127 @@ def _get_scaling_factor(folder):
     return scaling_factor
 
 
+def _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc = {"submitter": None}):
+    pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+    result_files = glob.glob(pattern, recursive=True)
+    scores = []
+    power_scores = []
+    dropped_scores = 0
+    for result_file in result_files:
+        try:
+            loglines = _read_result_file(result_file, usage, ruleset)
+            start, stop = _query_run_start_stop(loglines)
+            time_to_train_ms = stop - start
+            scores.append(time_to_train_ms / 60 / 1000)
+        except ValueError as e:
+            print('{} in {}'.format(e, result_file))
+            dropped_scores += 1
+            continue
+        if has_power:
+            power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
+    max_dropped_scores = 4 if benchmark == 'unet3d' else 1
+    if dropped_scores > max_dropped_scores:
+        print('CRITICAL ERROR: Too many non-converging runs '
+                'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+        print('** CRITICAL ERROR ** Results in the table for {} {}/{} are '
+                'NOT correct'.format(desc['submitter'], system, benchmark))
+    elif dropped_scores >= 1:
+        print('NOTICE: Dropping non-converged run(s) for {} {}/{} using '
+                'olympic scoring.'.format(
+                    desc['submitter'],
+                    system,
+                    benchmark,
+                ))
+        
+    if has_power:
+        unsorted_scores = scores.copy()
+
+    score = None
+    scaling_factor = _get_scaling_factor(benchmark_folder)
+    if dropped_scores <= max_dropped_scores:
+        olympic_avg = _compute_olympic_average(
+            scores, dropped_scores, max_dropped_scores)
+        if olympic_avg is not None:
+            score = olympic_avg
+            score *= scaling_factor
+
+    power_score = None
+    if has_power and dropped_scores <= max_dropped_scores:
+        index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
+        olympic_avg = _index_olympic_average(
+            power_scores, index, dropped_scores, max_dropped_scores)
+        if olympic_avg is not None:
+            power_score = olympic_avg
+            power_score *= scaling_factor
+    return score, power_score
+
+
+def _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc = {"submitter": None}):
+    power_scores = []
+    # Read scores from result files.
+    pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+    result_files = glob.glob(pattern, recursive=True)
+    global_start, global_stop = float('inf'), float('-inf')
+    number_of_models = 0
+    instance_scale = None
+    for result_file in result_files:
+        try:
+            loglines = _read_result_file(result_file, usage, ruleset)
+            start, stop = _query_run_start_stop(loglines)
+            global_start = min(global_start, start)
+            global_stop = max(global_stop, stop)
+            number_of_models += 1
+            if instance_scale == None:
+                instance_scale = _query_instance_scale(loglines)
+            else:
+                assert instance_scale == _query_instance_scale(loglines)
+        except ValueError as e:
+            print('{} in {}'.format(e, result_file))
+            continue
+        if has_power:
+            time_to_train_ms = stop - start
+            power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
+
+    scores = {}
+    power = {}
+    if number_of_models >= get_result_file_counts(usage)[benchmark]:
+        scores['{}:{}'.format(
+            benchmark,
+            'time_to_train_all',
+        )] = (global_stop - global_start) / 60 / 1000
+        scores['{}:{}'.format(
+            benchmark,
+            'number_of_models',
+        )] = number_of_models
+        scores['{}:{}'.format(
+            benchmark,
+            'instance_scale',
+        )] = instance_scale
+    else:
+        print('CRITICAL ERROR: Not enough converging weak scaling runs '
+                'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+        
+    if has_power:
+        olympic_avg = _compute_olympic_average(
+            power_scores, 1, 1)
+        if olympic_avg is not None:
+            power['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )] = olympic_avg
+            power['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )] = olympic_avg
+            power['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )] = olympic_avg
+
+    return scores, power
+
+
+
 def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     # Collect scores for benchmarks.
     benchmark_scores = {}
@@ -340,55 +461,11 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
         # Read scores from result files.
-        pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
-        result_files = glob.glob(pattern, recursive=True)
-        scores = []
-        power_scores = []
-        dropped_scores = 0
-        for result_file in result_files:
-            try:
-                loglines = _read_result_file(result_file, usage, ruleset)
-                start, stop = _query_run_start_stop(loglines)
-                time_to_train_ms = stop - start
-                scores.append(time_to_train_ms / 60 / 1000)
-            except ValueError as e:
-                print('{} in {}'.format(e, result_file))
-                dropped_scores += 1
-                continue
-            if has_power:
-                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
-        max_dropped_scores = 4 if benchmark == 'unet3d' else 1
-        if dropped_scores > max_dropped_scores:
-            print('CRITICAL ERROR: Too many non-converging runs '
-                  'for {} {}/{}'.format(desc['submitter'], system, benchmark))
-            print('** CRITICAL ERROR ** Results in the table for {} {}/{} are '
-                  'NOT correct'.format(desc['submitter'], system, benchmark))
-        elif dropped_scores >= 1:
-            print('NOTICE: Dropping non-converged run(s) for {} {}/{} using '
-                  'olympic scoring.'.format(
-                      desc['submitter'],
-                      system,
-                      benchmark,
-                  ))
-            
-        if has_power:
-            unsorted_scores = scores.copy()
-
-        scaling_factor = _get_scaling_factor(benchmark_folder)
-        if dropped_scores <= max_dropped_scores:
-            olympic_avg = _compute_olympic_average(
-                scores, dropped_scores, max_dropped_scores)
-            if olympic_avg is not None:
-                benchmark_scores[benchmark] = olympic_avg
-                benchmark_scores[benchmark] *= scaling_factor
-
-        if has_power and dropped_scores <= max_dropped_scores:
-            index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
-            olympic_avg = _index_olympic_average(
-                power_scores, index, dropped_scores, max_dropped_scores)
-            if olympic_avg is not None:
-                benchmark_power_scores[benchmark] = olympic_avg
-                benchmark_power_scores[benchmark] *= scaling_factor
+        score, power_score = _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
+        if score is not None:
+            benchmark_scores[benchmark] = score
+        if power_score is not None:
+            benchmark_power_scores[benchmark] = power_score
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
     if len(benchmark_power_scores) > 0:
         _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
@@ -426,64 +503,53 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
         system = folder_parts[-3]
         # Check if this benchmark has power results
         has_power = _has_power(benchmark_folder)
-        power_scores = []
-        # Read scores from result files.
-        pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
-        result_files = glob.glob(pattern, recursive=True)
-        global_start, global_stop = float('inf'), float('-inf')
-        number_of_models = 0
-        instance_scale = None
-        for result_file in result_files:
-            try:
-                loglines = _read_result_file(result_file, usage, ruleset)
-                start, stop = _query_run_start_stop(loglines)
-                global_start = min(global_start, start)
-                global_stop = max(global_stop, stop)
-                number_of_models += 1
-                if instance_scale == None:
-                    instance_scale = _query_instance_scale(loglines)
-                else:
-                    assert instance_scale == _query_instance_scale(loglines)
-            except ValueError as e:
-                print('{} in {}'.format(e, result_file))
-                continue
-            if has_power:
-                time_to_train_ms = stop - start
-                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
+        scores, power_scores = _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
 
-        if number_of_models >= get_result_file_counts(usage)[benchmark]:
+        if scores:
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'time_to_train_all',
-            )] = (global_stop - global_start) / 60 / 1000
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )]
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'number_of_models',
-            )] = number_of_models
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )]
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'instance_scale',
-            )] = instance_scale
-        else:
-            print('CRITICAL ERROR: Not enough converging weak scaling runs '
-                  'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )]
             
-        if has_power:
-            olympic_avg = _compute_olympic_average(
-                power_scores, 1, 1)
-            if olympic_avg is not None:
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'time_to_train_all',
-                )] = olympic_avg
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'number_of_models',
-                )] = olympic_avg
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'instance_scale',
-                )] = olympic_avg
+        if power_scores:
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )]
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )]
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )]
 
     _fill_empty_benchmark_scores(benchmark_scores,
                                  usage,
