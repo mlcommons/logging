@@ -9,13 +9,21 @@ def get_compute_args():
         prog="mlperf_logging.result_summarizer.compute_score",
         description="Compute the score of a single benchmark",
     )
-    parser.add_argument("--benchmark", type=str, help="TODO:", required=True)
+    parser.add_argument(
+        "--benchmark",
+        type=str,
+        help="Benchmark to compute the score such as rgat, llama31_8b, etc.",
+        required=True,
+    )
     parser.add_argument("--system", type=str, help="System name", default=None)
     parser.add_argument(
         "--has_power", action="store_true", help="Compute power score as well"
     )
     parser.add_argument(
-        "--benchmark_folder", type=str, help="Folder containing all the result files", required=True
+        "--benchmark_folder",
+        type=str,
+        help="Folder containing all the result files",
+        required=True,
     )
     parser.add_argument(
         "--usage",
@@ -49,17 +57,18 @@ def print_benchmark_info(args):
     print(f"System: {args.system}")
     print(f"Benchmark: {args.benchmark}")
 
+
 args = get_compute_args()
 
 if args.scale:
     rcp_checker.check_directory(
-        args.benchmark_folder, 
+        args.benchmark_folder,
         args.usage,
         args.ruleset,
         False,
         False,
         rcp_file=None,
-        rcp_pass='pruned_rcps',
+        rcp_pass="pruned_rcps",
         rcp_bypass=False,
         set_scaling=True,
     )
