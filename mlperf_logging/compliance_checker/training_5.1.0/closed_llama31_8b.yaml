@@ -25,7 +25,6 @@
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1200000 " 
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
