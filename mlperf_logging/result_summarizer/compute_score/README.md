@@ -14,7 +14,7 @@ python3 -m mlperf_logging.result_summarizer.compute_score --benchmark BENCHMARK 
 
 
 **BENCHMARK:** Name of the benchmark to compute the score such as rgat, llama31_8b, etc.
-**SYSTEM_NAME:** The name of the system, it can be set to None.
+**SYSTEM_NAME:** Optional system name.
 **BENCHMARK_FOLDER:** Folder containing all the results files of the benchmark.
 **USAGE:** Either "training" or "hpc",
 **RULESET:** Version of the rules that applies one of "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0".

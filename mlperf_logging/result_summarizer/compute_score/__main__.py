@@ -1,19 +1,18 @@
 from .. import result_summarizer
 from ...rcp_checker import rcp_checker
 from ...compliance_checker.mlp_compliance import usage_choices, rule_choices
+from ...compliance_checker.mlp_parser import parse_file
+from ...benchmark_meta import get_result_file_counts
 import argparse
+import glob
+import json
+import os
 
 
 def get_compute_args():
     parser = argparse.ArgumentParser(
         prog="mlperf_logging.result_summarizer.compute_score",
         description="Compute the score of a single benchmark",
-    )
-    parser.add_argument(
-        "--benchmark",
-        type=str,
-        help="Benchmark to compute the score such as rgat, llama31_8b, etc.",
-        required=True,
     )
     parser.add_argument("--system", type=str, help="System name", default=None)
     parser.add_argument(
@@ -50,15 +49,55 @@ def get_compute_args():
     return parser.parse_args()
 
 
-def print_benchmark_info(args):
+def print_benchmark_info(args, benchmark):
+    print("INFO -------------------------------------------------------")
     print(f"MLPerf {args.usage}")
     print(f"Folder: {args.benchmark_folder}")
     print(f"Version: {args.ruleset}")
     print(f"System: {args.system}")
-    print(f"Benchmark: {args.benchmark}")
+    print(f"Benchmark: {benchmark}")
+    print("-------------------------------------------------------------")
+
+
+def _reset_scaling(results_dir):
+    filepath = results_dir + "/scaling.json"
+    if os.path.exists(filepath):
+        os.remove(filepath)
+
+
+def _get_scaling_factor(results_dir):
+    scaling_factor = 1.0
+    scaling_file = results_dir + "/scaling.json"
+    if os.path.exists(scaling_file):
+        with open(scaling_file, "r") as f:
+            contents = json.load(f)
+        scaling_factor = contents["scaling_factor"]
+    return scaling_factor
+
+
+def _find_benchmark(result_file, ruleset):
+    loglines, _ = parse_file(result_file, ruleset)
+    benchmark = None
+    for logline in loglines:
+        if logline.key == "submission_benchmark":
+            benchmark = logline.value["value"]
+            break
+    if benchmark is None:
+        raise ValueError("Benchmark not specified in result file")
+    return benchmark
 
 
 args = get_compute_args()
+_reset_scaling(args.benchmark_folder)
+pattern = "{folder}/result_*.txt".format(folder=args.benchmark_folder)
+result_files = glob.glob(pattern, recursive=True)
+benchmark = _find_benchmark(result_files[0], args.ruleset)
+required_runs = get_result_file_counts(args.usage)[benchmark]
+if required_runs > len(result_files):
+    print(
+        f"WARNING: Not enough runs found for an official submission."
+        f" Found: {len(result_files)}, required: {required_runs}"
+    )
 
 if args.scale:
     rcp_checker.check_directory(
@@ -73,29 +112,54 @@ if args.scale:
         set_scaling=True,
     )
 
+scaling_factor = _get_scaling_factor(args.benchmark_folder)
+
 if args.is_weak_scaling:
     scores, power_scores = result_summarizer._compute_weak_score_standalone(
-        args.benchmark,
+        benchmark,
         args.system,
         args.has_power,
         args.benchmark_folder,
         args.usage,
         args.ruleset,
     )
-    print_benchmark_info(args)
+    print_benchmark_info(args, benchmark)
     print(f"Scores: {scores}")
     if power_scores:
         print(f"Power Scores - Energy (kJ): {power_scores}")
 else:
-    score, power_score = result_summarizer._compute_strong_score_standalone(
-        args.benchmark,
-        args.system,
-        args.has_power,
-        args.benchmark_folder,
-        args.usage,
-        args.ruleset,
+    scores_track, power_scores_track, score, power_score = (
+        result_summarizer._compute_strong_score_standalone(
+            benchmark,
+            args.system,
+            args.has_power,
+            args.benchmark_folder,
+            args.usage,
+            args.ruleset,
+            return_full_scores=True,
+        )
     )
-    print_benchmark_info(args)
-    print(f"Score - Time to Train (minutes): {score}")
+    print_benchmark_info(args, benchmark)
+    mean_score = 0
+    for file, s in scores_track.items():
+        print(f"Score - Time to Train (minutes) for {file}: {s}")
+        mean_score += s
+    mean_score /= len(result_files)
+    mean_score *= scaling_factor
+    if required_runs > len(result_files):
+        print("WARNING: Olympic scoring skipped")
+        print(f"Final score - Time to Train (minutes): {mean_score}")
+    else:
+        print(f"Final score - Time to Train (minutes): {score}")
     if power_score:
-        print(f"Power Score - Energy (kJ): {power_score}")
+        mean_power = 0
+        for file, ps in power_scores_track.items():
+            print(f"Power Score - Energy (kJ) for {file}: {ps}")
+            mean_power += ps
+        mean_power /= len(result_files)
+        mean_power *= scaling_factor
+        if required_runs > len(result_files):
+            print("WARNING: Olympic scoring skipped")
+            print(f"Final score - Time to Train (minutes): {mean_power}")
+        else:
+            print(f"Power Score - Energy (kJ): {power_score}")

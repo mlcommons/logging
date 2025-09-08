@@ -324,11 +324,22 @@ def _get_scaling_factor(folder):
     return scaling_factor
 
 
-def _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc = {"submitter": None}):
-    pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+def _compute_strong_score_standalone(
+    benchmark,
+    system,
+    has_power,
+    benchmark_folder,
+    usage,
+    ruleset,
+    desc={"submitter": None},
+    return_full_scores=False,
+):
+    pattern = "{folder}/result_*.txt".format(folder=benchmark_folder)
     result_files = glob.glob(pattern, recursive=True)
     scores = []
+    scores_track = {}
     power_scores = []
+    power_scores_track = {}
     dropped_scores = 0
     for result_file in result_files:
         try:
@@ -336,26 +347,38 @@ def _compute_strong_score_standalone(benchmark, system, has_power, benchmark_fol
             start, stop = _query_run_start_stop(loglines)
             time_to_train_ms = stop - start
             scores.append(time_to_train_ms / 60 / 1000)
+            scores_track[result_file] = scores[-1]
         except ValueError as e:
-            print('{} in {}'.format(e, result_file))
+            print("{} in {}".format(e, result_file))
             dropped_scores += 1
             continue
         if has_power:
-            power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
-    max_dropped_scores = 4 if benchmark == 'unet3d' else 1
+            power_scores.append(
+                _compute_total_power(
+                    benchmark_folder, result_file, time_to_train_ms, ruleset
+                )
+            )
+            power_scores_track[result_file] = power_scores[-1]
+    max_dropped_scores = 4 if benchmark == "unet3d" else 1
     if dropped_scores > max_dropped_scores:
-        print('CRITICAL ERROR: Too many non-converging runs '
-                'for {} {}/{}'.format(desc['submitter'], system, benchmark))
-        print('** CRITICAL ERROR ** Results in the table for {} {}/{} are '
-                'NOT correct'.format(desc['submitter'], system, benchmark))
+        print(
+            "CRITICAL ERROR: Too many non-converging runs "
+            "for {} {}/{}".format(desc["submitter"], system, benchmark)
+        )
+        print(
+            "** CRITICAL ERROR ** Results in the table for {} {}/{} are "
+            "NOT correct".format(desc["submitter"], system, benchmark)
+        )
     elif dropped_scores >= 1:
-        print('NOTICE: Dropping non-converged run(s) for {} {}/{} using '
-                'olympic scoring.'.format(
-                    desc['submitter'],
-                    system,
-                    benchmark,
-                ))
-        
+        print(
+            "NOTICE: Dropping non-converged run(s) for {} {}/{} using "
+            "olympic scoring.".format(
+                desc["submitter"],
+                system,
+                benchmark,
+            )
+        )
+
     if has_power:
         unsorted_scores = scores.copy()
 
@@ -363,19 +386,23 @@ def _compute_strong_score_standalone(benchmark, system, has_power, benchmark_fol
     scaling_factor = _get_scaling_factor(benchmark_folder)
     if dropped_scores <= max_dropped_scores:
         olympic_avg = _compute_olympic_average(
-            scores, dropped_scores, max_dropped_scores)
+            scores, dropped_scores, max_dropped_scores
+        )
         if olympic_avg is not None:
             score = olympic_avg
             score *= scaling_factor
 
     power_score = None
     if has_power and dropped_scores <= max_dropped_scores:
-        index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
+        index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x: x[1])]
         olympic_avg = _index_olympic_average(
-            power_scores, index, dropped_scores, max_dropped_scores)
+            power_scores, index, dropped_scores, max_dropped_scores
+        )
         if olympic_avg is not None:
             power_score = olympic_avg
             power_score *= scaling_factor
+    if return_full_scores:
+        return scores_track, power_scores_track, score, power_score
     return score, power_score
 
 
