@@ -87,6 +87,26 @@ def _find_benchmark(result_file, ruleset):
     return benchmark
 
 
+def _epochs_samples_to_converge(result_file, ruleset):
+    loglines, _ = parse_file(result_file, ruleset)
+    epoch_num = None
+    samples_count = None
+    for logline in loglines:
+        if logline.key == "eval_accuracy":
+            if "epoch_num" in logline.value["metadata"]:
+                epoch_num = logline.value["metadata"]["epoch_num"]
+            if "samples_count" in logline.value["metadata"]:
+                samples_count = logline.value["metadata"]["samples_count"]
+    if samples_count is not None:
+        return samples_count
+    if epoch_num is not None:
+        return epoch_num
+    raise ValueError(
+        "Not enough values specified in result file. One of ('samples_count')"
+        "or ('epoch_num') is needed"
+    )
+
+
 args = get_compute_args()
 _reset_scaling(args.benchmark_folder)
 pattern = "{folder}/result_*.txt".format(folder=args.benchmark_folder)
@@ -142,7 +162,10 @@ else:
     print_benchmark_info(args, benchmark)
     mean_score = 0
     for file, s in scores_track.items():
-        print(f"Score - Time to Train (minutes) for {file}: {s}")
+        epochs_samples_to_converge = _epochs_samples_to_converge(file, args.ruleset)
+        print(
+            f"Score - Time to Train (minutes) for {file}: {s}. Samples/Epochs to converge: {epochs_samples_to_converge}"
+        )
         mean_score += s
     mean_score /= len(result_files)
     mean_score *= scaling_factor
