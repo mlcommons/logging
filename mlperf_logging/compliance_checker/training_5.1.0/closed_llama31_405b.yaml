@@ -24,12 +24,15 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  opt_learning_rate_decay_steps
-    REQ:   EXACTLY_ONE
-
-- KEY:
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
+    POST: >
+        s['opt_learning_rate_warmup_steps'] = math.ceil(8000 * 1152 / s['global_batch_size'] )
+
+- KEY:
+    NAME:  opt_learning_rate_decay_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == math.ceil(1_200_000 / s['global_batch_size'] ) - s['opt_learning_rate_warmup_steps'] "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
