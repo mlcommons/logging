@@ -12,7 +12,7 @@
       "opt_adamw_epsilon": 1e-8,
       "opt_adamw_weight_decay": 0.1,
       "opt_base_learning_rate": 2.0e-4,
-      "opt_learning_rate_warmup_steps": 0,
+      "opt_learning_rate_warmup_steps": 1600,
       "opt_gradient_clip_norm": 1.0
     },
     "samples to converge": [
