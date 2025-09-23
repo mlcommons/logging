@@ -31,7 +31,7 @@
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == math.ceil(1_200_000 / s['global_batch_size'] ) - s['opt_learning_rate_warmup_steps'] "
+    CHECK: " v['value'] == 1_200_000 - s['opt_learning_rate_warmup_steps'] "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
