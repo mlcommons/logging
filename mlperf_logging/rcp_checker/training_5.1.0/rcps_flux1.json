@@ -1,4 +1,26 @@
 {
+  "flux_ref_512": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v5.1",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 512,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.0e-4,
+      "opt_learning_rate_warmup_steps": 1600,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      8388608, 8388608, 8388608, 8126464, 7864320, 8126464, 7864320, 7602176,
+      8650752, 8126464, 8650752, 8126464, 8388608, 8126464, 8126464, 8126464,
+      8126464, 8126464, 8126464, 7864320
+    ]
+  },
   "flux_ref_1024": {
     "Benchmark": "flux1",
     "Creator": "NVIDIA",
