@@ -5,13 +5,13 @@
       "Benchmark": "llama31_8b",
       "Creator": "NVIDIA",
       "When": "Reference RCPs before 5.1 submission",
-      "Platform": "2xDGX-B200",
+      "Platform": "4xDGX-B200",
       "Precision": "BF16",
       "BS": 32,
       "Hyperparams": {
-        "opt_base_learning_rate": 1e-03,
-        "opt_learning_rate_warmup_samples": 16348,
-        "gradient_accumulation_steps": 2
+        "opt_base_learning_rate": 8e-04,
+        "opt_learning_rate_warmup_samples": 4096,
+        "gradient_accumulation_steps": 1
       },
       "Epochs to converge": [
         196608, 172032, 184320, 184320, 172032,
@@ -84,6 +84,7 @@
       ]
     }
 }
+
 
 
 
