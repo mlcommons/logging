@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--usage', type=str, default='training',
                         choices=['training', 'hpc'],
                         help="the WG that produced the benchmark")
-    parser.add_argument('--version', type=str, default='5.1.0',
+    parser.add_argument('--version', type=str, default='6.0.0',
                         help='what version of the ruleset')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--unpruned', action='store_true',

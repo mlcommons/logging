@@ -155,7 +155,16 @@ _ALL_ALLOWED_BENCHMARKS = {
         'llama2_70b_lora',
         'rgat',
         'llama31_405b'
-    ]  
+    ],
+    '6.0': [
+        'llama31_8b',
+        'dlrm_dcnv2',   
+        'retinanet',        
+        'flux1',
+        'llama2_70b_lora',
+        'rgat',
+        'llama31_405b'
+    ]    
     },
     
     'hpc': {

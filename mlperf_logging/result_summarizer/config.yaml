@@ -102,6 +102,15 @@ columns:
       llama31_8b: ["Benchmark results (minutes)", "Small LLM", "C4", "Llama31-8b"]
       llama31_405b: ["Benchmark results (minutes)", "LLM", "C4", "Llama31-405B"]
       default: [" ", " ", " "]
+    "6.0.0":
+      dlrm_dcnv2: ["Benchmark results (minutes)", "Recommendation", "1TB Multihot Clickthrough", "DLRM DCNv2"]      
+      retinanet: ["Benchmark results (minutes)", "Object detection, light-weight", "OpenImages", "RetinaNet"]
+      flux1: ["Benchmark results (minutes)", "Text to image", "CC12M and Coco-2014 for eval", "Flux1"]
+      llama2_70b_lora: ["Benchmark results (minutes)", "LLM-Finetune", "SCROLSS Gov Report", "LLama2-70B-LoRA"]
+      rgat: ["Benchmark results (minutes)", "Graph node classification", "IGBH-Full", "R-GAT"]
+      llama31_8b: ["Benchmark results (minutes)", "Small LLM", "C4", "Llama31-8b"]
+      llama31_405b: ["Benchmark results (minutes)", "LLM", "C4", "Llama31-405B"]
+      default: [" ", " ", " "]
 
   hpc:
     "2.0.0":

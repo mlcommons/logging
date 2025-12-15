@@ -10,7 +10,7 @@ To check an organization's submission package for compliance:
 python3 -m mlperf_logging.package_checker FOLDER USAGE RULESET
 ```
 
-Currently, USAGE in ["training"] and RULESET in ["0.6.0", "0.7.0", "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0"] are supported.
+Currently, USAGE in ["training"] and RULESET in ["0.6.0", "0.7.0", "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0", "6.0.0"] are supported.
 
 The package checker checks:
 1. The number of result files for each benchmark matches the required count. If
