@@ -17,7 +17,7 @@ python3 -m mlperf_logging.result_summarizer.compute_score --benchmark BENCHMARK 
 **SYSTEM_NAME:** Optional system name.
 **BENCHMARK_FOLDER:** Folder containing all the results files of the benchmark.
 **USAGE:** Either "training" or "hpc",
-**RULESET:** Version of the rules that applies one of "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0".
+**RULESET:** Version of the rules that applies one of "1.0.0", "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0", "6.0.0".
 **[--is_weak_scaling]:** Is the benchmark weak scaling (only applies to HPC).
 **[--scale]:** Compute the scaling.json file (only if the folder does not contain it already).
 **[--has_power]:** Have the results power measurements .

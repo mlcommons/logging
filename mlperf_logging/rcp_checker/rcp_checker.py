@@ -13,6 +13,31 @@ import re
 import scipy.stats
 import sys
 
+
+def is_version_at_least(version, min_version):
+    """
+    Check if a version string is at least the minimum version.
+    
+    Args:
+        version: Version string to check (e.g., "5.1.0")
+        min_version: Minimum version string (e.g., "5.0.0")
+    
+    Returns:
+        True if version >= min_version, False otherwise
+    
+    Example:
+        is_version_at_least("5.1.0", "5.0.0")  # True
+        is_version_at_least("4.1.0", "5.0.0")  # False
+    """
+    version_parts = tuple(int(x) for x in version.split('.'))
+    min_parts = tuple(int(x) for x in min_version.split('.'))
+    # Pad shorter version with zeros for comparison
+    max_len = max(len(version_parts), len(min_parts))
+    version_parts = version_parts + (0,) * (max_len - len(version_parts))
+    min_parts = min_parts + (0,) * (max_len - len(min_parts))
+    return version_parts >= min_parts
+
+
 # Number of submission runs for each benchmark
 # References need 2x of these runs
 # We use olympic scoring for statistics, so we reject
@@ -166,8 +191,8 @@ def get_submission_epochs(result_files, ruleset, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
-        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0, 5.0.0 and 5.1.0')
+        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0", "6.0.0"}:
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0, 5.0.0, 5.1.0 and 6.0.0')
         self.usage = usage
         self.ruleset = ruleset
         self.benchmark = benchmark
@@ -447,7 +472,7 @@ class RCP_Checker:
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
 
-        if self.ruleset in ["5.0.0", "5.1.0"] and self.benchmark == "llama31_405b": 
+        if is_version_at_least(self.ruleset, "5.0.0") and self.benchmark == "llama31_405b": 
             rcp_record['Max Speedup'] = rcp_record['RCP Mean'] / (rcp_record['Min Epochs'] - 46080)
         
         subm_epochs.sort()
@@ -550,7 +575,7 @@ def get_parser():
     parser.add_argument('--rcp_usage', type=str, default='training',
                     choices=['training', 'hpc'],
                     help='what WG does the benchmark come from to check the log against')
-    parser.add_argument('--rcp_version', type=str, default='5.1.0',
+    parser.add_argument('--rcp_version', type=str, default='6.0.0',
                     help='what version of rules to check the log against')
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--bert_train_samples', action='store_true',

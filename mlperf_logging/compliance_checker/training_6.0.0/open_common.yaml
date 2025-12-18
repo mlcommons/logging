@@ -1,0 +1,6 @@
+
+- KEY:
+    NAME:  submission_benchmark
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] in ['flux1', 'dlrm_dcnv2', 'llama31_8b', 'llama2_70b_lora', 'llama31_405b'] "
+    POST:  " enqueue_config('training_6.0.0/open_{}.yaml'.format(v['value'])) "
