@@ -25,18 +25,14 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     6.0.0/common.yaml          - currently the default config file, checks common fields complience and equeues benchmark-specific config file
     6.0.0/closed_common.yaml   - the common rules file for closed submissions. These rules apply to all benchmarks
     6.0.0/open_common.yaml     - the common rules file for open submissions. These rules apply to all benchmarks
-    6.0.0/closed_retinanet.yaml      - Per-benchmark rules, closed submissions.    
     6.0.0/closed_llama31_8b.yaml
     6.0.0/closed_llama31_405b.yaml
     6.0.0/closed_dlrm_dcnv2.yaml
-    6.0.0/closed_rgat.yaml
     6.0.0/closed_llama2_70b_lora.yaml
     6.0.0/closed_flux1.yaml
-    6.0.0/open_retinanet.yaml        - Per-benchmark rules, open submissions.    
     6.0.0/open_llama31_8b.yaml
     6.0.0/open_llama31_405b.yaml
     6.0.0/open_dlrm_dcnv2.yaml
-    6.0.0/open_rgat.yaml
     6.0.0/open_llama2_70b_lora.yaml
     6.0.0/open_flux1.yaml
 
