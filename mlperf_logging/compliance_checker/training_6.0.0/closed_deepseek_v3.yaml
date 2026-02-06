@@ -44,7 +44,7 @@
 - KEY:
     NAME:  opt_adamw_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-05 "
+    CHECK: " v['value'] == 1e-08 "
 
 - KEY:
     NAME:  opt_adamw_weight_decay
@@ -64,11 +64,11 @@
 - KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 6144 "
+    CHECK: " v['value'] == 1024 "
 
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'samples_count' in v['metadata']"
-    ATLEAST_ONE_CHECK: "(v['value'] <= 4.0) and v['value'] > 0.0"
+    ATLEAST_ONE_CHECK: "(v['value'] <= 2.7) and v['value'] > 0.0"  # TODO(dfridman): Update this once we have the exact value
