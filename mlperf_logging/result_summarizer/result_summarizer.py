@@ -914,6 +914,7 @@ def get_parser():
     
     parser.add_argument('--id_json_path',
                         type=str,
+                        default="id_list.json",
                         help='Path to id_json file to map runs to public ids. If specified but path is not found, file is created from scratch.')
 
     parser.add_argument('--werror',
