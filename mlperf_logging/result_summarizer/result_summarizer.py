@@ -13,6 +13,7 @@ import sys
 import itertools
 import pandas as pd
 import yaml
+import hashlib
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -691,6 +692,57 @@ def _fill_empty_benchmark_scores(
                 benchmark_scores[benchmark] = None
 
 
+def _add_id_to_summary(summary, id_json_path):
+    """Add public ids to the summary file based on the json in id_json_path, which is a list of sha256 ids where the position in the list is the id. If id_json_path is specified but the file does not exist, it is created from scratch.
+
+    Args:
+        summary (pd.DataFrame): Summary dataframe.
+        id_json_path (str): Path to json file.
+    """
+    
+    id_json = []
+    if os.path.exists(id_json_path):
+        with open(id_json_path, 'r') as f:
+            id_json = json.load(f)
+    
+    print(id_json)
+    
+    def get_hash(row):
+        columns_for_hashing = [    
+            'division',
+            'submitter',
+            'system',
+            'number_of_nodes',
+            'host_processor_model_name',
+            'host_processors_count',
+            'accelerator_model_name',
+            'accelerators_count',
+            'framework'
+        ]
+        to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
+        return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
+    
+    summary['hash'] = summary.apply(get_hash, axis=1)
+    
+    id_list = []
+
+    for elem in summary['hash']:
+        if elem in id_json:
+            id_list.append(id_json.index(elem) + 1)
+        else:
+            id_json.append(elem)
+            id_list.append(len(id_json))
+    
+    summary['id'] = id_list
+
+    with open(id_json_path, 'w') as f:
+        json.dump(id_json, f, indent=4)
+    
+    return summary
+
+     
+
+
 def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     """Summarizes a set of results.
 
@@ -837,6 +889,8 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
 
+
+
 def get_parser():
     parser = argparse.ArgumentParser(
         prog='mlperf_logging.result_summarizer',
@@ -857,6 +911,11 @@ def get_parser():
                         type=str,
                         choices=rule_choices(),
                         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
+    
+    parser.add_argument('--id_json_path',
+                        type=str,
+                        help='Path to id_json file to map runs to public ids. If specified but path is not found, file is created from scratch.')
+
     parser.add_argument('--werror',
                         action='store_true',
                         help='Treat warnings as errors')
@@ -874,6 +933,7 @@ def get_parser():
         '--xlsx',
         type=str,
         help='Exports a xlsx of the results to the path specified')
+    
 
     return parser
 
@@ -1042,7 +1102,8 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            print(summaries)
+            summaries = _add_id_to_summary(summaries, args.id_json_path)
+            
             if args.csv is not None:
                 csv = args.csv
                 assert csv.endswith(".csv")
