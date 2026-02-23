@@ -704,7 +704,10 @@ def _add_id_to_summary(summary, id_json_path):
     if os.path.exists(id_json_path):
         with open(id_json_path, 'r') as f:
             id_json = json.load(f)
-    
+        
+        if not isinstance(id_json, list):
+            raise ValueError(f"id_json file {id_json_path} is not a list. Either delete the file or change the argument to a file that doesn't exist.")
+
     print(id_json)
     
     def get_hash(row):
