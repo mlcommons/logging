@@ -1,0 +1,65 @@
+{
+    "gpt_oss_20b_ref_16":
+      {
+        "Benchmark": "gpt_oss_20b",
+        "Creator": "AMD",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "1xMI355X",
+        "Precision": "BF16",
+        "BS": 16,
+        "Hyperparams": {
+          "opt_base_learning_rate": 4e-04,
+          "opt_learning_rate_warmup_samples": 2048,
+          "gradient_accumulation_steps": 1
+        },
+        "Epochs to converge": [
+        //   159744, 159744, 159744, 159744, 159744,
+        //   159744, 172032, 159744, 172032, 159744,
+        //   172032, 159744, 159744, 159744, 159744,
+        //   159744, 159744, 159744, 159744, 159744
+        ]
+      },
+  
+    "gpt_oss_20b_ref_32":
+      {
+        "Benchmark": "gpt_oss_20b",
+        "Creator": "AMD",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "1xMI355X",
+        "Precision": "BF16",
+        "BS": 32,
+        "Hyperparams": {
+          "opt_base_learning_rate": 8e-04,
+          "opt_learning_rate_warmup_samples": 2048,
+          "gradient_accumulation_steps": 1
+        },
+        "Epochs to converge": [
+        //   196608, 172032, 184320, 184320, 172032,
+        //   172032, 184320, 184320, 184320, 172032,
+        //   172032, 172032, 184320, 184320, 184320,
+        //   172032, 172032, 172032, 184320, 184320
+        ]
+      },
+    
+    "gpt_oss_20b_ref_64":
+      {
+        "Benchmark": "gpt_oss_20b",
+        "Creator": "AMD",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "1xMI355X",
+        "Precision": "BF16",
+        "BS": 64,
+        "Hyperparams": {
+          "opt_base_learning_rate": 8e-04,
+          "opt_learning_rate_warmup_samples": 2048,
+          "gradient_accumulation_steps": 2
+        },
+        "Epochs to converge": [
+        //   233472, 208896, 208896, 233472, 233472,
+        //   233472, 233472, 233472, 208896, 233472,
+        //   233472, 233472, 245760, 221184, 208896,
+        //   233472, 233472, 221184, 221184, 221184
+        ]
+      }
+  }
+  

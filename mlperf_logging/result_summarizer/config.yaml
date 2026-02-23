@@ -108,6 +108,7 @@ columns:
       llama2_70b_lora: ["Benchmark results (minutes)", "LLM-Finetune", "SCROLSS Gov Report", "LLama2-70B-LoRA"]
       llama31_8b: ["Benchmark results (minutes)", "Small LLM", "C4", "Llama31-8b"]
       llama31_405b: ["Benchmark results (minutes)", "LLM", "C4", "Llama31-405B"]
+      gpt_oss_20b: ["Benchmark results (minutes)", "LLM", "C4", "GPT-OSS-20B"]
       default: [" ", " ", " "]
 
   hpc:
