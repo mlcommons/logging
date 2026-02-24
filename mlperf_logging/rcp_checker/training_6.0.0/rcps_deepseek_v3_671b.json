@@ -2,9 +2,9 @@
     "deepseek_v3_671b_ref_16384":
       {
         "Benchmark": "deepseek_v3_671b",
-        "Creator": "MLPerf",
+        "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "TBD",
+        "Platform": "GB300",
         "Precision": "BF16",
         "BS": 16384,
         "Hyperparams": {
@@ -20,9 +20,9 @@
     "deepseek_v3_671b_ref_18432":
       {
         "Benchmark": "deepseek_v3_671b",
-        "Creator": "MLPerf",
+        "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "TBD",
+        "Platform": "GB300",
         "Precision": "BF16",
         "BS": 18432,
         "Hyperparams": {
@@ -38,9 +38,9 @@
     "deepseek_v3_671b_ref_20480":
       {
         "Benchmark": "deepseek_v3_671b",
-        "Creator": "MLPerf",
+        "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "TBD",
+        "Platform": "GB300",
         "Precision": "BF16",
         "BS": 20480,
         "Hyperparams": {
