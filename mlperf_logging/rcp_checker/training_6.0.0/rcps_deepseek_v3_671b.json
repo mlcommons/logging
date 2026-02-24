@@ -1,0 +1,55 @@
+{
+    "deepseek_v3_671b_ref_16384":
+      {
+        "Benchmark": "deepseek_v3_671b",
+        "Creator": "MLPerf",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "TBD",
+        "Precision": "BF16",
+        "BS": 16384,
+        "Hyperparams": {
+          "opt_base_learning_rate": 0.000024,
+          "opt_learning_rate_warmup_steps": 4,
+          "gradient_accumulation_steps": 256
+        },
+        "Epochs to converge": [
+          // TODO(dfridman)
+        ]
+      },
+
+    "deepseek_v3_671b_ref_18432":
+      {
+        "Benchmark": "deepseek_v3_671b",
+        "Creator": "MLPerf",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "TBD",
+        "Precision": "BF16",
+        "BS": 18432,
+        "Hyperparams": {
+          "opt_base_learning_rate": 0.000025456,
+          "opt_learning_rate_warmup_steps": 4,
+          "gradient_accumulation_steps": 288
+        },
+        "Epochs to converge": [
+          // TODO(dfridman)
+        ]
+      },
+
+    "deepseek_v3_671b_ref_20480":
+      {
+        "Benchmark": "deepseek_v3_671b",
+        "Creator": "MLPerf",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "TBD",
+        "Precision": "BF16",
+        "BS": 20480,
+        "Hyperparams": {
+          "opt_base_learning_rate": 0.000026833,
+          "opt_learning_rate_warmup_steps": 4,
+          "gradient_accumulation_steps": 320
+        },
+        "Epochs to converge": [
+          // TODO(dfridman)
+        ]
+      }
+  }
