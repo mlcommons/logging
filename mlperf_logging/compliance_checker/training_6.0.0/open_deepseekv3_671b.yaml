@@ -77,5 +77,5 @@
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'epoch_num' in v['metadata']"
-    ATLEAST_ONE_CHECK: "(v['value'] <= 2.7) and v['value'] > 0.0"  # TODO(dfridman): Update this once we have the exact value
+    ATLEAST_ONE_CHECK: "(v['value'] <= 4.05) and v['value'] > 0.0"
 
