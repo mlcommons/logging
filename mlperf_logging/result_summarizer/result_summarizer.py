@@ -916,7 +916,6 @@ def get_parser():
     
     parser.add_argument('--id_json_path',
                         type=str,
-                        default="id_list.json",
                         help='Path to id_json file to map runs to public ids. If specified but path is not found, file is created from scratch.')
 
     parser.add_argument('--werror',
@@ -1105,7 +1104,8 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            summaries = _add_id_to_summary(summaries, args.id_json_path)
+            if args.id_json_path is not None:  
+                summaries = _add_id_to_summary(summaries, args.id_json_path)
             
             if args.csv is not None:
                 csv = args.csv
