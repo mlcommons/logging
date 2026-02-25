@@ -1,7 +1,7 @@
 {
-    "deepseek_v3_671b_ref_16384":
+    "deepseekv3_671b_ref_16384":
       {
-        "Benchmark": "deepseek_v3_671b",
+        "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
         "Platform": "GB300",
@@ -17,9 +17,9 @@
         ]
       },
 
-    "deepseek_v3_671b_ref_18432":
+    "deepseekv3_671b_ref_18432":
       {
-        "Benchmark": "deepseek_v3_671b",
+        "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
         "Platform": "GB300",
@@ -35,9 +35,9 @@
         ]
       },
 
-    "deepseek_v3_671b_ref_20480":
+    "deepseekv3_671b_ref_20480":
       {
-        "Benchmark": "deepseek_v3_671b",
+        "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
         "Platform": "GB300",
