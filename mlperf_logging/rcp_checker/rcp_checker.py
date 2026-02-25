@@ -60,7 +60,7 @@ submission_runs = {
         'flux1': 10,
         'llama31_405b': 3,
         'llama31_8b': 10,
-        'deepseekv3_671b': 10,
+        'deepseekv3_671b': 5,
     },
     "hpc": {
         'cosmoflow': 10,
