@@ -10,6 +10,7 @@
         "Hyperparams": {
           "opt_base_learning_rate": 0.000024,
           "opt_learning_rate_warmup_steps": 4,
+          "max_steps": 12000,
           "gradient_accumulation_steps": 256
         },
         "Epochs to converge": [
@@ -28,6 +29,7 @@
         "Hyperparams": {
           "opt_base_learning_rate": 0.000025456,
           "opt_learning_rate_warmup_steps": 4,
+          "max_steps": 12000,
           "gradient_accumulation_steps": 288
         },
         "Epochs to converge": [
@@ -46,6 +48,7 @@
         "Hyperparams": {
           "opt_base_learning_rate": 0.000026833,
           "opt_learning_rate_warmup_steps": 4,
+          "max_steps": 12000,
           "gradient_accumulation_steps": 320
         },
         "Epochs to converge": [
