@@ -17,6 +17,7 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
+    CHECK: " abs(v['value'] - 2.4e-05 * (s['global_batch_size'] / 16384) ** 0.5) < 1e-9 "
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
