@@ -1,6 +1,7 @@
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
+    CHECK: " v['value'] >= 15360 "
     POST: >
         s['global_batch_size'] = v['value']
 
