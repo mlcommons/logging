@@ -23,7 +23,7 @@ _ALL_RESULT_FILE_COUNTS = {
         # TODO: Update with official values
         'llama31_8b': 10,
         'flux1': 10,
-        'deepseekv3_671b': 5,
+        'deepseekv3_671b': 3,
     },
     
     'hpc' : {
