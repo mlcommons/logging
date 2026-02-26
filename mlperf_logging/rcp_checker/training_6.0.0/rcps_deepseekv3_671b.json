@@ -4,7 +4,7 @@
         "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "64 NVIDIA GB300 NVL72",
+        "Platform": "64 NVIDIA GB300 nodes",
         "Precision": "BF16",
         "BS": 15360,
         "Hyperparams": {
@@ -23,7 +23,7 @@
         "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "64 NVIDIA GB300 NVL72",
+        "Platform": "64 NVIDIA GB300 nodes",
         "Precision": "BF16",
         "BS": 16384,
         "Hyperparams": {
@@ -42,7 +42,7 @@
         "Benchmark": "deepseekv3_671b",
         "Creator": "NVIDIA",
         "When": "Reference RCPs before 6.0 submission",
-        "Platform": "64 NVIDIA GB300 NVL72",
+        "Platform": "64 NVIDIA GB300 nodes",
         "Precision": "BF16",
         "BS": 18432,
         "Hyperparams": {
