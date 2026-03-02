@@ -14,7 +14,7 @@
           "gradient_accumulation_steps": 240
         },
         "Epochs to converge": [
-          // TODO(dfridman)
+          721920, 721920, 721920, 737280, 691200, 737280
         ]
       },
 
@@ -33,7 +33,7 @@
           "gradient_accumulation_steps": 256
         },
         "Epochs to converge": [
-          // TODO(dfridman)
+          770048, 786432, 770048, 753664, 753664, 770048
         ]
       },
 
@@ -52,7 +52,7 @@
           "gradient_accumulation_steps": 288
         },
         "Epochs to converge": [
-          // TODO(dfridman)
+          847872, 866304, 866304, 829440, 866304, 866304
         ]
       }
   }
