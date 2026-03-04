@@ -23,6 +23,7 @@ _ALL_RESULT_FILE_COUNTS = {
         # TODO: Update with official values
         'llama31_8b': 10,
         'flux1': 10,
+        'gpt_oss_20b': 10,
         'deepseekv3_671b': 3,
     },
     
@@ -163,6 +164,7 @@ _ALL_ALLOWED_BENCHMARKS = {
         'flux1',
         'llama2_70b_lora',
         'llama31_405b',
+        'gpt_oss_20b'
         'deepseekv3_671b'
     ]
     },
