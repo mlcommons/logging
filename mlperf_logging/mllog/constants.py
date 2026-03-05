@@ -57,6 +57,7 @@ RGAT = "rgat"
 LLAMA31_405B = "llama31_405b"
 LLAMA31_8B = "llama31_8b"
 FLUX1 = "flux1"
+DEEPSEEKV3_671B = "deepseekv3_671b"
 
 # Constant values - model info
 ADAGRAD = "adagrad"
