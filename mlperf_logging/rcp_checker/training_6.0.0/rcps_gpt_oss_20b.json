@@ -30,14 +30,34 @@
         "BS": 32,
         "Hyperparams": {
           "opt_base_learning_rate": 8e-04,
-          "opt_learning_rate_warmup_samples": 2048,
-          "gradient_accumulation_steps": 1
+          "opt_learning_rate_warmup_samples": 4096,
+          "gradient_accumulation_steps": 2
         },
         "Epochs to converge": [
-          196608, 172032, 184320, 184320, 172032,
-          172032, 184320, 184320, 184320, 172032,
-          172032, 172032, 184320, 184320, 184320,
-          172032, 172032, 172032, 184320, 184320
+          245760, 233472, 233472, 233472, 233472,
+          233472, 233472, 233472, 233472, 233472,
+          233472, 221184, 233472, 233472, 245760,
+          245760, 221184, 245760, 245760, 221184
+        ]
+      },
+      "gpt_oss_20b_ref_64":
+      {
+        "Benchmark": "gpt_oss_20b",
+        "Creator": "AMD",
+        "When": "Reference RCPs before 6.0 submission",
+        "Platform": "1xMI355X",
+        "Precision": "BF16",
+        "BS": 64,
+        "Hyperparams": {
+          "opt_base_learning_rate": 1e-03,
+          "opt_learning_rate_warmup_samples": 12288,
+          "gradient_accumulation_steps": 4
+        },
+        "Epochs to converge": [
+          282624, 307200, 307200, 307200, 294912,
+          331776, 307200, 294912, 294912, 282624,
+          319488, 282624, 294912, 319488, 294912,
+          294912, 331776, 282624, 294912, 307200
         ]
       }
   }
