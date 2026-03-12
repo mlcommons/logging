@@ -14,6 +14,7 @@ import itertools
 import pandas as pd
 import yaml
 import hashlib
+import humanhash
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -692,22 +693,12 @@ def _fill_empty_benchmark_scores(
                 benchmark_scores[benchmark] = None
 
 
-def _add_id_to_summary(summary, id_json_path):
-    """Add public ids to the summary file based on the json in id_json_path, which is a list of sha256 ids where the position in the list is the id. If id_json_path is specified but the file does not exist, it is created from scratch.
+def _add_id_to_summary(summary):
+    """Add private ids to the summary file based on the json in id_json_path, which is a list of sha256 ids where the position in the list is the id. If id_json_path is specified but the file does not exist, it is created from scratch.
 
     Args:
         summary (pd.DataFrame): Summary dataframe.
-        id_json_path (str): Path to json file.
     """
-    
-    id_json = []
-    if os.path.exists(id_json_path):
-        with open(id_json_path, 'r') as f:
-            id_json = json.load(f)
-        
-        if not isinstance(id_json, list):
-            raise ValueError(f"id_json file {id_json_path} is not a list. Either delete the file or change the argument to a file that doesn't exist.")
-
     
     def get_hash(row):
         columns_for_hashing = [    
@@ -726,20 +717,8 @@ def _add_id_to_summary(summary, id_json_path):
     
     summary['hash'] = summary.apply(get_hash, axis=1)
     
-    id_list = []
+    summary['id'] = summary['hash'].apply(lambda x: humanhash.humanize(x))
 
-    for elem in summary['hash']:
-        if elem in id_json:
-            id_list.append(id_json.index(elem) + 1)
-        else:
-            id_json.append(elem)
-            id_list.append(len(id_json))
-    
-    summary['id'] = id_list
-
-    with open(id_json_path, 'w') as f:
-        json.dump(id_json, f, indent=4)
-    
     return summary
 
      
@@ -914,9 +893,9 @@ def get_parser():
                         choices=rule_choices(),
                         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
     
-    parser.add_argument('--id_json_path',
-                        type=str,
-                        help='Path to id_json file to map runs to public ids. If specified but path is not found, file is created from scratch.')
+    parser.add_argument('--generate_private_ids',
+                        action='store_true',
+                        help='Generate private IDs for each run.')
 
     parser.add_argument('--werror',
                         action='store_true',
@@ -1104,8 +1083,8 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            if args.id_json_path is not None:  
-                summaries = _add_id_to_summary(summaries, args.id_json_path)
+            if args.generate_private_ids:  
+                summaries = _add_id_to_summary(summaries)
             
             if args.csv is not None:
                 csv = args.csv
