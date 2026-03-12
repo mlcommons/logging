@@ -2,6 +2,15 @@
 
 MLPerf result summarizer
 
+## Installation
+
+Install the dependencies for the result summarizer using:
+
+```sh
+pip install -r requirements.txt
+```
+
+
 ## Usage
 
 To summarize an organization's submission results:
