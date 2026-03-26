@@ -1,9 +1,6 @@
 '''
 Summarizes a set of results.
 '''
-
-from __future__ import print_function
-
 import argparse
 import glob
 import json
@@ -284,6 +281,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'accelerators_count': int,
         'framework': str,
         'notes': str,
+        'private_id': str
     }
     if weak_scaling == True:
         benchmarks = get_allowed_benchmarks(usage, ruleset)
@@ -676,6 +674,16 @@ def _load_system_desc(folder, system):
         raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
     return _read_json_file(system_file)
 
+def _update_system_desc_with_id(folder, system, id):
+    systems_folder = os.path.join(folder, 'systems')
+    system_file = os.path.join(systems_folder, '{}.json'.format(system))
+    if not os.path.exists(system_file):
+        raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
+    json_file_contents = _read_json_file(system_file)
+    if "private_id" not in json_file_contents:
+        json_file_contents["private_id"] = id
+        with open(system_file, 'w') as f:
+            json.dump(json_file_contents, f, indent=4)
 
 def _fill_empty_benchmark_scores(
     benchmark_scores,
@@ -695,11 +703,11 @@ def _fill_empty_benchmark_scores(
                 benchmark_scores[benchmark] = None
 
 
-def _add_id_to_summary(summary):
-    """Add private ids to the summary file based on the json in id_json_path, which is a list of sha256 ids where the position in the list is the id. If id_json_path is specified but the file does not exist, it is created from scratch.
+def _get_id_from_sysinfo(summary):
+    """Generate private id from system information.
 
     Args:
-        summary (pd.DataFrame): Summary dataframe.
+        summary (dictionary): Sysinfo Dictionary
     """
 
 
@@ -797,22 +805,20 @@ def _add_id_to_summary(summary):
         columns_for_hashing = [    
             'division',
             'submitter',
-            'system',
+            'system_name',
             'number_of_nodes',
             'host_processor_model_name',
-            'host_processors_count',
+            'host_processors_per_node',
             'accelerator_model_name',
-            'accelerators_count',
+            'accelerators_per_node',
             'framework'
         ]
         to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
         return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
     
-    summary['hash'] = summary.apply(get_hash, axis=1)
-    
+    hash = get_hash(summary)
     humanhasha = HumanHasher()
-
-    summary['id'] = summary['hash'].apply(lambda x: humanhasha.humanize(x))
+    summary = humanhasha.humanize(hash)
 
     return summary
 
@@ -841,6 +847,17 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Load corresponding system description.
         try:
             desc = _load_system_desc(folder, system)
+
+            # Generate private id and update system desc to match
+            if kwargs.get('generate_private_ids'):
+                id = _get_id_from_sysinfo(desc)
+                desc['private_id'] = id if 'private_id' not in desc else desc['private_id']
+                _update_system_desc_with_id(folder, system, id)
+            else:
+                if 'private_id' in desc:
+                    print(f"WARNING: Found private_id in system desc for {system} but not generating private ids. To generate private ids, please use the --generate_private_ids flag.")
+                desc['private_id'] = '' 
+
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print(e)
             continue
@@ -857,6 +874,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
+            _check_and_update_system_specs('private_id', 'private_id')
             # Map availability if requested
             if "availability" in kwargs:
                 _check_and_update_system_specs('status', 'availability', lambda desc: _map_availability(desc["status"], kwargs["availability"]))
@@ -1032,13 +1050,15 @@ def main():
                 folder,
                 args.usage,
                 args.ruleset,
-                availability = config["availability"]
+                availability = config["availability"],
+                generate_private_ids = args.generate_private_ids,
             )
         else:
             strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
                 folder,
                 args.usage,
                 args.ruleset,
+                generate_private_ids = args.generate_private_ids,
             )
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
@@ -1178,9 +1198,7 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            if args.generate_private_ids:  
-                summaries = _add_id_to_summary(summaries)
-            
+
             if args.csv is not None:
                 csv = args.csv
                 assert csv.endswith(".csv")
