@@ -1,9 +1,6 @@
 '''
 Summarizes a set of results.
 '''
-
-from __future__ import print_function
-
 import argparse
 import glob
 import json
@@ -13,6 +10,10 @@ import sys
 import itertools
 import pandas as pd
 import yaml
+import hashlib
+import math
+import operator
+import uuid as uuidlib
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -280,6 +281,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'accelerators_count': int,
         'framework': str,
         'notes': str,
+        'private_id': str
     }
     if weak_scaling == True:
         benchmarks = get_allowed_benchmarks(usage, ruleset)
@@ -672,6 +674,16 @@ def _load_system_desc(folder, system):
         raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
     return _read_json_file(system_file)
 
+def _update_system_desc_with_id(folder, system, id):
+    systems_folder = os.path.join(folder, 'systems')
+    system_file = os.path.join(systems_folder, '{}.json'.format(system))
+    if not os.path.exists(system_file):
+        raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
+    json_file_contents = _read_json_file(system_file)
+    if "private_id" not in json_file_contents:
+        json_file_contents["private_id"] = id
+        with open(system_file, 'w') as f:
+            json.dump(json_file_contents, f, indent=4)
 
 def _fill_empty_benchmark_scores(
     benchmark_scores,
@@ -689,6 +701,128 @@ def _fill_empty_benchmark_scores(
         else:
             if benchmark not in benchmark_scores:
                 benchmark_scores[benchmark] = None
+
+
+def _get_id_from_sysinfo(summary):
+    """Generate private id from system information.
+
+    Args:
+        summary (dictionary): Sysinfo Dictionary
+    """
+
+
+    # Code from humanhash3, which is public domain.
+    DEFAULT_WORDLIST = (
+    'ack', 'alabama', 'alanine', 'alaska', 'alpha', 'angel', 'apart', 'april',
+    'arizona', 'arkansas', 'artist', 'asparagus', 'aspen', 'august', 'autumn',
+    'avocado', 'bacon', 'bakerloo', 'batman', 'beer', 'berlin', 'beryllium',
+    'black', 'blossom', 'blue', 'bluebird', 'bravo', 'bulldog', 'burger',
+    'butter', 'california', 'carbon', 'cardinal', 'carolina', 'carpet', 'cat',
+    'ceiling', 'charlie', 'chicken', 'coffee', 'cola', 'cold', 'colorado',
+    'comet', 'connecticut', 'crazy', 'cup', 'dakota', 'december', 'delaware',
+    'delta', 'diet', 'don', 'double', 'early', 'earth', 'east', 'echo',
+    'edward', 'eight', 'eighteen', 'eleven', 'emma', 'enemy', 'equal',
+    'failed', 'fanta', 'fifteen', 'fillet', 'finch', 'fish', 'five', 'fix',
+    'floor', 'florida', 'football', 'four', 'fourteen', 'foxtrot', 'freddie',
+    'friend', 'fruit', 'gee', 'georgia', 'glucose', 'golf', 'green', 'grey',
+    'hamper', 'happy', 'harry', 'hawaii', 'helium', 'high', 'hot', 'hotel',
+    'hydrogen', 'idaho', 'illinois', 'india', 'indigo', 'ink', 'iowa',
+    'island', 'item', 'jersey', 'jig', 'johnny', 'juliet', 'july', 'jupiter',
+    'kansas', 'kentucky', 'kilo', 'king', 'kitten', 'lactose', 'lake', 'lamp',
+    'lemon', 'leopard', 'lima', 'lion', 'lithium', 'london', 'louisiana',
+    'low', 'magazine', 'magnesium', 'maine', 'mango', 'march', 'mars',
+    'maryland', 'massachusetts', 'may', 'mexico', 'michigan', 'mike',
+    'minnesota', 'mirror', 'mississippi', 'missouri', 'mobile', 'mockingbird',
+    'monkey', 'montana', 'moon', 'mountain', 'muppet', 'music', 'nebraska',
+    'neptune', 'network', 'nevada', 'nine', 'nineteen', 'nitrogen', 'north',
+    'november', 'nuts', 'october', 'ohio', 'oklahoma', 'one', 'orange',
+    'oranges', 'oregon', 'oscar', 'oven', 'oxygen', 'papa', 'paris', 'pasta',
+    'pennsylvania', 'pip', 'pizza', 'pluto', 'potato', 'princess', 'purple',
+    'quebec', 'queen', 'quiet', 'red', 'river', 'robert', 'robin', 'romeo',
+    'rugby', 'sad', 'salami', 'saturn', 'september', 'seven', 'seventeen',
+    'shade', 'sierra', 'single', 'sink', 'six', 'sixteen', 'skylark', 'snake',
+    'social', 'sodium', 'solar', 'south', 'spaghetti', 'speaker', 'spring',
+    'stairway', 'steak', 'stream', 'summer', 'sweet', 'table', 'tango', 'ten',
+    'tennessee', 'tennis', 'texas', 'thirteen', 'three', 'timing', 'triple',
+    'twelve', 'twenty', 'two', 'uncle', 'undress', 'uniform', 'uranus', 'utah',
+    'vegan', 'venus', 'vermont', 'victor', 'video', 'violet', 'virginia',
+    'washington', 'west', 'whiskey', 'white', 'william', 'winner', 'winter',
+    'wisconsin', 'wolfram', 'wyoming', 'xray', 'yankee', 'yellow', 'zebra',
+    'zulu')
+
+    class HumanHasher(object):
+
+        def __init__(self, wordlist=DEFAULT_WORDLIST):
+            self.wordlist = wordlist
+
+        def humanize_list(self, hexdigest, words=4):
+            # Gets a list of byte values between 0-255.
+            bytes_ = map(lambda x: int(x, 16),
+                        map(''.join, zip(hexdigest[::2], hexdigest[1::2])))
+            # Compress an arbitrary number of bytes to `words`.
+            compressed = self.compress(bytes_, words)
+
+            return [str(self.wordlist[byte]) for byte in compressed]
+
+        def humanize(self, hexdigest, words=4, separator='-'):
+            # Map the compressed byte values through the word list.
+            return separator.join(self.humanize_list(hexdigest, words))
+
+        @staticmethod
+        def compress(bytes_, target):
+            bytes_list = list(bytes_)
+
+            length = len(bytes_list)
+            # If there are less than the target number bytes, return input bytes
+            if target >= length:
+                return bytes_
+
+            # Split `bytes` evenly into `target` segments
+            # Each segment hashes `seg_size` bytes, rounded down for some
+            seg_size = float(length) / float(target)
+            # Initialize `target` number of segments
+            segments = [0] * target
+            seg_num = 0
+
+            # Use a simple XOR checksum-like function for compression
+            for i, byte in enumerate(bytes_list):
+                # Divide the byte index by the segment size to assign its segment
+                # Floor to create a valid segment index
+                # Min to ensure the index is within `target`
+                seg_num = min(int(math.floor(i / seg_size)), target-1)
+                # Apply XOR to the existing segment and the byte
+                segments[seg_num] = operator.xor(segments[seg_num], byte)
+
+            return segments
+
+        def uuid(self, **params):
+            digest = str(uuidlib.uuid4()).replace('-', '')
+            return self.humanize(digest, **params), digest
+
+
+
+    def get_hash(row):
+        columns_for_hashing = [    
+            'division',
+            'submitter',
+            'system_name',
+            'number_of_nodes',
+            'host_processor_model_name',
+            'host_processors_per_node',
+            'accelerator_model_name',
+            'accelerators_per_node',
+            'framework'
+        ]
+        to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
+        return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
+    
+    hash = get_hash(summary)
+    humanhasha = HumanHasher()
+    summary = humanhasha.humanize(hash)
+
+    return summary
+
+     
 
 
 def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
@@ -713,6 +847,17 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Load corresponding system description.
         try:
             desc = _load_system_desc(folder, system)
+
+            # Generate private id and update system desc to match
+            if kwargs.get('generate_private_ids'):
+                id = _get_id_from_sysinfo(desc)
+                desc['private_id'] = id if 'private_id' not in desc else desc['private_id']
+                _update_system_desc_with_id(folder, system, id)
+            else:
+                if 'private_id' in desc:
+                    print(f"WARNING: Found private_id in system desc for {system} but not generating private ids. To generate private ids, please use the --generate_private_ids flag.")
+                desc['private_id'] = '' 
+
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print(e)
             continue
@@ -729,6 +874,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
+            _check_and_update_system_specs('private_id', 'private_id')
             # Map availability if requested
             if "availability" in kwargs:
                 _check_and_update_system_specs('status', 'availability', lambda desc: _map_availability(desc["status"], kwargs["availability"]))
@@ -837,6 +983,8 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
 
+
+
 def get_parser():
     parser = argparse.ArgumentParser(
         prog='mlperf_logging.result_summarizer',
@@ -857,6 +1005,11 @@ def get_parser():
                         type=str,
                         choices=rule_choices(),
                         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
+    
+    parser.add_argument('--generate_private_ids',
+                        action='store_true',
+                        help='Generate private IDs for each run.')
+
     parser.add_argument('--werror',
                         action='store_true',
                         help='Treat warnings as errors')
@@ -874,6 +1027,7 @@ def get_parser():
         '--xlsx',
         type=str,
         help='Exports a xlsx of the results to the path specified')
+    
 
     return parser
 
@@ -896,13 +1050,15 @@ def main():
                 folder,
                 args.usage,
                 args.ruleset,
-                availability = config["availability"]
+                availability = config["availability"],
+                generate_private_ids = args.generate_private_ids,
             )
         else:
             strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
                 folder,
                 args.usage,
                 args.ruleset,
+                generate_private_ids = args.generate_private_ids,
             )
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
@@ -1042,7 +1198,7 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            print(summaries)
+
             if args.csv is not None:
                 csv = args.csv
                 assert csv.endswith(".csv")
