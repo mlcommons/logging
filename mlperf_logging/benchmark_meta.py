@@ -164,7 +164,7 @@ _ALL_ALLOWED_BENCHMARKS = {
         'flux1',
         'llama2_70b_lora',
         'llama31_405b',
-        'gpt_oss_20b'
+        'gpt_oss_20b',
         'deepseekv3_671b'
     ]
     },
