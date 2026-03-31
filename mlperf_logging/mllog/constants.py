@@ -177,6 +177,7 @@ EVAL_MAX_PREDICTION_SYMBOLS = "eval_max_prediction_symbols"
 START_WARMUP_STEP = "start_warmup_step"
 INIT_CHECKPOINT_STEP = "init_checkpoint_step"
 LORA_ALPHA = "lora_alpha"
+MOE_AUX_LOSS_COEFF = "moe_aux_loss_coeff"
 # Log keys - misc.
 BBOX = "bbox"
 SEGM = "segm"
