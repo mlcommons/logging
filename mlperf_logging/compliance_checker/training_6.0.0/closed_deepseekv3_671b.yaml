@@ -70,6 +70,11 @@
     CHECK: " v['value'] == 1.0 "
 
 - KEY:
+    NAME:  moe_aux_loss_coeff
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.01 "
+
+- KEY:
     NAME:  gradient_accumulation_steps
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] > 0 "
