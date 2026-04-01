@@ -674,16 +674,19 @@ def _load_system_desc(folder, system):
         raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
     return _read_json_file(system_file)
 
-def _update_system_desc_with_id(folder, system, id):
+def _get_id_file(folder, system):
     systems_folder = os.path.join(folder, 'systems')
-    system_file = os.path.join(systems_folder, '{}.json'.format(system))
+    system_file = os.path.join(systems_folder, '{}_privateid.json'.format(system))
     if not os.path.exists(system_file):
-        raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
-    json_file_contents = _read_json_file(system_file)
-    if "private_id" not in json_file_contents:
-        json_file_contents["private_id"] = id
-        with open(system_file, 'w') as f:
-            json.dump(json_file_contents, f, indent=4)
+        return {}
+    return _read_json_file(system_file)
+
+def _update_id_file(folder, system, id):
+    systems_folder = os.path.join(folder, 'systems')
+    system_file = os.path.join(systems_folder, '{}_privateid.json'.format(system))
+    id = {'private_id': id}
+    with open(system_file, 'w') as f:
+        json.dump(id, f, indent=4)
 
 def _fill_empty_benchmark_scores(
     benchmark_scores,
@@ -840,23 +843,21 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                                               weak_scaling=True)
     power_summary = _get_empty_summary(usage, ruleset)
     power_weak_scaling_summary = _get_empty_summary(usage, ruleset, weak_scaling=True)
-
     for system_folder in _get_sub_folders(results_folder):
         folder_parts = system_folder.split('/')
         system = folder_parts[-1]
         # Load corresponding system description.
         try:
             desc = _load_system_desc(folder, system)
-
+            id = _get_id_file(folder, system)
             # Generate private id and update system desc to match
-            if kwargs.get('generate_private_ids'):
-                id = _get_id_from_sysinfo(desc)
-                desc['private_id'] = id if 'private_id' not in desc else desc['private_id']
-                _update_system_desc_with_id(folder, system, id)
-            else:
-                if 'private_id' in desc:
-                    print(f"WARNING: Found private_id in system desc for {system} but not generating private ids. To generate private ids, please use the --generate_private_ids flag.")
-                desc['private_id'] = '' 
+            if kwargs.get('generate_private_ids') and 'private_id' not in id:
+                id['private_id'] = _get_id_from_sysinfo(desc)
+                _update_id_file(folder, system, desc['private_id'])
+            elif 'private_id' not in id:
+                # Ensure private_id field exists in desc for consistent processing later, even if it's empty
+                id['private_id'] = '' 
+            desc['private_id']  = id['private_id']
 
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print(e)
