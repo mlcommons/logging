@@ -675,15 +675,15 @@ def _load_system_desc(folder, system):
     return _read_json_file(system_file)
 
 def _get_id_file(folder, system):
-    systems_folder = os.path.join(folder, 'systems')
-    system_file = os.path.join(systems_folder, '{}_privateid.json'.format(system))
+    systems_folder = os.path.join(folder, 'results/',system)
+    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
     if not os.path.exists(system_file):
         return {}
     return _read_json_file(system_file)
 
 def _update_id_file(folder, system, id):
-    systems_folder = os.path.join(folder, 'systems')
-    system_file = os.path.join(systems_folder, '{}_privateid.json'.format(system))
+    systems_folder = os.path.join(folder, 'results/',system)
+    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
     id = {'private_id': id}
     with open(system_file, 'w') as f:
         json.dump(id, f, indent=4)
