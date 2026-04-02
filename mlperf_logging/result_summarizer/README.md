@@ -31,6 +31,8 @@ With the `--csv` flag, the result summarizer exports a CSV line for each system,
 corresponding to one row of a table like the 
 [0.6 results](https://mlperf.org/training-results-0-6).
 
+In order to generate private systems-specific IDs for each submission, please use the "--generate_private_ids" flag to generate a "private_id.json" file per each system. This will contain the private id assigned to each system, which will be exported in an exported CSV file under the "private-id" column.
+
 ## Tested software versions
 Tested and confirmed working using the following software versions:
 
