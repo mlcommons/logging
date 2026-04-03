@@ -1,9 +1,6 @@
 '''
 Summarizes a set of results.
 '''
-
-from __future__ import print_function
-
 import argparse
 import glob
 import json
@@ -13,6 +10,10 @@ import sys
 import itertools
 import pandas as pd
 import yaml
+import hashlib
+import math
+import operator
+import uuid as uuidlib
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
@@ -280,6 +281,7 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'accelerators_count': int,
         'framework': str,
         'notes': str,
+        'private_id': str
     }
     if weak_scaling == True:
         benchmarks = get_allowed_benchmarks(usage, ruleset)
@@ -324,6 +326,154 @@ def _get_scaling_factor(folder):
     return scaling_factor
 
 
+def _compute_strong_score_standalone(
+    benchmark,
+    system,
+    has_power,
+    benchmark_folder,
+    usage,
+    ruleset,
+    desc={"submitter": None},
+    return_full_scores=False,
+):
+    pattern = "{folder}/result_*.txt".format(folder=benchmark_folder)
+    result_files = glob.glob(pattern, recursive=True)
+    scores = []
+    scores_track = {}
+    power_scores = []
+    power_scores_track = {}
+    dropped_scores = 0
+    for result_file in result_files:
+        try:
+            loglines = _read_result_file(result_file, usage, ruleset)
+            start, stop = _query_run_start_stop(loglines)
+            time_to_train_ms = stop - start
+            scores.append(time_to_train_ms / 60 / 1000)
+            scores_track[result_file] = scores[-1]
+        except ValueError as e:
+            print("{} in {}".format(e, result_file))
+            dropped_scores += 1
+            continue
+        if has_power:
+            power_scores.append(
+                _compute_total_power(
+                    benchmark_folder, result_file, time_to_train_ms, ruleset
+                )
+            )
+            power_scores_track[result_file] = power_scores[-1]
+    max_dropped_scores = 4 if benchmark == "unet3d" else 1
+    if dropped_scores > max_dropped_scores:
+        print(
+            "CRITICAL ERROR: Too many non-converging runs "
+            "for {} {}/{}".format(desc["submitter"], system, benchmark)
+        )
+        print(
+            "** CRITICAL ERROR ** Results in the table for {} {}/{} are "
+            "NOT correct".format(desc["submitter"], system, benchmark)
+        )
+    elif dropped_scores >= 1:
+        print(
+            "NOTICE: Dropping non-converged run(s) for {} {}/{} using "
+            "olympic scoring.".format(
+                desc["submitter"],
+                system,
+                benchmark,
+            )
+        )
+
+    if has_power:
+        unsorted_scores = scores.copy()
+
+    score = None
+    scaling_factor = _get_scaling_factor(benchmark_folder)
+    if dropped_scores <= max_dropped_scores:
+        olympic_avg = _compute_olympic_average(
+            scores, dropped_scores, max_dropped_scores
+        )
+        if olympic_avg is not None:
+            score = olympic_avg
+            score *= scaling_factor
+
+    power_score = None
+    if has_power and dropped_scores <= max_dropped_scores:
+        index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x: x[1])]
+        olympic_avg = _index_olympic_average(
+            power_scores, index, dropped_scores, max_dropped_scores
+        )
+        if olympic_avg is not None:
+            power_score = olympic_avg
+            power_score *= scaling_factor
+    if return_full_scores:
+        return scores_track, power_scores_track, score, power_score
+    return score, power_score
+
+
+def _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc = {"submitter": None}):
+    power_scores = []
+    # Read scores from result files.
+    pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+    result_files = glob.glob(pattern, recursive=True)
+    global_start, global_stop = float('inf'), float('-inf')
+    number_of_models = 0
+    instance_scale = None
+    for result_file in result_files:
+        try:
+            loglines = _read_result_file(result_file, usage, ruleset)
+            start, stop = _query_run_start_stop(loglines)
+            global_start = min(global_start, start)
+            global_stop = max(global_stop, stop)
+            number_of_models += 1
+            if instance_scale == None:
+                instance_scale = _query_instance_scale(loglines)
+            else:
+                assert instance_scale == _query_instance_scale(loglines)
+        except ValueError as e:
+            print('{} in {}'.format(e, result_file))
+            continue
+        if has_power:
+            time_to_train_ms = stop - start
+            power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
+
+    scores = {}
+    power = {}
+    if number_of_models >= get_result_file_counts(usage)[benchmark]:
+        scores['{}:{}'.format(
+            benchmark,
+            'time_to_train_all',
+        )] = (global_stop - global_start) / 60 / 1000
+        scores['{}:{}'.format(
+            benchmark,
+            'number_of_models',
+        )] = number_of_models
+        scores['{}:{}'.format(
+            benchmark,
+            'instance_scale',
+        )] = instance_scale
+    else:
+        print('CRITICAL ERROR: Not enough converging weak scaling runs '
+                'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+        
+    if has_power:
+        olympic_avg = _compute_olympic_average(
+            power_scores, 1, 1)
+        if olympic_avg is not None:
+            power['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )] = olympic_avg
+            power['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )] = olympic_avg
+            power['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )] = olympic_avg
+
+    return scores, power
+
+
+
 def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
     # Collect scores for benchmarks.
     benchmark_scores = {}
@@ -340,55 +490,11 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
         # Read scores from result files.
-        pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
-        result_files = glob.glob(pattern, recursive=True)
-        scores = []
-        power_scores = []
-        dropped_scores = 0
-        for result_file in result_files:
-            try:
-                loglines = _read_result_file(result_file, usage, ruleset)
-                start, stop = _query_run_start_stop(loglines)
-                time_to_train_ms = stop - start
-                scores.append(time_to_train_ms / 60 / 1000)
-            except ValueError as e:
-                print('{} in {}'.format(e, result_file))
-                dropped_scores += 1
-                continue
-            if has_power:
-                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
-        max_dropped_scores = 4 if benchmark == 'unet3d' else 1
-        if dropped_scores > max_dropped_scores:
-            print('CRITICAL ERROR: Too many non-converging runs '
-                  'for {} {}/{}'.format(desc['submitter'], system, benchmark))
-            print('** CRITICAL ERROR ** Results in the table for {} {}/{} are '
-                  'NOT correct'.format(desc['submitter'], system, benchmark))
-        elif dropped_scores >= 1:
-            print('NOTICE: Dropping non-converged run(s) for {} {}/{} using '
-                  'olympic scoring.'.format(
-                      desc['submitter'],
-                      system,
-                      benchmark,
-                  ))
-            
-        if has_power:
-            unsorted_scores = scores.copy()
-
-        scaling_factor = _get_scaling_factor(benchmark_folder)
-        if dropped_scores <= max_dropped_scores:
-            olympic_avg = _compute_olympic_average(
-                scores, dropped_scores, max_dropped_scores)
-            if olympic_avg is not None:
-                benchmark_scores[benchmark] = olympic_avg
-                benchmark_scores[benchmark] *= scaling_factor
-
-        if has_power and dropped_scores <= max_dropped_scores:
-            index = [i[0] for i in sorted(enumerate(unsorted_scores), key=lambda x:x[1])]
-            olympic_avg = _index_olympic_average(
-                power_scores, index, dropped_scores, max_dropped_scores)
-            if olympic_avg is not None:
-                benchmark_power_scores[benchmark] = olympic_avg
-                benchmark_power_scores[benchmark] *= scaling_factor
+        score, power_score = _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
+        if score is not None:
+            benchmark_scores[benchmark] = score
+        if power_score is not None:
+            benchmark_power_scores[benchmark] = power_score
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
     if len(benchmark_power_scores) > 0:
         _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
@@ -426,64 +532,53 @@ def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
         system = folder_parts[-3]
         # Check if this benchmark has power results
         has_power = _has_power(benchmark_folder)
-        power_scores = []
-        # Read scores from result files.
-        pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
-        result_files = glob.glob(pattern, recursive=True)
-        global_start, global_stop = float('inf'), float('-inf')
-        number_of_models = 0
-        instance_scale = None
-        for result_file in result_files:
-            try:
-                loglines = _read_result_file(result_file, usage, ruleset)
-                start, stop = _query_run_start_stop(loglines)
-                global_start = min(global_start, start)
-                global_stop = max(global_stop, stop)
-                number_of_models += 1
-                if instance_scale == None:
-                    instance_scale = _query_instance_scale(loglines)
-                else:
-                    assert instance_scale == _query_instance_scale(loglines)
-            except ValueError as e:
-                print('{} in {}'.format(e, result_file))
-                continue
-            if has_power:
-                time_to_train_ms = stop - start
-                power_scores.append(_compute_total_power(benchmark_folder, result_file, time_to_train_ms, ruleset))
+        scores, power_scores = _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
 
-        if number_of_models >= get_result_file_counts(usage)[benchmark]:
+        if scores:
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'time_to_train_all',
-            )] = (global_stop - global_start) / 60 / 1000
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )]
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'number_of_models',
-            )] = number_of_models
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )]
             benchmark_scores['{}:{}'.format(
                 benchmark,
                 'instance_scale',
-            )] = instance_scale
-        else:
-            print('CRITICAL ERROR: Not enough converging weak scaling runs '
-                  'for {} {}/{}'.format(desc['submitter'], system, benchmark))
+            )] = scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )]
             
-        if has_power:
-            olympic_avg = _compute_olympic_average(
-                power_scores, 1, 1)
-            if olympic_avg is not None:
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'time_to_train_all',
-                )] = olympic_avg
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'number_of_models',
-                )] = olympic_avg
-                benchmark_power_scores['{}:{}'.format(
-                    benchmark,
-                    'instance_scale',
-                )] = olympic_avg
+        if power_scores:
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'time_to_train_all',
+            )]
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'number_of_models',
+            )]
+            benchmark_power_scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )] = power_scores['{}:{}'.format(
+                benchmark,
+                'instance_scale',
+            )]
 
     _fill_empty_benchmark_scores(benchmark_scores,
                                  usage,
@@ -579,6 +674,19 @@ def _load_system_desc(folder, system):
         raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
     return _read_json_file(system_file)
 
+def _get_id_file(folder, system):
+    systems_folder = os.path.join(folder, 'results/',system)
+    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
+    if not os.path.exists(system_file):
+        return {}
+    return _read_json_file(system_file)
+
+def _update_id_file(folder, system, id):
+    systems_folder = os.path.join(folder, 'results/',system)
+    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
+    id = {'private_id': id}
+    with open(system_file, 'w') as f:
+        json.dump(id, f, indent=4)
 
 def _fill_empty_benchmark_scores(
     benchmark_scores,
@@ -598,6 +706,128 @@ def _fill_empty_benchmark_scores(
                 benchmark_scores[benchmark] = None
 
 
+def _get_id_from_sysinfo(summary):
+    """Generate private id from system information.
+
+    Args:
+        summary (dictionary): Sysinfo Dictionary
+    """
+
+
+    # Code from humanhash3, which is public domain.
+    DEFAULT_WORDLIST = (
+    'ack', 'alabama', 'alanine', 'alaska', 'alpha', 'angel', 'apart', 'april',
+    'arizona', 'arkansas', 'artist', 'asparagus', 'aspen', 'august', 'autumn',
+    'avocado', 'bacon', 'bakerloo', 'batman', 'beer', 'berlin', 'beryllium',
+    'black', 'blossom', 'blue', 'bluebird', 'bravo', 'bulldog', 'burger',
+    'butter', 'california', 'carbon', 'cardinal', 'carolina', 'carpet', 'cat',
+    'ceiling', 'charlie', 'chicken', 'coffee', 'cola', 'cold', 'colorado',
+    'comet', 'connecticut', 'crazy', 'cup', 'dakota', 'december', 'delaware',
+    'delta', 'diet', 'don', 'double', 'early', 'earth', 'east', 'echo',
+    'edward', 'eight', 'eighteen', 'eleven', 'emma', 'enemy', 'equal',
+    'failed', 'fanta', 'fifteen', 'fillet', 'finch', 'fish', 'five', 'fix',
+    'floor', 'florida', 'football', 'four', 'fourteen', 'foxtrot', 'freddie',
+    'friend', 'fruit', 'gee', 'georgia', 'glucose', 'golf', 'green', 'grey',
+    'hamper', 'happy', 'harry', 'hawaii', 'helium', 'high', 'hot', 'hotel',
+    'hydrogen', 'idaho', 'illinois', 'india', 'indigo', 'ink', 'iowa',
+    'island', 'item', 'jersey', 'jig', 'johnny', 'juliet', 'july', 'jupiter',
+    'kansas', 'kentucky', 'kilo', 'king', 'kitten', 'lactose', 'lake', 'lamp',
+    'lemon', 'leopard', 'lima', 'lion', 'lithium', 'london', 'louisiana',
+    'low', 'magazine', 'magnesium', 'maine', 'mango', 'march', 'mars',
+    'maryland', 'massachusetts', 'may', 'mexico', 'michigan', 'mike',
+    'minnesota', 'mirror', 'mississippi', 'missouri', 'mobile', 'mockingbird',
+    'monkey', 'montana', 'moon', 'mountain', 'muppet', 'music', 'nebraska',
+    'neptune', 'network', 'nevada', 'nine', 'nineteen', 'nitrogen', 'north',
+    'november', 'nuts', 'october', 'ohio', 'oklahoma', 'one', 'orange',
+    'oranges', 'oregon', 'oscar', 'oven', 'oxygen', 'papa', 'paris', 'pasta',
+    'pennsylvania', 'pip', 'pizza', 'pluto', 'potato', 'princess', 'purple',
+    'quebec', 'queen', 'quiet', 'red', 'river', 'robert', 'robin', 'romeo',
+    'rugby', 'sad', 'salami', 'saturn', 'september', 'seven', 'seventeen',
+    'shade', 'sierra', 'single', 'sink', 'six', 'sixteen', 'skylark', 'snake',
+    'social', 'sodium', 'solar', 'south', 'spaghetti', 'speaker', 'spring',
+    'stairway', 'steak', 'stream', 'summer', 'sweet', 'table', 'tango', 'ten',
+    'tennessee', 'tennis', 'texas', 'thirteen', 'three', 'timing', 'triple',
+    'twelve', 'twenty', 'two', 'uncle', 'undress', 'uniform', 'uranus', 'utah',
+    'vegan', 'venus', 'vermont', 'victor', 'video', 'violet', 'virginia',
+    'washington', 'west', 'whiskey', 'white', 'william', 'winner', 'winter',
+    'wisconsin', 'wolfram', 'wyoming', 'xray', 'yankee', 'yellow', 'zebra',
+    'zulu')
+
+    class HumanHasher(object):
+
+        def __init__(self, wordlist=DEFAULT_WORDLIST):
+            self.wordlist = wordlist
+
+        def humanize_list(self, hexdigest, words=4):
+            # Gets a list of byte values between 0-255.
+            bytes_ = map(lambda x: int(x, 16),
+                        map(''.join, zip(hexdigest[::2], hexdigest[1::2])))
+            # Compress an arbitrary number of bytes to `words`.
+            compressed = self.compress(bytes_, words)
+
+            return [str(self.wordlist[byte]) for byte in compressed]
+
+        def humanize(self, hexdigest, words=4, separator='-'):
+            # Map the compressed byte values through the word list.
+            return separator.join(self.humanize_list(hexdigest, words))
+
+        @staticmethod
+        def compress(bytes_, target):
+            bytes_list = list(bytes_)
+
+            length = len(bytes_list)
+            # If there are less than the target number bytes, return input bytes
+            if target >= length:
+                return bytes_
+
+            # Split `bytes` evenly into `target` segments
+            # Each segment hashes `seg_size` bytes, rounded down for some
+            seg_size = float(length) / float(target)
+            # Initialize `target` number of segments
+            segments = [0] * target
+            seg_num = 0
+
+            # Use a simple XOR checksum-like function for compression
+            for i, byte in enumerate(bytes_list):
+                # Divide the byte index by the segment size to assign its segment
+                # Floor to create a valid segment index
+                # Min to ensure the index is within `target`
+                seg_num = min(int(math.floor(i / seg_size)), target-1)
+                # Apply XOR to the existing segment and the byte
+                segments[seg_num] = operator.xor(segments[seg_num], byte)
+
+            return segments
+
+        def uuid(self, **params):
+            digest = str(uuidlib.uuid4()).replace('-', '')
+            return self.humanize(digest, **params), digest
+
+
+
+    def get_hash(row):
+        columns_for_hashing = [    
+            'division',
+            'submitter',
+            'system_name',
+            'number_of_nodes',
+            'host_processor_model_name',
+            'host_processors_per_node',
+            'accelerator_model_name',
+            'accelerators_per_node',
+            'framework'
+        ]
+        to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
+        return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
+    
+    hash = get_hash(summary)
+    humanhasha = HumanHasher()
+    summary = humanhasha.humanize(hash)
+
+    return summary
+
+     
+
+
 def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     """Summarizes a set of results.
 
@@ -613,13 +843,22 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                                               weak_scaling=True)
     power_summary = _get_empty_summary(usage, ruleset)
     power_weak_scaling_summary = _get_empty_summary(usage, ruleset, weak_scaling=True)
-
     for system_folder in _get_sub_folders(results_folder):
         folder_parts = system_folder.split('/')
         system = folder_parts[-1]
         # Load corresponding system description.
         try:
             desc = _load_system_desc(folder, system)
+            id = _get_id_file(folder, system)
+            # Generate private id and update system desc to match
+            if kwargs.get('generate_private_ids') and 'private_id' not in id:
+                id['private_id'] = _get_id_from_sysinfo(desc)
+                _update_id_file(folder, system, desc['private_id'])
+            elif 'private_id' not in id:
+                # Ensure private_id field exists in desc for consistent processing later, even if it's empty
+                id['private_id'] = '' 
+            desc['private_id']  = id['private_id']
+
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print(e)
             continue
@@ -636,6 +875,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
+            _check_and_update_system_specs('private_id', 'private_id')
             # Map availability if requested
             if "availability" in kwargs:
                 _check_and_update_system_specs('status', 'availability', lambda desc: _map_availability(desc["status"], kwargs["availability"]))
@@ -744,6 +984,8 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
 
+
+
 def get_parser():
     parser = argparse.ArgumentParser(
         prog='mlperf_logging.result_summarizer',
@@ -764,6 +1006,11 @@ def get_parser():
                         type=str,
                         choices=rule_choices(),
                         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
+    
+    parser.add_argument('--generate_private_ids',
+                        action='store_true',
+                        help='Generate private IDs for each run.')
+
     parser.add_argument('--werror',
                         action='store_true',
                         help='Treat warnings as errors')
@@ -781,6 +1028,7 @@ def get_parser():
         '--xlsx',
         type=str,
         help='Exports a xlsx of the results to the path specified')
+    
 
     return parser
 
@@ -803,13 +1051,15 @@ def main():
                 folder,
                 args.usage,
                 args.ruleset,
-                availability = config["availability"]
+                availability = config["availability"],
+                generate_private_ids = args.generate_private_ids,
             )
         else:
             strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
                 folder,
                 args.usage,
                 args.ruleset,
+                generate_private_ids = args.generate_private_ids,
             )
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
@@ -949,7 +1199,7 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-            print(summaries)
+
             if args.csv is not None:
                 csv = args.csv
                 assert csv.endswith(".csv")

@@ -1,13 +1,14 @@
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
+    CHECK: " v['value'] >= 15360 "
     POST: >
         s['global_batch_size'] = v['value']
 
 - KEY:
     NAME:  max_sequence_length
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 8192 "
+    CHECK: " v['value'] == 4096 "
 
 - KEY:
     NAME:  opt_name
@@ -17,22 +18,26 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] * 1152 == s['global_batch_size'] * 8e-5 " 
+    CHECK: " abs(v['value'] - 2.4e-05 * (s['global_batch_size'] / 16384) ** 0.5) < 1e-9 "
 
 - KEY:
-    NAME:  opt_end_learning_rate
+    NAME:  max_steps
     REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 12000 "
+    POST: >
+        s['max_steps'] = v['value']
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 4 "
     POST: >
-        s['opt_learning_rate_warmup_steps'] = math.ceil(8000 * 1152 / s['global_batch_size'] )
+        s['opt_learning_rate_warmup_steps'] = v['value']
 
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == math.ceil(1_200_000 * 1152 / s['global_batch_size'] ) - s['opt_learning_rate_warmup_steps'] "
+    CHECK: " v['value'] == s['max_steps'] - s['opt_learning_rate_warmup_steps'] "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
@@ -52,7 +57,7 @@
 - KEY:
     NAME:  opt_adamw_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-05 "
+    CHECK: " v['value'] == 1e-08 "
 
 - KEY:
     NAME:  opt_adamw_weight_decay
@@ -65,6 +70,11 @@
     CHECK: " v['value'] == 1.0 "
 
 - KEY:
+    NAME:  moe_aux_loss_coeff
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.01 "
+
+- KEY:
     NAME:  gradient_accumulation_steps
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] > 0 "
@@ -72,17 +82,11 @@
 - KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 5760 "
+    CHECK: " v['value'] == 1024 "
 
 - KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'samples_count' in v['metadata']"
-    ATLEAST_ONE_CHECK: "(v['value'] <= 5.6) and v['value'] > 0.0"
-
-- KEY:
-    NAME: init_checkpoint_step
-    REQ:  EXACTLY_ONE
-    CHECK: " v['value'] == 0 "
-
+    ATLEAST_ONE_CHECK: "(v['value'] <= 3.6) and v['value'] > 0.0"

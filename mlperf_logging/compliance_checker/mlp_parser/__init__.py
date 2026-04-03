@@ -10,6 +10,7 @@ from .ruleset_400 import parse_file as parse_file_400
 from .ruleset_410 import parse_file as parse_file_410
 from .ruleset_500 import parse_file as parse_file_500
 from .ruleset_510 import parse_file as parse_file_510
+from .ruleset_600 import parse_file as parse_file_600
 
 def parse_file(filename, ruleset='0.6.0'):
     if ruleset == '0.6.0':
@@ -36,5 +37,7 @@ def parse_file(filename, ruleset='0.6.0'):
         return parse_file_500(filename)
     elif ruleset == '5.1.0':
         return parse_file_510(filename)
+    elif ruleset == '6.0.0':
+        return parse_file_600(filename)
     else:
         raise Exception(f'Ruleset "{ruleset}" is not supported')
