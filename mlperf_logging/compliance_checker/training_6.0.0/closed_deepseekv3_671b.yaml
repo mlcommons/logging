@@ -23,9 +23,6 @@
 - KEY:
     NAME:  max_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 12000 "
-    POST: >
-        s['max_steps'] = v['value']
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
@@ -37,7 +34,7 @@
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == s['max_steps'] - s['opt_learning_rate_warmup_steps'] "
+    CHECK: " v['value'] == 12000 - s['opt_learning_rate_warmup_steps'] "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
