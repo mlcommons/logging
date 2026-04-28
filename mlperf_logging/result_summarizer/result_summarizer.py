@@ -1,6 +1,9 @@
 '''
 Summarizes a set of results.
 '''
+
+from __future__ import print_function
+
 import argparse
 import glob
 import json
@@ -10,15 +13,12 @@ import sys
 import itertools
 import pandas as pd
 import yaml
-import hashlib
-import math
-import operator
-import uuid as uuidlib
+import numpy as np
 
 from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..compliance_checker.mlp_parser import parse_file
-
+from ..rcp_checker import rcp_checker
 from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
 
@@ -262,6 +262,14 @@ def _get_weak_scaling_metric_schema():
         'time_to_train_all': float,
     }
 
+def _get_strong_scaling_metric_schema():
+    return {
+        'time_to_train': float,
+        'Energy': float,
+        'GBS': float,
+        'epochs': float,
+        'RCP': str,
+    }
 
 def _get_empty_summary(usage, ruleset, weak_scaling=False):
     return Summary(
@@ -281,7 +289,6 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
         'accelerators_count': int,
         'framework': str,
         'notes': str,
-        'private_id': str
     }
     if weak_scaling == True:
         benchmarks = get_allowed_benchmarks(usage, ruleset)
@@ -289,10 +296,14 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
             for metric, dtype in _get_weak_scaling_metric_schema().items():
                 schema['{}:{}'.format(benchmark, metric)] = dtype
     else:
-        schema.update(
-            {b: float
-             for b in get_allowed_benchmarks(usage, ruleset)})
-    schema.update({'details_url': str, 'code_url': str})
+        #schema.update(
+        #    {b: float
+        #     for b in get_allowed_benchmarks(usage, ruleset)})
+        benchmarks = get_allowed_benchmarks(usage, ruleset)
+        for benchmark in benchmarks:
+            for metric, dtype in _get_strong_scaling_metric_schema().items():
+                schema['{}:{}'.format(benchmark, metric)] = dtype
+    schema.update({'notes': str, 'details_url': str, 'code_url': str})
     return schema
 
 
@@ -338,6 +349,8 @@ def _compute_strong_score_standalone(
 ):
     pattern = "{folder}/result_*.txt".format(folder=benchmark_folder)
     result_files = glob.glob(pattern, recursive=True)
+    benchmark_scores = {}
+    benchmark_power_scores = {}
     scores = []
     scores_track = {}
     power_scores = []
@@ -474,7 +487,7 @@ def _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folde
 
 
 
-def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
+def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division, rcp_bypass=False):
     # Collect scores for benchmarks.
     benchmark_scores = {}
     benchmark_power_scores = {}
@@ -489,16 +502,82 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
         has_power = _has_power(benchmark_folder)
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
-        # Read scores from result files.
-        score, power_score = _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
+        # Compute base perf/power scores
+        score, power_score = _compute_strong_score_standalone(
+            benchmark, system, has_power, benchmark_folder, usage, ruleset, desc
+        )
+
+        # RCP/GBS/Epochs additions for closed division
+        benchmark_gbs = None
+        benchmark_epochs = None
+        benchmark_rcp = None
+        if division == 'closed':
+            pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+            result_files = glob.glob(pattern, recursive=True)
+            try:
+                # RCP check
+                verbose = False
+                bert_train_samples = False
+                rcp_pass, rcp_msg, rcp_norm_factor = rcp_checker.check_directory(
+                    benchmark_folder,
+                    usage,
+                    ruleset,
+                    verbose,
+                    bert_train_samples,
+                    rcp_file=None,
+                    rcp_pass='pruned_rcps',
+                    rcp_bypass=rcp_bypass,
+                    set_scaling=True,
+                )
+                if not rcp_pass:
+                    print(
+                        'ERROR: RCP Test Failed on {}/{}/{} with message: {}.'.format(
+                            desc['submitter'], system, benchmark, rcp_msg
+                        )
+                    )
+                    if rcp_msg == 'RCP found':
+                        benchmark_rcp = 'Fail'
+                    elif rcp_msg == 'RCP Interpolation':
+                        benchmark_rcp = 'Interp. Fail'
+                    elif 'Missing' in rcp_msg:
+                        benchmark_rcp = 'Missing'
+                    elif rcp_msg == 'Cannot find any RCPs':
+                        benchmark_rcp = 'No RCP'
+                    else:
+                        benchmark_rcp = 'Unknown state'
+                else:
+                    benchmark_rcp = 'Pass'
+
+                # GBS and epochs
+                benchmark_gbs, subm_epochs, _ = rcp_checker.get_submission_epochs(
+                    result_files, ruleset, bert_train_samples=False
+                )
+                subm_epochs.sort()
+                samples_rejected = 4 if benchmark == 'unet3d' else 1
+                if len(subm_epochs) >= 2 * samples_rejected + 1:
+                    benchmark_epochs = float(
+                        np.mean(
+                            subm_epochs[
+                                samples_rejected : len(subm_epochs) - samples_rejected
+                            ]
+                        )
+                    )
+            except Exception as e:
+                print(f"WARNING: RCP/GBS computation failed for {benchmark_folder}: {e}")
+
+        # Map into metric-suffixed keys for schema
         if score is not None:
-            benchmark_scores[benchmark] = score
+            benchmark_scores[f"{benchmark}:time_to_train"] = score
+        if benchmark_gbs is not None:
+            benchmark_scores[f"{benchmark}:GBS"] = float(benchmark_gbs)
+        if benchmark_epochs is not None:
+            benchmark_scores[f"{benchmark}:epochs"] = float(benchmark_epochs)
+        if benchmark_rcp is not None:
+            benchmark_scores[f"{benchmark}:RCP"] = benchmark_rcp
         if power_score is not None:
-            benchmark_power_scores[benchmark] = power_score
+            benchmark_scores[f"{benchmark}:Energy"] = power_score
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
-    if len(benchmark_power_scores) > 0:
-        _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
-    return benchmark_scores, benchmark_power_scores
+    return benchmark_scores, {}
 
 
 def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
@@ -674,19 +753,6 @@ def _load_system_desc(folder, system):
         raise FileNotFoundError('ERROR: Missing {}'.format(system_file))
     return _read_json_file(system_file)
 
-def _get_id_file(folder, system):
-    systems_folder = os.path.join(folder, 'results/',system)
-    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
-    if not os.path.exists(system_file):
-        return {}
-    return _read_json_file(system_file)
-
-def _update_id_file(folder, system, id):
-    systems_folder = os.path.join(folder, 'results/',system)
-    system_file = os.path.join(systems_folder, 'privateid.json'.format(system))
-    id = {'private_id': id}
-    with open(system_file, 'w') as f:
-        json.dump(id, f, indent=4)
 
 def _fill_empty_benchmark_scores(
     benchmark_scores,
@@ -702,130 +768,10 @@ def _fill_empty_benchmark_scores(
                     benchmark_scores[k] = None
 
         else:
-            if benchmark not in benchmark_scores:
-                benchmark_scores[benchmark] = None
-
-
-def _get_id_from_sysinfo(summary):
-    """Generate private id from system information.
-
-    Args:
-        summary (dictionary): Sysinfo Dictionary
-    """
-
-
-    # Code from humanhash3, which is public domain.
-    DEFAULT_WORDLIST = (
-    'ack', 'alabama', 'alanine', 'alaska', 'alpha', 'angel', 'apart', 'april',
-    'arizona', 'arkansas', 'artist', 'asparagus', 'aspen', 'august', 'autumn',
-    'avocado', 'bacon', 'bakerloo', 'batman', 'beer', 'berlin', 'beryllium',
-    'black', 'blossom', 'blue', 'bluebird', 'bravo', 'bulldog', 'burger',
-    'butter', 'california', 'carbon', 'cardinal', 'carolina', 'carpet', 'cat',
-    'ceiling', 'charlie', 'chicken', 'coffee', 'cola', 'cold', 'colorado',
-    'comet', 'connecticut', 'crazy', 'cup', 'dakota', 'december', 'delaware',
-    'delta', 'diet', 'don', 'double', 'early', 'earth', 'east', 'echo',
-    'edward', 'eight', 'eighteen', 'eleven', 'emma', 'enemy', 'equal',
-    'failed', 'fanta', 'fifteen', 'fillet', 'finch', 'fish', 'five', 'fix',
-    'floor', 'florida', 'football', 'four', 'fourteen', 'foxtrot', 'freddie',
-    'friend', 'fruit', 'gee', 'georgia', 'glucose', 'golf', 'green', 'grey',
-    'hamper', 'happy', 'harry', 'hawaii', 'helium', 'high', 'hot', 'hotel',
-    'hydrogen', 'idaho', 'illinois', 'india', 'indigo', 'ink', 'iowa',
-    'island', 'item', 'jersey', 'jig', 'johnny', 'juliet', 'july', 'jupiter',
-    'kansas', 'kentucky', 'kilo', 'king', 'kitten', 'lactose', 'lake', 'lamp',
-    'lemon', 'leopard', 'lima', 'lion', 'lithium', 'london', 'louisiana',
-    'low', 'magazine', 'magnesium', 'maine', 'mango', 'march', 'mars',
-    'maryland', 'massachusetts', 'may', 'mexico', 'michigan', 'mike',
-    'minnesota', 'mirror', 'mississippi', 'missouri', 'mobile', 'mockingbird',
-    'monkey', 'montana', 'moon', 'mountain', 'muppet', 'music', 'nebraska',
-    'neptune', 'network', 'nevada', 'nine', 'nineteen', 'nitrogen', 'north',
-    'november', 'nuts', 'october', 'ohio', 'oklahoma', 'one', 'orange',
-    'oranges', 'oregon', 'oscar', 'oven', 'oxygen', 'papa', 'paris', 'pasta',
-    'pennsylvania', 'pip', 'pizza', 'pluto', 'potato', 'princess', 'purple',
-    'quebec', 'queen', 'quiet', 'red', 'river', 'robert', 'robin', 'romeo',
-    'rugby', 'sad', 'salami', 'saturn', 'september', 'seven', 'seventeen',
-    'shade', 'sierra', 'single', 'sink', 'six', 'sixteen', 'skylark', 'snake',
-    'social', 'sodium', 'solar', 'south', 'spaghetti', 'speaker', 'spring',
-    'stairway', 'steak', 'stream', 'summer', 'sweet', 'table', 'tango', 'ten',
-    'tennessee', 'tennis', 'texas', 'thirteen', 'three', 'timing', 'triple',
-    'twelve', 'twenty', 'two', 'uncle', 'undress', 'uniform', 'uranus', 'utah',
-    'vegan', 'venus', 'vermont', 'victor', 'video', 'violet', 'virginia',
-    'washington', 'west', 'whiskey', 'white', 'william', 'winner', 'winter',
-    'wisconsin', 'wolfram', 'wyoming', 'xray', 'yankee', 'yellow', 'zebra',
-    'zulu')
-
-    class HumanHasher(object):
-
-        def __init__(self, wordlist=DEFAULT_WORDLIST):
-            self.wordlist = wordlist
-
-        def humanize_list(self, hexdigest, words=4):
-            # Gets a list of byte values between 0-255.
-            bytes_ = map(lambda x: int(x, 16),
-                        map(''.join, zip(hexdigest[::2], hexdigest[1::2])))
-            # Compress an arbitrary number of bytes to `words`.
-            compressed = self.compress(bytes_, words)
-
-            return [str(self.wordlist[byte]) for byte in compressed]
-
-        def humanize(self, hexdigest, words=4, separator='-'):
-            # Map the compressed byte values through the word list.
-            return separator.join(self.humanize_list(hexdigest, words))
-
-        @staticmethod
-        def compress(bytes_, target):
-            bytes_list = list(bytes_)
-
-            length = len(bytes_list)
-            # If there are less than the target number bytes, return input bytes
-            if target >= length:
-                return bytes_
-
-            # Split `bytes` evenly into `target` segments
-            # Each segment hashes `seg_size` bytes, rounded down for some
-            seg_size = float(length) / float(target)
-            # Initialize `target` number of segments
-            segments = [0] * target
-            seg_num = 0
-
-            # Use a simple XOR checksum-like function for compression
-            for i, byte in enumerate(bytes_list):
-                # Divide the byte index by the segment size to assign its segment
-                # Floor to create a valid segment index
-                # Min to ensure the index is within `target`
-                seg_num = min(int(math.floor(i / seg_size)), target-1)
-                # Apply XOR to the existing segment and the byte
-                segments[seg_num] = operator.xor(segments[seg_num], byte)
-
-            return segments
-
-        def uuid(self, **params):
-            digest = str(uuidlib.uuid4()).replace('-', '')
-            return self.humanize(digest, **params), digest
-
-
-
-    def get_hash(row):
-        columns_for_hashing = [    
-            'division',
-            'submitter',
-            'system_name',
-            'number_of_nodes',
-            'host_processor_model_name',
-            'host_processors_per_node',
-            'accelerator_model_name',
-            'accelerators_per_node',
-            'framework'
-        ]
-        to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
-        return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
-    
-    hash = get_hash(summary)
-    humanhasha = HumanHasher()
-    summary = humanhasha.humanize(hash)
-
-    return summary
-
-     
+            for metric in _get_strong_scaling_metric_schema().keys():
+                k = '{}:{}'.format(benchmark, metric)
+                if k not in benchmark_scores:
+                    benchmark_scores[k] = None
 
 
 def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
@@ -843,22 +789,13 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                                               weak_scaling=True)
     power_summary = _get_empty_summary(usage, ruleset)
     power_weak_scaling_summary = _get_empty_summary(usage, ruleset, weak_scaling=True)
+
     for system_folder in _get_sub_folders(results_folder):
         folder_parts = system_folder.split('/')
         system = folder_parts[-1]
         # Load corresponding system description.
         try:
             desc = _load_system_desc(folder, system)
-            id = _get_id_file(folder, system)
-            # Generate private id and update system desc to match
-            if kwargs.get('generate_private_ids') and 'private_id' not in id:
-                id['private_id'] = _get_id_from_sysinfo(desc)
-                _update_id_file(folder, system, desc['private_id'])
-            elif 'private_id' not in id:
-                # Ensure private_id field exists in desc for consistent processing later, even if it's empty
-                id['private_id'] = '' 
-            desc['private_id']  = id['private_id']
-
         except (json.JSONDecodeError, FileNotFoundError) as e:
             print(e)
             continue
@@ -875,7 +812,6 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
         # Construct prefix portion of the row.
         try:
             _check_and_update_system_specs('division', 'division')
-            _check_and_update_system_specs('private_id', 'private_id')
             # Map availability if requested
             if "availability" in kwargs:
                 _check_and_update_system_specs('status', 'availability', lambda desc: _map_availability(desc["status"], kwargs["availability"]))
@@ -925,7 +861,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
 
         # Compute the scores.
         strong_scaling_scores, power_scores = _compute_strong_scaling_scores(
-            desc, system_folder, usage, ruleset)
+            desc, system_folder, usage, ruleset, system_specs["division"], rcp_bypass=False)
         if usage == 'hpc':
             weak_scaling_scores, power_scores_weak_scaling = _compute_weak_scaling_scores(
                 desc, system_folder, usage, ruleset)
@@ -984,8 +920,6 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
     return strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary
 
 
-
-
 def get_parser():
     parser = argparse.ArgumentParser(
         prog='mlperf_logging.result_summarizer',
@@ -1006,11 +940,6 @@ def get_parser():
                         type=str,
                         choices=rule_choices(),
                         help='the ruleset such as 0.6.0, 0.7.0, or 1.0.0')
-    
-    parser.add_argument('--generate_private_ids',
-                        action='store_true',
-                        help='Generate private IDs for each run.')
-
     parser.add_argument('--werror',
                         action='store_true',
                         help='Treat warnings as errors')
@@ -1028,7 +957,6 @@ def get_parser():
         '--xlsx',
         type=str,
         help='Exports a xlsx of the results to the path specified')
-    
 
     return parser
 
@@ -1051,15 +979,13 @@ def main():
                 folder,
                 args.usage,
                 args.ruleset,
-                availability = config["availability"],
-                generate_private_ids = args.generate_private_ids,
+                availability = config["availability"]
             )
         else:
             strong_scaling_summary, weak_scaling_summary, power_summary, power_weak_scaling_summary = summarize_results(
                 folder,
                 args.usage,
                 args.ruleset,
-                generate_private_ids = args.generate_private_ids,
             )
         strong_scaling_summaries.append(strong_scaling_summary)
         if len(weak_scaling_summary) > 0:
@@ -1178,7 +1104,7 @@ def main():
                     start += len(section)
                     index += len(section)
 
-        writer.save()
+        writer.close()
     # Print and write back results.
     def _print_and_write(summaries, weak_scaling=False, mode='w', power = False):
         if len(summaries) > 0:
@@ -1199,7 +1125,7 @@ def main():
 
             # Sort rows by their values
             summaries = summaries.sort_values(by=cols)
-
+            print(summaries)
             if args.csv is not None:
                 csv = args.csv
                 assert csv.endswith(".csv")
