@@ -7,9 +7,11 @@ import json
 import os
 import re
 import sys
+import traceback
 import itertools
 import pandas as pd
 import yaml
+import numpy as np
 import hashlib
 import math
 import operator
@@ -19,6 +21,7 @@ from ..compliance_checker import mlp_compliance
 from ..compliance_checker.mlp_compliance import usage_choices, rule_choices
 from ..compliance_checker.mlp_parser import parse_file
 
+from ..rcp_checker import rcp_checker
 from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
 
@@ -263,6 +266,17 @@ def _get_weak_scaling_metric_schema():
     }
 
 
+def _get_strong_scaling_metric_schema():
+    return {
+        'time_to_train': float,
+        'Energy': float,
+        'GBS': float,
+        'epochs': float,
+        'RCP': str,
+        'rcp_scaling_factor': float,
+    }
+
+
 def _get_empty_summary(usage, ruleset, weak_scaling=False):
     return Summary(
         _get_column_schema(usage, ruleset, weak_scaling=weak_scaling).keys())
@@ -289,9 +303,10 @@ def _get_column_schema(usage, ruleset, weak_scaling=False):
             for metric, dtype in _get_weak_scaling_metric_schema().items():
                 schema['{}:{}'.format(benchmark, metric)] = dtype
     else:
-        schema.update(
-            {b: float
-             for b in get_allowed_benchmarks(usage, ruleset)})
+        benchmarks = get_allowed_benchmarks(usage, ruleset)
+        for benchmark in benchmarks:
+            for metric, dtype in _get_strong_scaling_metric_schema().items():
+                schema['{}:{}'.format(benchmark, metric)] = dtype
     schema.update({'details_url': str, 'code_url': str})
     return schema
 
@@ -404,8 +419,8 @@ def _compute_strong_score_standalone(
             power_score = olympic_avg
             power_score *= scaling_factor
     if return_full_scores:
-        return scores_track, power_scores_track, score, power_score
-    return score, power_score
+        return scores_track, power_scores_track, score, power_score, scaling_factor
+    return score, power_score, scaling_factor
 
 
 def _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc = {"submitter": None}):
@@ -474,31 +489,101 @@ def _compute_weak_score_standalone(benchmark, system, has_power, benchmark_folde
 
 
 
-def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset):
+def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division, rcp_bypass=False):
     # Collect scores for benchmarks.
     benchmark_scores = {}
-    benchmark_power_scores = {}
-    has_power = None
     benchmark_folder_parent = os.path.join(
         system_folder, 'strong') if usage == 'hpc' else system_folder
     if not os.path.isdir(benchmark_folder_parent):
-        return benchmark_scores, benchmark_power_scores
+        return benchmark_scores, {}
     for benchmark_folder in _get_sub_folders(benchmark_folder_parent):
         folder_parts = benchmark_folder.split('/')
         # Check if this benchmark has power results
         has_power = _has_power(benchmark_folder)
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
-        # Read scores from result files.
-        score, power_score = _compute_strong_score_standalone(benchmark, system, has_power, benchmark_folder, usage, ruleset, desc)
+        # Compute base perf/power scores
+        score, power_score, rcp_scaling_factor = _compute_strong_score_standalone(
+            benchmark, system, has_power, benchmark_folder, usage, ruleset, desc
+        )
+
+        # RCP/GBS/Epochs additions for closed division
+        benchmark_gbs = None
+        benchmark_epochs = None
+        benchmark_rcp = None
+        if division == 'closed':
+            pattern = '{folder}/result_*.txt'.format(folder=benchmark_folder)
+            result_files = glob.glob(pattern, recursive=True)
+            try:
+                # RCP check
+                verbose = False
+                bert_train_samples = False
+                rcp_pass, rcp_msg, _ = rcp_checker.check_directory(
+                    benchmark_folder,
+                    usage,
+                    ruleset,
+                    verbose,
+                    bert_train_samples,
+                    rcp_file=None,
+                    rcp_pass='pruned_rcps',
+                    rcp_bypass=rcp_bypass,
+                    set_scaling=True,
+                )
+                if not rcp_pass:
+                    print(
+                        'ERROR: RCP Test Failed on {}/{}/{} with message: {}.'.format(
+                            desc['submitter'], system, benchmark, rcp_msg
+                        )
+                    )
+                    if rcp_msg == 'RCP found':
+                        benchmark_rcp = 'Fail'
+                    elif rcp_msg == 'RCP Interpolation':
+                        benchmark_rcp = 'Interp. Fail'
+                    elif 'Missing' in rcp_msg:
+                        benchmark_rcp = 'Missing'
+                    elif rcp_msg == 'Cannot find any RCPs':
+                        benchmark_rcp = 'No RCP'
+                    else:
+                        benchmark_rcp = 'Unknown state'
+                else:
+                    benchmark_rcp = 'Pass'
+
+                # GBS and epochs
+                benchmark_gbs, subm_epochs, _ = rcp_checker.get_submission_epochs(
+                    result_files, ruleset, bert_train_samples=False
+                )
+                subm_epochs.sort()
+                samples_rejected = 1
+                if len(subm_epochs) >= 2 * samples_rejected + 1:
+                    benchmark_epochs = float(
+                        np.mean(
+                            subm_epochs[
+                                samples_rejected : len(subm_epochs) - samples_rejected
+                            ]
+                        )
+                    )
+            except Exception as e:
+                print(
+                    f"WARNING: RCP/GBS computation failed for {benchmark_folder}: {e}"
+                )
+                traceback.print_exc()
+
+        # Map into metric-suffixed keys for schema
+        benchmark_scores[f"{benchmark}:rcp_scaling_factor"] = float(
+            rcp_scaling_factor
+        )
         if score is not None:
-            benchmark_scores[benchmark] = score
+            benchmark_scores[f"{benchmark}:time_to_train"] = score
+        if benchmark_gbs is not None:
+            benchmark_scores[f"{benchmark}:GBS"] = float(benchmark_gbs)
+        if benchmark_epochs is not None:
+            benchmark_scores[f"{benchmark}:epochs"] = float(benchmark_epochs)
+        if benchmark_rcp is not None:
+            benchmark_scores[f"{benchmark}:RCP"] = benchmark_rcp
         if power_score is not None:
-            benchmark_power_scores[benchmark] = power_score
+            benchmark_scores[f"{benchmark}:Energy"] = power_score
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset)
-    if len(benchmark_power_scores) > 0:
-        _fill_empty_benchmark_scores(benchmark_power_scores, usage, ruleset)
-    return benchmark_scores, benchmark_power_scores
+    return benchmark_scores, {}
 
 
 def _compute_weak_scaling_scores(desc, system_folder, usage, ruleset):
@@ -702,8 +787,15 @@ def _fill_empty_benchmark_scores(
                     benchmark_scores[k] = None
 
         else:
-            if benchmark not in benchmark_scores:
-                benchmark_scores[benchmark] = None
+            strong_schema = _get_strong_scaling_metric_schema()
+            for metric, dtype in strong_schema.items():
+                k = '{}:{}'.format(benchmark, metric)
+                if dtype is str:
+                    if k not in benchmark_scores or benchmark_scores[k] is None:
+                        benchmark_scores[k] = ''
+                else:
+                    if k not in benchmark_scores:
+                        benchmark_scores[k] = None
 
 
 def _get_id_from_sysinfo(summary):
@@ -925,7 +1017,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
 
         # Compute the scores.
         strong_scaling_scores, power_scores = _compute_strong_scaling_scores(
-            desc, system_folder, usage, ruleset)
+            desc, system_folder, usage, ruleset, system_specs["division"], rcp_bypass=False)
         if usage == 'hpc':
             weak_scaling_scores, power_scores_weak_scaling = _compute_weak_scaling_scores(
                 desc, system_folder, usage, ruleset)
@@ -956,11 +1048,12 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
                     power_scores.items(),
                     urls.items(),
             ):
-                power_summary.push(column_name, value)
-                if column_name in strong_scaling_scores:
-                    power_summary.push(column_name, strong_scaling_scores[column_name])
-                else:
-                    power_summary.push(column_name, value)
+                merged = (
+                    strong_scaling_scores[column_name]
+                    if column_name in strong_scaling_scores
+                    else value
+                )
+                power_summary.push(column_name, merged)
         if usage == 'hpc' and len(power_scores_weak_scaling) > 0:
             for column_name, value in itertools.chain(
                     system_specs.items(),
