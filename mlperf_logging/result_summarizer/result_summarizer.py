@@ -586,7 +586,7 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division
         if benchmark_gbs is not None:
             detailed_bechmark_scores[f"{benchmark}:GBS"] = float(benchmark_gbs)
         if benchmark_epochs is not None:
-            detailed_bechmark_scores[f"{benchmark}:epochs"] = float(benchmark_epochs)
+            detailed_bechmark_scores[f"{benchmark}:samples_to_converge"] = float(benchmark_epochs)
         if benchmark_rcp is not None:
             detailed_bechmark_scores[f"{benchmark}:RCP"] = benchmark_rcp
         if power_score is not None:
