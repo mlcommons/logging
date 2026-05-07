@@ -144,3 +144,33 @@
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
 
+# Optional parallelism keys
+- KEY:
+    NAME:  tensor_parallelism
+    REQ:   OPTIONAL
+    CHECK: " is_integer(v['value']) "
+
+- KEY:
+    NAME:  pipeline_parallelism
+    REQ:   OPTIONAL
+    CHECK: " is_integer(v['value']) "
+
+- KEY:
+    NAME:  context_parallelism
+    REQ:   OPTIONAL
+    CHECK: " is_integer(v['value']) "
+
+- KEY:
+    NAME:  expert_parallelism
+    REQ:   OPTIONAL
+    CHECK: " is_integer(v['value']) "
+
+- KEY:
+    NAME:  micro_batch_size
+    REQ:   OPTIONAL
+    CHECK: " is_integer(v['value']) "
+
+- KEY:
+    NAME:  config_filename
+    REQ:   OPTIONAL
+

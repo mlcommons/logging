@@ -196,3 +196,12 @@ POWER_MEASUREMENT_STOP = "power_measurement_stop"
 POWER_READING = "power_reading"
 CONVERTION_EFF = "conversion_eff"
 INTERCONNECT_POWER_EST = "interconnect_power_est"
+
+# Parallelism constants
+TENSOR_PARALLELISM = "tensor_parallelism"
+PIPELINE_PARALLELISM = "pipeline_parallelism"
+CONTEXT_PARALLELISM = "context_parallelism"
+EXPERT_PARALLELISM = "expert_parallelism"
+MICRO_BATCH_SIZE = "micro_batch_size"
+
+CONFIG_FILENAME = "config_filename"

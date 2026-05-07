@@ -217,6 +217,13 @@ class ComplianceChecker:
             if 'REQ' not in v:
                 continue
 
+            if v['REQ'] == 'OPTIONAL':
+                if len(reported_values[k]) == 0:
+                    # self.put_warning(f"OPTIONAL key '{k}' not reported", 
+                    #                  key=k)
+                    continue
+
+
             if v['REQ']=='EXACTLY_ONE':
                 if len(reported_values[k]) !=1:
                     if reported_values[k] and all_same(reported_values[k]):
