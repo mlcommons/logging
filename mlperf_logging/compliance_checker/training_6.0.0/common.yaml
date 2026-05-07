@@ -144,7 +144,22 @@
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
 
-# Optional parallelism keys
+# Optional keys
+- KEY:
+    NAME:  lowest_numerical_precision_in_linear
+    REQ:   OPTIONAL
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+
+- KEY:
+    NAME:  lowest_numerical_precision_in_attn
+    REQ:   OPTIONAL
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+
+- KEY:
+    NAME:  lowest_numerical_precision_in_comm
+    REQ:   OPTIONAL
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+
 - KEY:
     NAME:  tensor_parallelism
     REQ:   OPTIONAL
