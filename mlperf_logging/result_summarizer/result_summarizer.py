@@ -272,7 +272,7 @@ def _get_strong_scaling_metric_schema():
         'time_to_train': float,
         'Energy': float,
         'GBS': float,
-        'epochs': float,
+        'samples_to_converge': float,
         'RCP': str,
         'rcp_scaling_factor': float,
     }
