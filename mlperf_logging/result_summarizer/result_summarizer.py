@@ -591,9 +591,10 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division
             detailed_bechmark_scores[f"{benchmark}:RCP"] = benchmark_rcp
         if power_score is not None:
             detailed_bechmark_scores[f"{benchmark}:Energy"] = power_score
-        benchmark_scores[f"{benchmark}"] = float(
-            score
-        )
+        if score is not None:
+            benchmark_scores[f"{benchmark}"] = float(
+                score
+            )
     _fill_empty_benchmark_scores(benchmark_scores, usage, ruleset, detailed=False)
     _fill_empty_benchmark_scores(detailed_bechmark_scores, usage, ruleset, detailed=True)
     return benchmark_scores, detailed_bechmark_scores
