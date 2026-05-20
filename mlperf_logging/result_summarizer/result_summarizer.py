@@ -964,7 +964,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
             # Generate private id and update system desc to match
             if kwargs.get('generate_private_ids') and 'private_id' not in id:
                 id['private_id'] = _get_id_from_sysinfo(desc)
-                _update_id_file(folder, system, desc['private_id'])
+                _update_id_file(folder, system, id['private_id'])
             elif 'private_id' not in id:
                 # Ensure private_id field exists in desc for consistent processing later, even if it's empty
                 id['private_id'] = '' 
