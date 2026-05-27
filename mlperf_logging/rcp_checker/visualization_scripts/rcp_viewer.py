@@ -7,6 +7,8 @@ RCP viewer: show the RCP means and mins after pruning
 import sys
 import os
 import argparse
+import math
+import numpy as np
 
 #Add the project root directory (assumed to be 3 levels up) to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
@@ -15,6 +17,31 @@ from  mlperf_logging.rcp_checker.rcp_checker import RCP_Checker
 
 def print_rcp_record(record):
     print(f"{record['BS']},{record['RCP Mean']},{record['Min Epochs']}")
+
+def bootstrap_scores(samples, num_runs, iterations=10000, rng=None):
+    '''Bootstrap submission-sized trimmed-mean scores from the reference runs.
+
+    Draw num_runs values with replacement from samples, trim k=ceil(10%) from
+    each end, and take the mean. Repeat iterations times, returning the scores.
+    '''
+    rng = rng if rng is not None else np.random.default_rng()
+    arr = np.asarray(samples, dtype=float)
+    k = math.ceil(0.10 * num_runs)
+    if num_runs - 2 * k <= 0:
+        sys.exit(f"Error: trimming {k} from each end of {num_runs} runs leaves no samples")
+    scores = np.empty(iterations)
+    for i in range(iterations):
+        draw = np.sort(rng.choice(arr, size=num_runs, replace=True))
+        scores[i] = draw[k:num_runs - k].mean()
+    return scores
+
+def print_histogram(scores, bar_width=50):
+    '''Print an ASCII text-bar histogram of scores using numpy auto-binning.'''
+    counts, edges = np.histogram(scores, bins='auto')
+    max_count = counts.max() if len(counts) else 0
+    for i, c in enumerate(counts):
+        bar = '#' * (round(bar_width * c / max_count) if max_count else 0)
+        print(f"{edges[i]:.1f}-{edges[i+1]:.1f} | {bar} ({c})")
 
 # this should be a method of rcp_checker.RCP_Checker, but it's missing.
 # Instead we derived it from _find_min_rcp()
@@ -68,7 +95,12 @@ def main():
                     help='specify an RCP json file to use')
     parser.add_argument('--interpolate', action='store_true',
                         help='generate interpolated rcp min/mean for all batch sizes')
-    
+    parser.add_argument('--bootstrap', type=int, metavar='GBS',
+                        help='print a histogram of bootstrapped, submission-sized trimmed-mean '
+                             'scores for the real (non-interpolated) RCP at the given global batch size (GBS)')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='seed the RNG for reproducible --bootstrap output')
+
 
     args = parser.parse_args()
     rcp_pass_arg='pruned_rcps'
@@ -80,7 +112,22 @@ def main():
     if not args.no_header:
         print("BS,Mean,Min")
 
-    if not args.interpolate:
+    if args.bootstrap is not None:
+        record = checker._find_rcp(args.bootstrap, 'full_rcps')
+        if record is None:
+            sys.exit(f"Error: GBS {args.bootstrap} is not a measured "
+                     f"(non-interpolated) RCP batch size for {args.benchmark}")
+        print_rcp_record(record)
+        print(f"submission_runs: {checker.submission_runs}")
+        max_speedup = record['RCP Mean'] / record['Min Epochs']
+        print(f"max_speedup (mean/min): {max_speedup}")
+        scores = bootstrap_scores(record['Epochs to converge'],
+                                  checker.submission_runs,
+                                  rng=np.random.default_rng(args.seed))
+        prob_below_min = np.mean(scores < record['Min Epochs'])
+        print(f"P(score < min): {prob_below_min}")
+        print_histogram(scores)
+    elif not args.interpolate:
         data=checker._get_rcp_data(rcp_pass_arg)
         for key, record in data.items():
             print_rcp_record(record)
