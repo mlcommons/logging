@@ -68,7 +68,10 @@ def main():
                     help='specify an RCP json file to use')
     parser.add_argument('--interpolate', action='store_true',
                         help='generate interpolated rcp min/mean for all batch sizes')
-    
+    parser.add_argument('--jackknife', type=int, metavar='GBS',
+                        help='restrict output to the single real (non-interpolated) RCP at this '
+                             'global batch size, and also print the benchmark submission_runs')
+
 
     args = parser.parse_args()
     rcp_pass_arg='pruned_rcps'
@@ -80,7 +83,14 @@ def main():
     if not args.no_header:
         print("BS,Mean,Min")
 
-    if not args.interpolate:
+    if args.jackknife is not None:
+        record = checker._find_rcp(args.jackknife, 'full_rcps')
+        if record is None:
+            sys.exit(f"Error: GBS {args.jackknife} is not a measured "
+                     f"(non-interpolated) RCP batch size for {args.benchmark}")
+        print_rcp_record(record)
+        print(f"submission_runs: {checker.submission_runs}")
+    elif not args.interpolate:
         data=checker._get_rcp_data(rcp_pass_arg)
         for key, record in data.items():
             print_rcp_record(record)
