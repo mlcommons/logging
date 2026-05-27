@@ -7,6 +7,8 @@ RCP viewer: show the RCP means and mins after pruning
 import sys
 import os
 import argparse
+import math
+import numpy as np
 
 #Add the project root directory (assumed to be 3 levels up) to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
@@ -15,6 +17,31 @@ from  mlperf_logging.rcp_checker.rcp_checker import RCP_Checker
 
 def print_rcp_record(record):
     print(f"{record['BS']},{record['RCP Mean']},{record['Min Epochs']}")
+
+def jackknife_scores(samples, num_runs, iterations=1000, rng=None):
+    '''Bootstrap submission-sized trimmed-mean scores from the reference runs.
+
+    Draw num_runs values with replacement from samples, trim k=ceil(10%) from
+    each end, and take the mean. Repeat iterations times, returning the scores.
+    '''
+    rng = rng if rng is not None else np.random.default_rng()
+    arr = np.asarray(samples, dtype=float)
+    k = math.ceil(0.10 * num_runs)
+    if num_runs - 2 * k <= 0:
+        sys.exit(f"Error: trimming {k} from each end of {num_runs} runs leaves no samples")
+    scores = np.empty(iterations)
+    for i in range(iterations):
+        draw = np.sort(rng.choice(arr, size=num_runs, replace=True))
+        scores[i] = draw[k:num_runs - k].mean()
+    return scores
+
+def print_histogram(scores, bar_width=50):
+    '''Print an ASCII text-bar histogram of scores using numpy auto-binning.'''
+    counts, edges = np.histogram(scores, bins='auto')
+    max_count = counts.max() if len(counts) else 0
+    for i, c in enumerate(counts):
+        bar = '#' * (round(bar_width * c / max_count) if max_count else 0)
+        print(f"{edges[i]:.1f}-{edges[i+1]:.1f} | {bar} ({c})")
 
 # this should be a method of rcp_checker.RCP_Checker, but it's missing.
 # Instead we derived it from _find_min_rcp()
@@ -71,6 +98,8 @@ def main():
     parser.add_argument('--jackknife', type=int, metavar='GBS',
                         help='restrict output to the single real (non-interpolated) RCP at this '
                              'global batch size, and also print the benchmark submission_runs')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='seed the RNG for reproducible --jackknife output')
 
 
     args = parser.parse_args()
@@ -90,6 +119,10 @@ def main():
                      f"(non-interpolated) RCP batch size for {args.benchmark}")
         print_rcp_record(record)
         print(f"submission_runs: {checker.submission_runs}")
+        scores = jackknife_scores(record['Epochs to converge'],
+                                  checker.submission_runs,
+                                  rng=np.random.default_rng(args.seed))
+        print_histogram(scores)
     elif not args.interpolate:
         data=checker._get_rcp_data(rcp_pass_arg)
         for key, record in data.items():
