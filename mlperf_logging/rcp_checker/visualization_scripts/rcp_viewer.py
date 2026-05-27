@@ -18,7 +18,7 @@ from  mlperf_logging.rcp_checker.rcp_checker import RCP_Checker
 def print_rcp_record(record):
     print(f"{record['BS']},{record['RCP Mean']},{record['Min Epochs']}")
 
-def jackknife_scores(samples, num_runs, iterations=1000, rng=None):
+def bootstrap_scores(samples, num_runs, iterations=10000, rng=None):
     '''Bootstrap submission-sized trimmed-mean scores from the reference runs.
 
     Draw num_runs values with replacement from samples, trim k=ceil(10%) from
@@ -95,11 +95,11 @@ def main():
                     help='specify an RCP json file to use')
     parser.add_argument('--interpolate', action='store_true',
                         help='generate interpolated rcp min/mean for all batch sizes')
-    parser.add_argument('--jackknife', type=int, metavar='GBS',
-                        help='restrict output to the single real (non-interpolated) RCP at this '
-                             'global batch size, and also print the benchmark submission_runs')
+    parser.add_argument('--bootstrap', type=int, metavar='GBS',
+                        help='print a histogram of bootstrapped, submission-sized trimmed-mean '
+                             'scores for the real (non-interpolated) RCP at the given global batch size (GBS)')
     parser.add_argument('--seed', type=int, default=None,
-                        help='seed the RNG for reproducible --jackknife output')
+                        help='seed the RNG for reproducible --bootstrap output')
 
 
     args = parser.parse_args()
@@ -112,14 +112,14 @@ def main():
     if not args.no_header:
         print("BS,Mean,Min")
 
-    if args.jackknife is not None:
-        record = checker._find_rcp(args.jackknife, 'full_rcps')
+    if args.bootstrap is not None:
+        record = checker._find_rcp(args.bootstrap, 'full_rcps')
         if record is None:
-            sys.exit(f"Error: GBS {args.jackknife} is not a measured "
+            sys.exit(f"Error: GBS {args.bootstrap} is not a measured "
                      f"(non-interpolated) RCP batch size for {args.benchmark}")
         print_rcp_record(record)
         print(f"submission_runs: {checker.submission_runs}")
-        scores = jackknife_scores(record['Epochs to converge'],
+        scores = bootstrap_scores(record['Epochs to converge'],
                                   checker.submission_runs,
                                   rng=np.random.default_rng(args.seed))
         print_histogram(scores)
