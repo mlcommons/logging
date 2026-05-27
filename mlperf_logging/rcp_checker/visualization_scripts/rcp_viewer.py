@@ -119,9 +119,13 @@ def main():
                      f"(non-interpolated) RCP batch size for {args.benchmark}")
         print_rcp_record(record)
         print(f"submission_runs: {checker.submission_runs}")
+        max_speedup = record['RCP Mean'] / record['Min Epochs']
+        print(f"max_speedup (mean/min): {max_speedup}")
         scores = bootstrap_scores(record['Epochs to converge'],
                                   checker.submission_runs,
                                   rng=np.random.default_rng(args.seed))
+        prob_below_min = np.mean(scores < record['Min Epochs'])
+        print(f"P(score < min): {prob_below_min}")
         print_histogram(scores)
     elif not args.interpolate:
         data=checker._get_rcp_data(rcp_pass_arg)
