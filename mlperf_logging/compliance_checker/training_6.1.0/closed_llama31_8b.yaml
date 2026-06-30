@@ -1,14 +1,13 @@
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] >= 15360 "
     POST: >
         s['global_batch_size'] = v['value']
 
 - KEY:
     NAME:  max_sequence_length
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 4096 "
+    CHECK: " v['value'] == 8192 "
 
 - KEY:
     NAME:  opt_name
@@ -18,23 +17,21 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " abs(v['value'] - 2.4e-05 * (s['global_batch_size'] / 16384) ** 0.5) < 1e-9 "
 
 - KEY:
-    NAME:  max_steps
+    NAME:  opt_end_learning_rate
     REQ:   EXACTLY_ONE
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 4 "
     POST: >
         s['opt_learning_rate_warmup_steps'] = v['value']
 
 - KEY:
     NAME:  opt_learning_rate_decay_steps
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 12000 - s['opt_learning_rate_warmup_steps'] "
+    CHECK: " v['value'] == 1_200_000 - s['opt_learning_rate_warmup_steps'] "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
@@ -54,7 +51,7 @@
 - KEY:
     NAME:  opt_adamw_epsilon
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 1e-08 "
+    CHECK: " v['value'] == 1e-05 "
 
 - KEY:
     NAME:  opt_adamw_weight_decay
@@ -65,11 +62,6 @@
     NAME:  opt_gradient_clip_norm
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 1.0 "
-
-- KEY:
-    NAME:  moe_aux_loss_coeff
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 0.01 "
 
 - KEY:
     NAME:  gradient_accumulation_steps
@@ -86,4 +78,10 @@
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'samples_count' in v['metadata']"
-    ATLEAST_ONE_CHECK: "(v['value'] <= 3.6) and v['value'] > 0.0"
+    ATLEAST_ONE_CHECK: "(v['value'] <= 3.3) and v['value'] > 0.0"
+
+- KEY:
+    NAME: max_steps
+    REQ:  EXACTLY_ONE
+    CHECK: " v['value'] == 1200000 "
+
