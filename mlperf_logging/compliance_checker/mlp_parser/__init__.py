@@ -39,5 +39,7 @@ def parse_file(filename, ruleset='0.6.0'):
         return parse_file_510(filename)
     elif ruleset == '6.0.0':
         return parse_file_600(filename)
+    elif ruleset == '6.1.0':
+        return parse_file_600(filename)
     else:
         raise Exception(f'Ruleset "{ruleset}" is not supported')
