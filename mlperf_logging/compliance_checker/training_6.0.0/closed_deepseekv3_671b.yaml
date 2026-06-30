@@ -86,4 +86,5 @@
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'samples_count' in v['metadata']"
+    FIRST_CHECK: " int(v['metadata']['samples_count']) == s['global_batch_size'] * math.floor(42 + 24576 / s['global_batch_size']) "
     ATLEAST_ONE_CHECK: "(v['value'] <= 3.6) and v['value'] > 0.0"
