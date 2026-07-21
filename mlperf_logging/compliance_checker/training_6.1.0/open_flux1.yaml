@@ -1,0 +1,13 @@
+# Stable diffusion uses two metrics, FID and CLIP.
+# These metrics can be calculated offline, using different scripts
+# and logged seperatly. Therefore, we create a virtual key
+# called aggregated_eval_accuracy, which aggregates
+# both metrics into a single log line
+
+# TODO: Update with official metric name
+- KEY:
+    NAME: averaged_validation_loss
+    REQ: AT_LEAST_ONE
+    CHECK:
+        - "'samples_count' in v['metadata']"
+    ATLEAST_ONE_CHECK: "v['value'] <= 0.586 and v['value'] > 0.0"
