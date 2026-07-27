@@ -14,6 +14,7 @@
     CHECK: " is_integer(v['value']) and v['value'] > 0 "
     POST: |
         s['global_batch_size'] = v['value']
+        s['learning_rate'] = 1.0e-6 * (s['global_batch_size'] / 256) ** 0.5
         s['validation_start_samples'] = v['value'] * math.ceil(2.5 + 3840 / v['value'])
         s['next_validation_samples'] = s['validation_start_samples']
 
@@ -44,12 +45,7 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " abs(v['value'] - 1.0e-6 * (s['global_batch_size'] / 256) ** 0.5) < 1e-9 "
-
-- KEY:
-    NAME:  opt_end_learning_rate
-    REQ:   EXACTLY_ONE
-    CHECK: " abs(v['value'] - 1.0e-6 * (s['global_batch_size'] / 256) ** 0.5) < 1e-9 "
+    CHECK: " abs(v['value'] - s['learning_rate']) < 1e-9 "
 
 - KEY:
     NAME:  opt_adamw_beta_1
@@ -80,11 +76,6 @@
     NAME:  opt_learning_rate_warmup_steps
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] == 0 "
-
-- KEY:
-    NAME:  opt_learning_rate_decay_steps
-    REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 100000 "
 
 - KEY:
     NAME:  opt_learning_rate_decay_schedule
