@@ -25,6 +25,7 @@ _ALL_RESULT_FILE_COUNTS = {
         'flux1': 10,
         'gpt_oss_20b': 10,
         'deepseekv3_671b': 3,
+        'qwen35_397b_grpo': 3,
     },
     
     'hpc' : {
@@ -166,6 +167,14 @@ _ALL_ALLOWED_BENCHMARKS = {
         'llama31_405b',
         'gpt_oss_20b',
         'deepseekv3_671b'
+    ],
+    '6.1': [
+        'llama31_8b',
+        'flux1',
+        'llama2_70b_lora',
+        'gpt_oss_20b',
+        'deepseekv3_671b',
+        'qwen35_397b_grpo'
     ]
     },
     
