@@ -117,6 +117,7 @@ columns:
       llama31_8b: ["Benchmark results (minutes)", "Small LLM", "C4", "Llama31-8b"]
       gpt_oss_20b: ["Benchmark results (minutes)", "LLM", "C4", "GPT-OSS-20B"]
       deepseekv3_671b: ["Benchmark results (minutes)", "LLM", "C4", "DeepSeekV3-671B"]
+      qwen35_397b_grpo: ["Benchmark results (minutes)", "LLM post training", "R2E-Gym-Subset (easy split)", "Qwen3.5-397B-A17B"]
       default: [" ", " ", " "]
 
   hpc:
