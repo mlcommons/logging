@@ -23,7 +23,7 @@ LogLine = collections.namedtuple('LogLine', [
 TOKEN = ':::MLL'
 
 # ^.*
-LINE_PATTERN = '^' + TOKEN + ''' [ ] # token and version
+LINE_PATTERN = '^' + TOKEN + r''' [ ] # token and version
 ([\d\.]+) [ ] # timestamp
 ([A-Za-z0-9_]+) [ ]? # key
 :\s+(.+) # value
