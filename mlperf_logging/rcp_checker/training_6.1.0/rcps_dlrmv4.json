@@ -1,0 +1,107 @@
+{
+  "dlrmv4_ref_8192": {
+    "Benchmark": "dlrmv4",
+    "Creator": "AMD",
+    "When": "Reference RCPs before 6.1 submission",
+    "Platform": "1x8xMI355X",
+    "Precision": "BF16",
+    "BS": 8192,
+    "Hyperparams": {
+      "opt_base_learning_rate": 1e-06,
+      "opt_learning_rate_warmup_steps": 24000,
+      "gradient_accumulation_steps": 1
+    },
+    "Epochs to converge": [
+      66519040,
+      68812800,
+      66519040,
+      66519040,
+      71106560,
+      80281600,
+      61931520,
+      68812800,
+      68812800,
+      73400320,
+      66519040,
+      73400320,
+      66519040,
+      66519040,
+      71106560,
+      73400320,
+      66519040,
+      71106560,
+      68812800,
+      68812800
+    ]
+  },
+  "dlrmv4_ref_16384": {
+    "Benchmark": "dlrmv4",
+    "Creator": "AMD",
+    "When": "Reference RCPs before 6.1 submission",
+    "Platform": "2x8xMI355X",
+    "Precision": "BF16",
+    "BS": 16384,
+    "Hyperparams": {
+      "opt_base_learning_rate": 2e-06,
+      "opt_learning_rate_warmup_steps": 24000,
+      "gradient_accumulation_steps": 1
+    },
+    "Epochs to converge": [
+      84869120,
+      84869120,
+      87162880,
+      91750400,
+      82575360,
+      82575360,
+      82575360,
+      91750400,
+      82575360,
+      82575360,
+      82575360,
+      77987840,
+      94044160,
+      96337920,
+      87162880,
+      89456640,
+      100925440,
+      98631680,
+      91750400,
+      82575360
+    ]
+  },
+  "dlrmv4_ref_32768": {
+    "Benchmark": "dlrmv4",
+    "Creator": "AMD",
+    "When": "Reference RCPs before 6.1 submission",
+    "Platform": "4x8xMI355X",
+    "Precision": "BF16",
+    "BS": 32768,
+    "Hyperparams": {
+      "opt_base_learning_rate": 4e-06,
+      "opt_learning_rate_warmup_steps": 24000,
+      "gradient_accumulation_steps": 1
+    },
+    "Epochs to converge": [
+      107806720,
+      105512960,
+      112394240,
+      105512960,
+      110100480,
+      107806720,
+      112394240,
+      123863040,
+      114688000,
+      110100480,
+      114688000,
+      128450560,
+      112394240,
+      112394240,
+      121569280,
+      98631680,
+      110100480,
+      128450560,
+      112394240,
+      110100480
+    ]
+  }
+}
