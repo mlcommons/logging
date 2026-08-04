@@ -39,6 +39,7 @@ As log examples use [NVIDIA's training logs](https://github.com/mlperf/training_
     6.0.0/open_llama2_70b_lora.yaml
     6.0.0/open_flux1.yaml
     6.0.0/open_gpt_oss_20b.yaml
+    6.1.0/open_dlrmv4.yaml
 
 ### Existing config files for HPC submissions
 
