@@ -3,7 +3,7 @@
     "Benchmark": "dlrmv4",
     "Creator": "AMD",
     "When": "Reference RCPs before 6.1 submission",
-    "Platform": "1x8xMI355X",
+    "Platform": "1x8xMI350",
     "Precision": "BF16",
     "BS": 8192,
     "Hyperparams": {
@@ -38,7 +38,7 @@
     "Benchmark": "dlrmv4",
     "Creator": "AMD",
     "When": "Reference RCPs before 6.1 submission",
-    "Platform": "2x8xMI355X",
+    "Platform": "2x8xMI350",
     "Precision": "BF16",
     "BS": 16384,
     "Hyperparams": {
@@ -73,7 +73,7 @@
     "Benchmark": "dlrmv4",
     "Creator": "AMD",
     "When": "Reference RCPs before 6.1 submission",
-    "Platform": "4x8xMI355X",
+    "Platform": "4x8xMI350",
     "Precision": "BF16",
     "BS": 32768,
     "Hyperparams": {
