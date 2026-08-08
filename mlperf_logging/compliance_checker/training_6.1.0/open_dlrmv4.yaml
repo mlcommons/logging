@@ -72,10 +72,6 @@
     REQ:   EXACTLY_ONE
 
 - KEY:
-    NAME:  skip_eval_epoch_pct
-    REQ:   EXACTLY_ONE
-
-- KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:

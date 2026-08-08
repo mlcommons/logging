@@ -190,7 +190,6 @@ OPT_SPARSE_NAME = "opt_sparse_name"
 OPT_SPARSE_BASE_LR = "opt_sparse_base_learning_rate"
 OPT_LR_WARMUP_START_LR = "opt_learning_rate_warmup_start_lr"
 EVAL_EVERY_DATA_PCT = "eval_every_data_pct"
-SKIP_EVAL_EPOCH_PCT = "skip_eval_epoch_pct"
 # Log keys - misc.
 BBOX = "bbox"
 SEGM = "segm"

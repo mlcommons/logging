@@ -3,7 +3,7 @@
         s.update({
             'global_batch_size': None,
             'eval_interval_samples': None,
-            'skip_eval_epoch_pct': None,
+            'first_eval_samples': None,
             'opt_base_learning_rate': None,
             'train_samples': 2290835423,
             'target_accuracy': 0.75,
@@ -25,12 +25,16 @@
         s['eval_interval_samples'] = max(
             1, round(0.001 * (s['train_samples'] // v['value']))
         ) * v['value']
-        # Eval begins at the earliest observed convergence for this batch size,
-        # from the linear fit through the reference sweep, as a fraction of the
-        # epoch. The configured value is rounded, hence the tolerance below.
-        s['skip_eval_epoch_pct'] = (
-            math.floor((4480 * v['value'] + 135331840) / 3) / s['train_samples']
-        )
+        # Measurement must begin where the reference recipe begins it: at the
+        # earliest convergence observed for this batch size, from the linear fit
+        # through the reference sweep, less its two-block margin. That threshold
+        # is resolved against the eval grid, so the first eval lands on the
+        # first grid point at or after it -- block 25, 31 and 41 at global batch
+        # 8192, 16384 and 32768.
+        s['first_eval_samples'] = math.ceil(
+            math.floor((4480 * v['value'] + 135331840) / 3)
+            / s['eval_interval_samples']
+        ) * s['eval_interval_samples']
 
 - KEY:
     NAME:  gradient_accumulation_steps
@@ -123,15 +127,11 @@
     CHECK: " v['value'] == 0.001 "
 
 - KEY:
-    NAME:  skip_eval_epoch_pct
-    REQ:   EXACTLY_ONE
-    CHECK: " abs(v['value'] - s['skip_eval_epoch_pct']) < 1e-4 "
-
-- KEY:
     NAME:  eval_accuracy
     REQ:   AT_LEAST_ONE
     CHECK:
         - "'samples_count' in v['metadata']"
         - "v['metadata']['samples_count'] % s['eval_interval_samples'] == 0"
         - "0.0 <= v['value'] <= 1.0"
+    FIRST_CHECK: " int(v['metadata']['samples_count']) == s['first_eval_samples'] "
     ATLEAST_ONE_CHECK: "v['value'] >= s['target_accuracy']"
