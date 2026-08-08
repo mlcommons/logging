@@ -1,0 +1,137 @@
+- BEGIN:
+    CODE: >
+        s.update({
+            'global_batch_size': None,
+            'eval_interval_samples': None,
+            'first_eval_samples': None,
+            'opt_base_learning_rate': None,
+            'train_samples': 2290835423,
+            'target_accuracy': 0.75,
+        })
+
+# Only the target learning rate and the global batch size may be tuned; every
+# other hyperparameter below is fixed by the closed division.
+
+- KEY:
+    NAME:  global_batch_size
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] > 0 "
+    POST: |
+        s['global_batch_size'] = v['value']
+        # Eval fires whenever the global step crosses a multiple of
+        # round(eval_every_data_pct * total_train_steps), so convergence is
+        # reported on a fixed grid and is only comparable against the RCPs when
+        # the grid matches.
+        s['eval_interval_samples'] = max(
+            1, round(0.001 * (s['train_samples'] // v['value']))
+        ) * v['value']
+        # Measurement must begin where the reference recipe begins it: at the
+        # earliest convergence observed for this batch size, from the linear fit
+        # through the reference sweep, less its two-block margin. That threshold
+        # is resolved against the eval grid, so the first eval lands on the
+        # first grid point at or after it -- block 25, 31 and 41 at global batch
+        # 8192, 16384 and 32768.
+        s['first_eval_samples'] = math.ceil(
+            math.floor((4480 * v['value'] + 135331840) / 3)
+            / s['eval_interval_samples']
+        ) * s['eval_interval_samples']
+
+- KEY:
+    NAME:  gradient_accumulation_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] > 0 "
+
+- KEY:
+    NAME:  train_samples
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == s['train_samples'] "
+
+- KEY:
+    NAME:  eval_samples
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 2058204 "
+
+- KEY:
+    NAME:  max_sequence_length
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 4096 "
+
+# Dense optimizer.
+
+- KEY:
+    NAME:  opt_name
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 'Adam' "
+
+- KEY:
+    NAME:  opt_base_learning_rate
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] > 0 "
+    POST:  " s['opt_base_learning_rate'] = v['value'] "
+
+- KEY:
+    NAME:  opt_adam_beta_1
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.95 "
+
+- KEY:
+    NAME:  opt_adam_beta_2
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.999 "
+
+- KEY:
+    NAME:  opt_adam_epsilon
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 1e-8 "
+
+- KEY:
+    NAME:  opt_weight_decay
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.0 "
+
+- KEY:
+    NAME:  opt_gradient_clip_norm
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 1.0 "
+
+# Sparse (embedding) optimizer. The single tunable learning rate applies to
+# both channels, which the reference ramps in lockstep.
+
+- KEY:
+    NAME:  opt_sparse_name
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 'RowWiseAdagrad' "
+
+- KEY:
+    NAME:  opt_sparse_base_learning_rate
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == s['opt_base_learning_rate'] "
+
+# Warmup: a linear ramp from zero to the target learning rate.
+
+- KEY:
+    NAME:  opt_learning_rate_warmup_steps
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 24000 "
+
+- KEY:
+    NAME:  opt_learning_rate_warmup_start_lr
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.0 "
+
+# Eval schedule.
+
+- KEY:
+    NAME:  eval_every_data_pct
+    REQ:   EXACTLY_ONE
+    CHECK: " v['value'] == 0.001 "
+
+- KEY:
+    NAME:  eval_accuracy
+    REQ:   AT_LEAST_ONE
+    CHECK:
+        - "'samples_count' in v['metadata']"
+        - "v['metadata']['samples_count'] % s['eval_interval_samples'] == 0"
+        - "0.0 <= v['value'] <= 1.0"
+    FIRST_CHECK: " int(v['metadata']['samples_count']) == s['first_eval_samples'] "
+    ATLEAST_ONE_CHECK: "v['value'] >= s['target_accuracy']"

@@ -59,6 +59,7 @@ LLAMA31_8B = "llama31_8b"
 FLUX1 = "flux1"
 DEEPSEEKV3_671B = "deepseekv3_671b"
 QWEN35_397B_GRPO = "qwen35_397b_grpo"
+DLRMV4 = "dlrmv4"
 
 # Constant values - model info
 ADAGRAD = "adagrad"
@@ -185,6 +186,10 @@ GENERATION_VALIDATION_ROLLOUT_TEMPERATURE = "generation_validation_rollout_tempe
 GENERATION_VALIDATION_ROLLOUT_TOP_P = "generation_validation_rollout_top_p"
 NUM_GENERATIONS_PER_PROMPT = "num_generations_per_prompt"
 NUM_PROMPTS_PER_STEP = "num_prompts_per_step"
+OPT_SPARSE_NAME = "opt_sparse_name"
+OPT_SPARSE_BASE_LR = "opt_sparse_base_learning_rate"
+OPT_LR_WARMUP_START_LR = "opt_learning_rate_warmup_start_lr"
+EVAL_EVERY_DATA_PCT = "eval_every_data_pct"
 # Log keys - misc.
 BBOX = "bbox"
 SEGM = "segm"

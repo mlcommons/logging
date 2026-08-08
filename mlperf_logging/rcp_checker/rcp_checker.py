@@ -63,6 +63,7 @@ submission_runs = {
         'gpt_oss_20b': 10,
         'deepseekv3_671b': 3,
         'qwen35_397b_grpo': 3,
+        'dlrmv4': 10,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -112,7 +113,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark in {"llama2_70b_lora", "flux1", "llama31_405b", "llama31_8b", "gpt_oss_20b", "deepseekv3_671b", "qwen35_397b_grpo"} and ("eval_error" in str or "eval_accuracy" in str):
+                elif benchmark in {"llama2_70b_lora", "flux1", "llama31_405b", "llama31_8b", "gpt_oss_20b", "deepseekv3_671b", "qwen35_397b_grpo", "dlrmv4"} and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
