@@ -19,11 +19,14 @@
     POST: |
         s['global_batch_size'] = v['value']
         # Eval fires whenever the global step crosses a multiple of
-        # round(eval_every_data_pct * total_train_steps), so convergence is
-        # reported on a fixed grid and is only comparable against the RCPs when
-        # the grid matches.
+        # ceil(eval_every_data_pct * train_samples / global_batch_size), so
+        # convergence is reported on a fixed grid and is only comparable against
+        # the RCPs when the grid matches. This mirrors the reference's
+        # data_pct_to_global_steps() (mlcommons/training#889): the fraction is
+        # taken in sample space and divided ONCE by the global batch size,
+        # rounding up, then scaled back to samples by the same batch size.
         s['eval_interval_samples'] = max(
-            1, round(0.001 * (s['train_samples'] // v['value']))
+            1, math.ceil(0.001 * s['train_samples'] / v['value'])
         ) * v['value']
         # Measurement must begin where the reference recipe begins it: at the
         # earliest convergence observed for this batch size, from the linear fit
@@ -35,11 +38,6 @@
             math.floor((4480 * v['value'] + 135331840) / 3)
             / s['eval_interval_samples']
         ) * s['eval_interval_samples']
-
-- KEY:
-    NAME:  gradient_accumulation_steps
-    REQ:   EXACTLY_ONE
-    CHECK: " is_integer(v['value']) and v['value'] > 0 "
 
 - KEY:
     NAME:  train_samples
