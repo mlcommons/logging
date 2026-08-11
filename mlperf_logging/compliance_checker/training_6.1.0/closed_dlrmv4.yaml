@@ -26,7 +26,7 @@
         # taken in sample space and divided ONCE by the global batch size,
         # rounding up, then scaled back to samples by the same batch size.
         s['eval_interval_samples'] = max(
-            1, math.ceil(0.001 * s['train_samples'] / v['value'])
+            1, int(math.ceil(0.001 * s['train_samples'] / v['value']))
         ) * v['value']
         # Measurement must begin where the reference recipe begins it: at the
         # earliest convergence observed for this batch size, from the linear fit
@@ -34,10 +34,10 @@
         # is resolved against the eval grid, so the first eval lands on the
         # first grid point at or after it -- block 25, 31 and 41 at global batch
         # 8192, 16384 and 32768.
-        s['first_eval_samples'] = math.ceil(
+        s['first_eval_samples'] = int(math.ceil(
             math.floor((4480 * v['value'] + 135331840) / 3)
             / s['eval_interval_samples']
-        ) * s['eval_interval_samples']
+        )) * s['eval_interval_samples']
 
 - KEY:
     NAME:  train_samples
