@@ -2,7 +2,7 @@
 - KEY:
     NAME:  submission_benchmark
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['flux1', 'llama31_8b', 'llama2_70b_lora', 'gpt_oss_20b', 'deepseekv3_671b', 'qwen35_397b_grpo'] "
+    CHECK: " v['value'] in ['flux1', 'llama31_8b', 'llama2_70b_lora', 'gpt_oss_20b', 'deepseekv3_671b', 'qwen35_397b_grpo', 'dlrmv4'] "
     POST:  " enqueue_config('training_6.1.0/closed_{}.yaml'.format(v['value'])) "
 
 - KEY:
