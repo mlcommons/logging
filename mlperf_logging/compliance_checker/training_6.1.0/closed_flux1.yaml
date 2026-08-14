@@ -2,11 +2,12 @@
     NAME:  global_batch_size
     REQ:   AT_LEAST_ONE
     CHECK: " v['value'] >= 0 "
+    POST: " s['eval_interval_samples'] = int(math.ceil(262144 / v['value'])) * v['value'] "
 
 - KEY:
     NAME:  evaluation_frequency
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 262144"
+    CHECK: " v['value'] == s['eval_interval_samples'] "
 
 - KEY:
     NAME:  opt_name
