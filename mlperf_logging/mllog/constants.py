@@ -209,6 +209,11 @@ POWER_READING = "power_reading"
 CONVERTION_EFF = "conversion_eff"
 INTERCONNECT_POWER_EST = "interconnect_power_est"
 
+# Precision constants
+LOWEST_NUMERICAL_PRECISION_IN_ATTN = "lowest_numerical_precision_in_attn"
+LOWEST_NUMERICAL_PRECISION_IN_COMM = "lowest_numerical_precision_in_comm"
+LOWEST_NUMERICAL_PRECISION_IN_LINEAR = "lowest_numerical_precision_in_linear"
+
 # Parallelism constants
 TENSOR_PARALLELISM = "tensor_parallelism"
 PIPELINE_PARALLELISM = "pipeline_parallelism"

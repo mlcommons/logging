@@ -144,42 +144,43 @@
     REQ:   EXACTLY_ONE
     CHECK: " v['value'] != '' "
 
-# Optional keys
+# Mandatory precision and parallelism disclosure (v6.1+)
 - KEY:
     NAME:  lowest_numerical_precision_in_linear
-    REQ:   OPTIONAL
+    REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  lowest_numerical_precision_in_attn
-    REQ:   OPTIONAL
+    REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  lowest_numerical_precision_in_comm
-    REQ:   OPTIONAL
+    REQ:   EXACTLY_ONE
     CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  tensor_parallelism
-    REQ:   OPTIONAL
-    CHECK: " is_integer(v['value']) "
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] >= 1 "
 
 - KEY:
     NAME:  pipeline_parallelism
-    REQ:   OPTIONAL
-    CHECK: " is_integer(v['value']) "
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] >= 1 "
 
 - KEY:
     NAME:  context_parallelism
-    REQ:   OPTIONAL
-    CHECK: " is_integer(v['value']) "
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] >= 1 "
 
 - KEY:
     NAME:  expert_parallelism
-    REQ:   OPTIONAL
-    CHECK: " is_integer(v['value']) "
+    REQ:   EXACTLY_ONE
+    CHECK: " is_integer(v['value']) and v['value'] >= 1 "
 
+# Optional keys
 - KEY:
     NAME:  micro_batch_size
     REQ:   OPTIONAL
