@@ -33,7 +33,7 @@ def parallelism_example():
 
   mllogger.start(key=mllog.constants.RUN_START)
 
-  # Log the model config file used for this run
+  # Log the model config file used for this run. The name must match the submitted config.
   mllogger.event(key=mllog.constants.CONFIG_FILENAME, value="llama31_405b_config.yaml")
 
   # Log lowest numerical precision used in linear, attention, and communication
