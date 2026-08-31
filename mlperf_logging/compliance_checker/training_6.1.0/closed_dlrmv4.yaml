@@ -5,12 +5,17 @@
             'eval_interval_samples': None,
             'first_eval_samples': None,
             'opt_base_learning_rate': None,
+            'lr_min': None,
+            'lr_max': None,
             'train_samples': 2290835423,
             'target_accuracy': 0.75,
         })
 
 # Only the target learning rate and the global batch size may be tuned; every
-# other hyperparameter below is fixed by the closed division.
+# other hyperparameter below is fixed by the closed division. The learning rate
+# is further confined to a band around the linear scaling law the reference
+# sweep was collected on, 1e-6 * global_batch_size / 8192, since convergence is
+# only comparable against the RCPs near that recipe.
 
 - KEY:
     NAME:  global_batch_size
@@ -38,6 +43,9 @@
             math.floor((4480 * v['value'] + 135331840) / 3)
             / s['eval_interval_samples']
         )) * s['eval_interval_samples']
+        # Half to 1.5x the reference learning rate for this batch size.
+        s['lr_min'] = 0.5e-6 * v['value'] / 8192
+        s['lr_max'] = 1.5e-6 * v['value'] / 8192
 
 - KEY:
     NAME:  train_samples
@@ -64,7 +72,10 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] > 0 "
+    # The bounds are derived from global_batch_size, and the rules run in log
+    # order, so a log that reports the learning rate first fails the guard
+    # rather than raising on the comparison.
+    CHECK: " s['lr_min'] is not None and s['lr_min'] * (1 - 1e-9) <= v['value'] <= s['lr_max'] * (1 + 1e-9) "
     POST:  " s['opt_base_learning_rate'] = v['value'] "
 
 - KEY:
