@@ -1,7 +1,14 @@
+# The open division is for algorithmic changes, not for buying convergence with
+# a learning rate the closed division would reject, so the same band around the
+# reference scaling law applies here.
+
 - KEY:
     NAME:  global_batch_size
     REQ:   EXACTLY_ONE
     CHECK: " is_integer(v['value']) and v['value'] > 0 "
+    POST: |
+        s['lr_min'] = 0.5e-6 * v['value'] / 8192
+        s['lr_max'] = 1.5e-6 * v['value'] / 8192
 
 - KEY:
     NAME:  gradient_accumulation_steps
@@ -30,6 +37,10 @@
 - KEY:
     NAME:  opt_base_learning_rate
     REQ:   EXACTLY_ONE
+    # The bounds come from global_batch_size, and the rules run in log order, so
+    # a log that reports the learning rate first fails the guard rather than
+    # raising on the comparison.
+    CHECK: " s.get('lr_min') is not None and s['lr_min'] * (1 - 1e-9) <= v['value'] <= s['lr_max'] * (1 + 1e-9) "
 
 - KEY:
     NAME:  opt_adam_beta_1
@@ -58,6 +69,9 @@
 - KEY:
     NAME:  opt_sparse_base_learning_rate
     REQ:   EXACTLY_ONE
+    # Unlike the closed division this is not pinned to the dense rate, so it
+    # needs the band applied independently.
+    CHECK: " s.get('lr_min') is not None and s['lr_min'] * (1 - 1e-9) <= v['value'] <= s['lr_max'] * (1 + 1e-9) "
 
 - KEY:
     NAME:  opt_learning_rate_warmup_steps
