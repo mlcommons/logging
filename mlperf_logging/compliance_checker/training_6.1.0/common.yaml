@@ -148,17 +148,17 @@
 - KEY:
     NAME:  lowest_numerical_precision_in_linear
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'mxfp6', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  lowest_numerical_precision_in_attn
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'mxfp6', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  lowest_numerical_precision_in_comm
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
+    CHECK: " v['value'] in ['fp64', 'fp32', 'tf32', 'fp16', 'fp8', 'mxfp6', 'nvfp4', 'mxfp4', 'bfloat16', 'Graphcore FLOAT 16.16', 'int8', 'uint8', 'int4', 'uint4'] "
 
 - KEY:
     NAME:  tensor_parallelism
