@@ -62,6 +62,8 @@ submission_runs = {
         'llama31_8b': 10,
         'gpt_oss_20b': 10,
         'deepseekv3_671b': 3,
+        'qwen35_397b_grpo': 3,
+        'dlrmv4': 10,
     },
     "hpc": {
         'cosmoflow': 10,
@@ -111,7 +113,7 @@ def read_submission_file(result_file, ruleset, use_train_samples):
                     eval_metric = json.loads(eval_accuracy_str)["metadata"]["metric"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
                     stable_diffusion_eval_results[eval_step][eval_metric] = eval_score
-                elif benchmark in {"llama2_70b_lora", "flux1", "llama31_405b", "llama31_8b", "gpt_oss_20b", "deepseekv3_671b"} and ("eval_error" in str or "eval_accuracy" in str):
+                elif benchmark in {"llama2_70b_lora", "flux1", "llama31_405b", "llama31_8b", "gpt_oss_20b", "deepseekv3_671b", "qwen35_397b_grpo", "dlrmv4"} and ("eval_error" in str or "eval_accuracy" in str):
                     eval_accuracy_str = str
                     conv_epoch = json.loads(eval_accuracy_str)["metadata"]["samples_count"]
                     eval_score = json.loads(eval_accuracy_str)["value"]
@@ -193,8 +195,8 @@ def get_submission_epochs(result_files, ruleset, bert_train_samples):
 class RCP_Checker:
 
     def __init__(self, usage, ruleset, benchmark, verbose, rcp_file=None):
-        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0", "6.0.0"}:
-            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0, 5.0.0, 5.1.0 and 6.0.0')
+        if ruleset not in {'1.0.0', "1.1.0", "2.0.0", "2.1.0", "3.0.0", "3.1.0", "4.0.0", "4.1.0", "5.0.0", "5.1.0", "6.0.0", "6.1.0"}:
+            raise Exception('RCP Checker only supported in 1.0.0, 1.1.0, 2.0.0, 2.1.0, 3.0.0, 3.1.0, 4.0.0, 4.1.0, 5.0.0, 5.1.0, 6.0.0 and 6.1.0')
         self.usage = usage
         self.ruleset = ruleset
         self.benchmark = benchmark

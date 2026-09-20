@@ -1,0 +1,42 @@
+- KEY:
+    NAME:  global_batch_size
+    REQ:   EXACTLY_ONE
+    POST: >
+        s['global_batch_size'] = v['value']
+
+- KEY:
+    NAME:  opt_base_learning_rate
+    REQ:   EXACTLY_ONE
+   
+
+- KEY:
+    NAME:  opt_learning_rate_training_steps
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  opt_gradient_clip_norm
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  opt_adamw_weight_decay
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  gradient_accumulation_steps
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  lora_alpha
+    REQ:   EXACTLY_ONE
+
+- KEY:
+    NAME:  lora_rank
+    REQ:   EXACTLY_ONE   
+    CHECK: " v['value'] == 16"
+
+- KEY:
+    NAME:  eval_accuracy
+    REQ:   AT_LEAST_ONE
+    CHECK:
+        - "'samples_count' in v['metadata']"
+    ATLEAST_ONE_CHECK: "(v['value'] <= 0.925) and v['value'] > 0.0"

@@ -1,0 +1,61 @@
+{
+  "qwen35_397b_grpo_ref_256":
+    {
+      "Benchmark": "qwen35_397b_grpo",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 6.1 submission",
+      "Platform": "64 NVIDIA GB300 nodes",
+      "Precision": "BF16",
+      "BS": 256,
+      "Hyperparams": {
+        "opt_base_learning_rate": 1e-06,
+        "opt_gradient_clip_norm": 0.125,
+        "num_prompts_per_step": 16,
+        "num_generations_per_prompt": 16,
+        "gradient_accumulation_steps": 32
+      },
+      "Epochs to converge": [
+        4608, 4608, 4608, 4608, 4608, 4608
+      ]
+    },
+
+  "qwen35_397b_grpo_ref_512":
+    {
+      "Benchmark": "qwen35_397b_grpo",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 6.1 submission",
+      "Platform": "64 NVIDIA GB300 nodes",
+      "Precision": "BF16",
+      "BS": 512,
+      "Hyperparams": {
+        "opt_base_learning_rate": 1.4142135624e-06,
+        "opt_gradient_clip_norm": 0.08838834765,
+        "num_prompts_per_step": 32,
+        "num_generations_per_prompt": 16,
+        "gradient_accumulation_steps": 64
+      },
+      "Epochs to converge": [
+        5120, 5120, 5120, 5120, 5120, 5120
+      ]
+    },
+
+  "qwen35_397b_grpo_ref_1024":
+    {
+      "Benchmark": "qwen35_397b_grpo",
+      "Creator": "NVIDIA",
+      "When": "Reference RCPs before 6.1 submission",
+      "Platform": "64 NVIDIA GB300 nodes",
+      "Precision": "BF16",
+      "BS": 1024,
+      "Hyperparams": {
+        "opt_base_learning_rate": 2e-06,
+        "opt_gradient_clip_norm": 0.0625,
+        "num_prompts_per_step": 64,
+        "num_generations_per_prompt": 16,
+        "gradient_accumulation_steps": 128
+      },
+      "Epochs to converge": [
+        7168, 7168, 7168, 7168, 7168, 7168
+      ]
+    }
+}

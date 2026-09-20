@@ -184,6 +184,7 @@ class ComplianceChecker:
         at_least_one_checks = {}
         # executing the rules through log records
         has_been_exec = set([])
+        first_check_seen = set([])
         for line in loglines:
             key_record = None
             try:
@@ -196,6 +197,9 @@ class ComplianceChecker:
                 if 'PRE' in key_record: self.run_check_exec(line, key_record['PRE'], state, 'PRE')
                 if 'CHECK' in key_record: self.run_check_eval(line, key_record['CHECK'], state)
                 if 'POST' in key_record: self.run_check_exec(line, key_record['POST'], state, 'POST')
+            if 'FIRST_CHECK' in key_record and line.key not in first_check_seen:
+                first_check_seen.add(line.key)
+                self.run_check_eval(line, key_record['FIRST_CHECK'], state)
             if 'ATLEAST_ONE_CHECK' in key_record:
               if line.key not in at_least_one_checks:
                 at_least_one_checks[line.key] = [0, key_record['ATLEAST_ONE_CHECK']]
@@ -322,7 +326,7 @@ def get_parser():
     parser.add_argument('--usage', type=str, default='training',
                     choices=usage_choices(),
                     help='what WG do the benchmarks come from')
-    parser.add_argument('--ruleset', type=str, default='6.0.0',
+    parser.add_argument('--ruleset', type=str, default='6.1.0',
                     choices=rule_choices(),
                     help='what version of rules to check the log against')
     parser.add_argument('--config',  type=str,

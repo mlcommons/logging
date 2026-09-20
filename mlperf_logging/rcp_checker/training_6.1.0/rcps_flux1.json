@@ -1,0 +1,90 @@
+{
+  "flux_ref_512": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v6.0",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 512,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.0e-4,
+      "opt_learning_rate_warmup_steps": 1600,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      7077888, 7340032, 7077888, 7077888, 7340032, 7340032, 7602176, 7340032,
+      7077888, 7340032, 7077888, 7340032, 7340032, 7077888, 7077888, 7077888,
+      7340032, 7340032, 7077888, 7340032
+    ]
+  },
+  "flux_ref_1024": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v6.0",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 1024,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.5e-4,
+      "opt_learning_rate_warmup_steps": 800,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      8650752, 8650752, 8126464, 8650752, 8650752, 8912896, 8126464, 8388608,
+      8650752, 8126464, 8126464, 8650752, 8388608, 8388608, 8650752, 8388608,
+      8388608, 8388608, 8912896, 8650752
+    ]
+  },
+  "flux_ref_2048": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v6.0",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 2048,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 2.5e-4,
+      "opt_learning_rate_warmup_steps": 0,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      9437184, 10223616, 10485760, 11010048, 10747904, 12320768, 10485760,
+      9961472, 10485760, 9437184, 9699328, 11534336, 9699328, 9699328, 10747904,
+      9961472, 10485760, 10747904, 9961472, 9961472
+    ]
+  },
+  "flux_ref_4096": {
+    "Benchmark": "flux1",
+    "Creator": "NVIDIA",
+    "When": "Reference RCPs before v6.0",
+    "Platform": "8xDGX-B200",
+    "Precision": "BF16",
+    "BS": 4096,
+    "Hyperparams": {
+      "opt_adamw_beta_1": 0.9,
+      "opt_adamw_beta_2": 0.95,
+      "opt_adamw_epsilon": 1e-8,
+      "opt_adamw_weight_decay": 0.1,
+      "opt_base_learning_rate": 4.0e-4,
+      "opt_learning_rate_warmup_steps": 100,
+      "opt_gradient_clip_norm": 1.0
+    },
+    "samples to converge": [
+      15204352, 15990784, 15466496, 15728640, 15204352, 15466496, 15990784,
+      15204352, 14942208, 15204352, 15466496, 16252928, 14680064, 14942208,
+      13893632, 15466496, 15466496, 15728640, 15466496, 15204352
+    ]
+  }
+}

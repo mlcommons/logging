@@ -19,7 +19,7 @@ from mlperf_logging import mllog
 
 
 def parallelism_example():
-  """Example usage of mllog with parallelism and config keys"""
+  """Example usage of mllog with mandatory precision, parallelism, and config keys"""
 
   mllogger = mllog.get_mllogger()
 
@@ -33,10 +33,15 @@ def parallelism_example():
 
   mllogger.start(key=mllog.constants.RUN_START)
 
-  # Log the model config file used for this run
+  # Log the model config file used for this run. The name must match the submitted config.
   mllogger.event(key=mllog.constants.CONFIG_FILENAME, value="llama31_405b_config.yaml")
 
-  # Log parallelism strategy
+  # Log lowest numerical precision used in linear, attention, and communication
+  mllogger.event(key=mllog.constants.LOWEST_NUMERICAL_PRECISION_IN_LINEAR, value="fp8")
+  mllogger.event(key=mllog.constants.LOWEST_NUMERICAL_PRECISION_IN_ATTN, value="bfloat16")
+  mllogger.event(key=mllog.constants.LOWEST_NUMERICAL_PRECISION_IN_COMM, value="fp8")
+
+  # Log parallelism strategy. Unused dimensions must still be logged as 1.
   mllogger.event(key=mllog.constants.TENSOR_PARALLELISM, value=8)
   mllogger.event(key=mllog.constants.PIPELINE_PARALLELISM, value=4)
   mllogger.event(key=mllog.constants.CONTEXT_PARALLELISM, value=2)
