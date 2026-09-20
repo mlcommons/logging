@@ -11,7 +11,7 @@
 - KEY:
     NAME:  eval_samples
     REQ:   EXACTLY_ONE
-    CHECK: " v['value'] == 256 "
+    CHECK: " v['value'] == 251 "
 
 - KEY:
     NAME:  init_checkpoint_step
