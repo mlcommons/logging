@@ -345,7 +345,6 @@ def _get_scaling_factor(folder):
     if os.path.isfile(scaling_file):
         contents = _read_json_file(scaling_file)
         scaling_factor = contents['scaling_factor']
-        print(f'NOTICE: Applying scaling factor {scaling_factor} to dir {folder}')
     return scaling_factor
 
 
