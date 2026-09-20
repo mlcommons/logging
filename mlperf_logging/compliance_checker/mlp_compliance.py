@@ -308,11 +308,11 @@ class ComplianceChecker:
 
 def usage_choices():
     return set(( x.split("_")[0] for x in os.listdir(os.path.dirname(__file__))
-             if re.match('\w+_\d+\.\d+\.\d+', x) ))
+             if re.match(r'\w+_\d+\.\d+\.\d+', x) ))
 
 def rule_choices():
     return set(( x.split("_")[1] for x in os.listdir(os.path.dirname(__file__))
-            if re.match('\w+_\d+\.\d+\.\d+', x) ))
+            if re.match(r'\w+_\d+\.\d+\.\d+', x) ))
 
 
 def get_parser():
