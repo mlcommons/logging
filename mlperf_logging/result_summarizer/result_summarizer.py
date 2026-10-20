@@ -510,12 +510,9 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division
         has_power = _has_power(benchmark_folder)
         benchmark = _benchmark_alias(folder_parts[-1])
         system = folder_parts[-3] if usage == 'hpc' else folder_parts[-2]
-        # Compute base perf/power scores
-        score, power_score, rcp_scaling_factor = _compute_strong_score_standalone(
-            benchmark, system, has_power, benchmark_folder, usage, ruleset, desc
-        )
 
-        # RCP/GBS/Epochs additions for closed division
+        # RCP/GBS/Epochs additions for closed division. The RCP check rewrites
+        # scaling.json, so it must run before the scores below read it.
         benchmark_gbs = None
         benchmark_epochs = None
         benchmark_rcp = None
@@ -575,6 +572,11 @@ def _compute_strong_scaling_scores(desc, system_folder, usage, ruleset, division
                     f"WARNING: RCP/GBS computation failed for {benchmark_folder}: {e}"
                 )
                 traceback.print_exc()
+
+        # Compute base perf/power scores
+        score, power_score, rcp_scaling_factor = _compute_strong_score_standalone(
+            benchmark, system, has_power, benchmark_folder, usage, ruleset, desc
+        )
 
         # Map into metric-suffixed keys for schema
         detailed_bechmark_scores[f"{benchmark}:rcp_scaling_factor"] = float(
