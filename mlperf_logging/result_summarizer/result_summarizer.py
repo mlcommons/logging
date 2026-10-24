@@ -28,7 +28,7 @@ from ..benchmark_meta import get_allowed_benchmarks, get_result_file_counts
 
 def _get_sub_folders(folder):
     sub_folders = [
-        os.path.join(folder, sub_folder) for sub_folder in os.listdir(folder)
+        os.path.join(folder, sub_folder) for sub_folder in sorted(os.listdir(folder))
     ]
     return [
         sub_folder for sub_folder in sub_folders if os.path.isdir(sub_folder)
@@ -816,11 +816,16 @@ def _fill_empty_benchmark_scores(
                     benchmark_scores[benchmark] = None
 
 
-def _get_id_from_sysinfo(summary):
+# Strings already hashed into private ids, shared across all summarized folders.
+_hashed_strings = set()
+
+
+def _get_id_from_sysinfo(summary, system):
     """Generate private id from system information.
 
     Args:
         summary (dictionary): Sysinfo Dictionary
+        system (str): System name, appended to the hash source if it is a duplicate
     """
 
 
@@ -927,6 +932,10 @@ def _get_id_from_sysinfo(summary):
             'framework'
         ]
         to_hash = ''.join(str(row[c]) for c in columns_for_hashing)
+        # Disambiguate systems whose hash source collides with a previous one
+        if to_hash in _hashed_strings:
+            to_hash += system
+        _hashed_strings.add(to_hash)
         return hashlib.sha256(to_hash.encode('utf-8')).hexdigest()
     
     hash = get_hash(summary)
@@ -962,7 +971,7 @@ def summarize_results(folder, usage, ruleset, csv_file=None, **kwargs):
             id = _get_id_file(folder, system)
             # Generate private id and update system desc to match
             if kwargs.get('generate_private_ids') and 'private_id' not in id:
-                id['private_id'] = _get_id_from_sysinfo(desc)
+                id['private_id'] = _get_id_from_sysinfo(desc, system)
                 _update_id_file(folder, system, id['private_id'])
             elif 'private_id' not in id:
                 # Ensure private_id field exists in desc for consistent processing later, even if it's empty
@@ -1189,7 +1198,7 @@ def main():
         if ',' in path_suffix:
             orgs = multiple_folders.group(2).split(',')
         elif '*' == path_suffix:
-            orgs = os.listdir(path_prefix)
+            orgs = sorted(os.listdir(path_prefix))
             orgs = [
                 org for org in orgs
                 if _is_organization_folder(os.path.join(path_prefix, org))
