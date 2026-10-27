@@ -468,10 +468,27 @@ class RCP_Checker:
         with open(filepath, "w") as scaling_file:
             scaling_file.write(json_content)
 
-    def _reset_results_scaling(self, results_dir):
+    def _update_results_scaling(self, scale_factor, results_dir):
+        '''Make results_dir/scaling.json hold scale_factor (no file means 1.0).
+        An existing file that already holds scale_factor is left untouched.'''
         filepath = results_dir+'/scaling.json'
+        old_factor = 1.0
         if os.path.exists(filepath):
+            try:
+                with open(filepath) as scaling_file:
+                    old_factor = float(json.load(scaling_file)['scaling_factor'])
+            except (OSError, ValueError, KeyError, TypeError):
+                old_factor = None
+        if old_factor == scale_factor:
+            return
+        if os.path.exists(filepath):
+            logging.warning(" Replacing scaling factor %s in %s with newly computed %.4f",
+                            old_factor, filepath, scale_factor)
+        if scale_factor == 1.0:
             os.remove(filepath)
+        else:
+            self._set_results_scaling(scale_factor, results_dir)
+            logging.info(" Results scaling set to normalization factor of %.4f", scale_factor)
 
     def _eval_submission_record(self, rcp_record, subm_epochs, results_dir):
         '''Compare reference and submission convergence.'''
@@ -483,7 +500,6 @@ class RCP_Checker:
         samples_rejected = 4 if rcp_record["Benchmark"] == 'unet3d' else 1
         mean_subm_epochs = np.mean(subm_epochs[samples_rejected:len(subm_epochs)-samples_rejected])
         norm_factor = self._find_norm_factor(rcp_record, mean_subm_epochs)
-        self._reset_results_scaling(results_dir)
         if mean_subm_epochs >= (rcp_record["RCP Mean"] / rcp_record["Max Speedup"]):
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
@@ -491,9 +507,9 @@ class RCP_Checker:
                 mesg = " Submission mean epochs faster than RCP mean but within max speedup range. Score should be normalized by factor of {} / {} = {}"
                 mesg = mesg.format(rcp_record["RCP Mean"], mean_subm_epochs, norm_factor)
                 logging.info(mesg)
-                if results_dir != '':
-                    self._set_results_scaling(norm_factor, results_dir)
-                    logging.info(" Results scaling set to normalization factor of %.4f", norm_factor)
+            # norm_factor is 1.0 when the submission is no faster than the RCP mean.
+            if results_dir != '':
+                self._update_results_scaling(norm_factor, results_dir)
             return True, norm_factor
         else:
             logging.info(" RCP Record: %s", rcp_record)
