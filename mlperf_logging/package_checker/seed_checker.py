@@ -82,6 +82,7 @@ class SeedChecker:
         no_logged_seed = True
         error_messages = []
         seed_to_result_file = {}
+        seeds = []
         for result_file in result_files:
             try:
                 seed_records = self._get_seed_records(result_file)
@@ -100,6 +101,7 @@ class SeedChecker:
                     "Result file {} logs more than one seeds {}!".format(
                         result_file, seed_records))
             for f, ln, s in seed_records:
+                seeds.append(s)
                 if (f, ln, s) in seed_to_result_file:
                     error_messages.append(
                         "Result file {} logs seed {} on {}:{}. However, "
@@ -113,6 +115,16 @@ class SeedChecker:
                         ))
                 else:
                     seed_to_result_file[(f, ln, s)] = result_file
+
+        sorted_seeds = sorted(set(seeds))
+        seed_differences = [right - left for left, right in
+                            zip(sorted_seeds, sorted_seeds[1:])]
+        if (len(seed_differences) > 1 and
+                len(set(seed_differences)) == 1):
+            error_messages.append(
+                "Seeds across result files form an arithmetic sequence: {}. "
+                "Adjacent differences are all {}.".format(
+                    sorted_seeds, seed_differences[0]))
 
         return error_messages
 
