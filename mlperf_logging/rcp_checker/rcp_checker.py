@@ -498,6 +498,10 @@ class RCP_Checker:
         else:
             logging.info(" RCP Record: %s", rcp_record)
             logging.info(" Submission mean epochs: %.4f", mean_subm_epochs)
+            # No scaling.json is written for a failed check, so report the
+            # factor here for anyone reviewing the failure.
+            logging.warning(" RCP check failed. Had it passed, score would be normalized by factor of %s / %.4f = %.4f",
+                            rcp_record["RCP Mean"], mean_subm_epochs, norm_factor)
             return False, norm_factor
 
 
