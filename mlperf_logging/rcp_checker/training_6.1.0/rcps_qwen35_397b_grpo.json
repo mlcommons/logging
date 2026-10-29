@@ -57,5 +57,25 @@
       "Epochs to converge": [
         7168, 7168, 7168, 7168, 7168, 7168
       ]
+    },
+
+  "qwen35_397b_grpo_ref_1152":
+    {
+      "Benchmark": "qwen35_397b_grpo",
+      "Creator": "Google",
+      "When": "Reference RCPs at BS=1152 on 64xGB200 using MLCommons reference code",
+      "Platform": "64 NVIDIA GB200 nodes",
+      "Precision": "BF16",
+      "BS": 1152,
+      "Hyperparams": {
+        "opt_base_learning_rate": 2.1213203436e-06,
+        "opt_gradient_clip_norm": 0.0589255651,
+        "num_prompts_per_step": 72,
+        "num_generations_per_prompt": 16,
+        "gradient_accumulation_steps": 144
+      },
+      "Epochs to converge": [
+        6912, 6912, 6912, 6912, 6912, 6912
+      ]
     }
 }
